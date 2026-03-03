@@ -20,6 +20,7 @@ public class Game
     private Planet? currentPlanet;
     private Ship ship;
     private StarMap starMap;
+    public bool ShouldExit { get; private set; } = false;
 
     public Game(int width, int height)
     {
@@ -38,6 +39,13 @@ public class Game
 
     public void Update()
     {
+        // Check for quit key (X) in any state
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_X))
+        {
+            ShouldExit = true;
+            return;
+        }
+
         switch (currentState)
         {
             case GameState.StarMap:
@@ -129,11 +137,11 @@ public class Game
         Raylib.DrawText($"Credits: {ship.Credits}", 10, 35, 20, Color.WHITE);
         if (currentSystem != null && currentSystem.Planets.Count > 0)
         {
-            Raylib.DrawText($"Press ENTER to explore {currentSystem.Planets[0].Name} | I for ship status", 10, screenHeight - 30, 16, Color.YELLOW);
+            Raylib.DrawText($"Press ENTER to explore {currentSystem.Planets[0].Name} | I for ship status | X to quit", 10, screenHeight - 30, 16, Color.YELLOW);
         }
         else
         {
-            Raylib.DrawText($"Press I for ship status | TAB to warp to nearest system", 10, screenHeight - 30, 16, Color.YELLOW);
+            Raylib.DrawText($"Press I for ship status | TAB to warp to nearest system | X to quit", 10, screenHeight - 30, 16, Color.YELLOW);
         }
     }
 
@@ -141,7 +149,7 @@ public class Game
     {
         Raylib.DrawText($"Fuel: {ship.Fuel:F1}%", 10, 10, 20, Color.WHITE);
         Raylib.DrawText($"Minerals: {ship.Minerals}", 10, 35, 20, Color.WHITE);
-        Raylib.DrawText($"Press ESC to return to star map", 10, screenHeight - 30, 16, Color.YELLOW);
+        Raylib.DrawText($"Press ESC to return to star map | X to quit", 10, screenHeight - 30, 16, Color.YELLOW);
         
         if (currentPlanet != null)
         {
@@ -170,6 +178,6 @@ public class Game
         startY += lineHeight;
         Raylib.DrawText($"Position: ({ship.Position.X:F1}, {ship.Position.Y:F1})", 50, startY, 24, Color.WHITE);
         
-        Raylib.DrawText("Press ESC to return", 50, screenHeight - 50, 20, Color.YELLOW);
+        Raylib.DrawText("Press ESC to return | X to quit", 50, screenHeight - 50, 20, Color.YELLOW);
     }
 }

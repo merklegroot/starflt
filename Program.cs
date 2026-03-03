@@ -15,12 +15,27 @@ class Program
 
         var game = new Game(screenWidth, screenHeight);
         
-        while (!Raylib.WindowShouldClose())
+        while (!game.ShouldExit && !WindowShouldClose())
         {
             game.Update();
             game.Draw();
         }
-
+        
         Raylib.CloseWindow();
+    }
+    
+    private static bool WindowShouldClose()
+    {
+        // Check if window close was requested (like clicking the X button)
+        // but ignore if it was triggered by the Escape key
+        bool closeRequested = Raylib.WindowShouldClose();
+        
+        // If close is requested and it's because of Escape key, ignore it
+        if (closeRequested && Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        {
+            return false;
+        }
+        
+        return closeRequested;
     }
 }
