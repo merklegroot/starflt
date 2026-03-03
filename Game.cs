@@ -112,15 +112,17 @@ public class Game
         switch (currentState)
         {
             case GameState.StarMap:
-                starMap.Draw(screenWidth, screenHeight, ship);
+                starMap.Draw(screenWidth - 250, screenHeight, ship);
                 DrawUI();
+                DrawRightPanel();
                 break;
             case GameState.PlanetaryExploration:
                 if (currentPlanet != null)
                 {
-                    currentPlanet.Draw(screenWidth, screenHeight, ship);
+                    currentPlanet.Draw(screenWidth - 250, screenHeight, ship);
                 }
                 DrawPlanetaryUI();
+                DrawRightPanel();
                 break;
             case GameState.ShipStatus:
                 DrawShipStatus();
@@ -179,5 +181,61 @@ public class Game
         Raylib.DrawText($"Position: ({ship.Position.X:F1}, {ship.Position.Y:F1})", 50, startY, 24, Color.WHITE);
         
         Raylib.DrawText("Press ESC to return | X to quit", 50, screenHeight - 50, 20, Color.YELLOW);
+    }
+
+    private void DrawRightPanel()
+    {
+        const int panelWidth = 250;
+        int panelX = screenWidth - panelWidth;
+        const int panelPadding = 15;
+        const int titleFontSize = 24;
+        const int textFontSize = 18;
+        const int lineSpacing = 25;
+
+        // Draw panel background
+        Raylib.DrawRectangle(panelX, 0, panelWidth, screenHeight, new Color(30, 30, 35, 255));
+        
+        // Draw panel border
+        Raylib.DrawLine(panelX, 0, panelX, screenHeight, Color.DARKGRAY);
+        
+        // Draw title
+        int yPos = panelPadding;
+        Raylib.DrawText("SHIP STATUS", panelX + panelPadding, yPos, titleFontSize, Color.WHITE);
+        
+        // Draw separator line
+        yPos += titleFontSize + 10;
+        Raylib.DrawLine(panelX + panelPadding, yPos, panelX + panelWidth - panelPadding, yPos, Color.DARKGRAY);
+        
+        // Draw ship status information
+        yPos += 20;
+        
+        // Fuel with color coding
+        Raylib.DrawText("Fuel:", panelX + panelPadding, yPos, textFontSize, Color.WHITE);
+        Color fuelColor = ship.Fuel > 50 ? Color.GREEN : ship.Fuel > 25 ? Color.YELLOW : Color.RED;
+        Raylib.DrawText($"{ship.Fuel:F1}%", panelX + panelPadding + 70, yPos, textFontSize, fuelColor);
+        yPos += lineSpacing;
+        
+        // Credits
+        Raylib.DrawText("Credits:", panelX + panelPadding, yPos, textFontSize, Color.WHITE);
+        Raylib.DrawText($"{ship.Credits:N0}", panelX + panelPadding + 80, yPos, textFontSize, Color.GOLD);
+        yPos += lineSpacing;
+        
+        // Minerals
+        Raylib.DrawText("Minerals:", panelX + panelPadding, yPos, textFontSize, Color.WHITE);
+        Raylib.DrawText($"{ship.Minerals}", panelX + panelPadding + 90, yPos, textFontSize, Color.LIGHTGRAY);
+        yPos += lineSpacing;
+        
+        // Speed
+        Raylib.DrawText("Speed:", panelX + panelPadding, yPos, textFontSize, Color.WHITE);
+        Raylib.DrawText($"{ship.Speed:F1}", panelX + panelPadding + 70, yPos, textFontSize, Color.SKYBLUE);
+        yPos += lineSpacing;
+        
+        // Position
+        yPos += 10;
+        Raylib.DrawText("Position:", panelX + panelPadding, yPos, textFontSize, Color.WHITE);
+        yPos += lineSpacing;
+        Raylib.DrawText($"X: {ship.Position.X:F1}", panelX + panelPadding + 10, yPos, textFontSize - 2, Color.LIGHTGRAY);
+        yPos += lineSpacing - 5;
+        Raylib.DrawText($"Y: {ship.Position.Y:F1}", panelX + panelPadding + 10, yPos, textFontSize - 2, Color.LIGHTGRAY);
     }
 }
