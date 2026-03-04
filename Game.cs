@@ -5,6 +5,7 @@ namespace StarflightGame;
 
 public enum GameState
 {
+    CanopyView,
     StarMap,
     PlanetaryExploration,
     ShipStatus
@@ -14,7 +15,7 @@ public class Game
 {
     private readonly int screenWidth;
     private readonly int screenHeight;
-    private GameState currentState = GameState.StarMap;
+    private GameState currentState = GameState.CanopyView;
     
     private StarSystem? currentSystem;
     private Planet? currentPlanet;
@@ -27,6 +28,10 @@ public class Game
     private int menuLevel = 0; // 0 = top level, 1 = submenu
     private readonly string[] topMenuItems = { "Captain", "Navigator" };
     private readonly string[] navigatorSubMenuItems = { "Manuever", "Starmap" };
+    
+    // Canopy view - starfield
+    private List<Vector2> starfield = new List<Vector2>();
+    private Random starfieldRandom = new Random();
 
     public Game(int width, int height)
     {
@@ -41,6 +46,9 @@ public class Game
         {
             ship.Position = currentSystem.Position;
         }
+        
+        // Initialize starfield for canopy view
+        GenerateStarfield();
     }
 
     public void Update()
@@ -56,6 +64,9 @@ public class Game
         
         switch (currentState)
         {
+            case GameState.CanopyView:
+                UpdateCanopyView();
+                break;
             case GameState.StarMap:
                 UpdateStarMap();
                 break;
@@ -66,6 +77,13 @@ public class Game
                 UpdateShipStatus();
                 break;
         }
+    }
+
+    private void UpdateCanopyView()
+    {
+        // Engines are not engaged - no movement
+        // Can navigate to other views through menu
+        // Navigator -> Starmap should switch to StarMap view
     }
 
     private void UpdateStarMap()
@@ -183,7 +201,10 @@ public class Game
                 }
                 else if (selectedMenuIndex == 1) // Starmap
                 {
-                    // TODO: Handle Starmap
+                    // Switch to StarMap view
+                    currentState = GameState.StarMap;
+                    menuLevel = 0;
+                    selectedMenuIndex = 0;
                 }
             }
         }
@@ -199,6 +220,10 @@ public class Game
 
         switch (currentState)
         {
+            case GameState.CanopyView:
+                DrawCanopyView();
+                DrawRightPanel();
+                break;
             case GameState.StarMap:
                 starMap.Draw(screenWidth - 250, screenHeight, ship);
                 DrawUI();
@@ -325,7 +350,57 @@ public class Game
         yPos += lineSpacing;
         Raylib.DrawText($"X: {ship.Position.X:F1}", panelX + panelPadding + 10, yPos, textFontSize - 2, Color.LIGHTGRAY);
         yPos += lineSpacing - 5;
-        Raylib.DrawText($"Y: {ship.Position.Y:F1}", panelX + panelPadding + 10, yPos, textFontSize - 2, Color.LIGHTGRAY);
+            Raylib.DrawText($"Y: {ship.Position.Y:F1}", panelX + panelPadding + 10, yPos, textFontSize - 2, Color.LIGHTGRAY);
+    }
+
+    private void GenerateStarfield()
+    {
+        starfield.Clear();
+        int starCount = 200;
+        const int panelWidth = 250; // Match the panel width
+        
+        for (int i = 0; i < starCount; i++)
+        {
+            starfield.Add(new Vector2(
+                starfieldRandom.Next(0, screenWidth - panelWidth),
+                starfieldRandom.Next(0, screenHeight)
+            ));
+        }
+    }
+
+    private void DrawCanopyView()
+    {
+        // Draw starfield background
+        foreach (var star in starfield)
+        {
+            // Draw stars as small white dots
+            Raylib.DrawPixel((int)star.X, (int)star.Y, Color.WHITE);
+        }
+        
+        // Draw some brighter stars (every 10th star)
+        for (int i = 0; i < starfield.Count; i += 10)
+        {
+            var star = starfield[i];
+            Raylib.DrawCircle((int)star.X, (int)star.Y, 1, Color.WHITE);
+        }
+        
+        // Draw canopy frame/border to simulate ship window
+        int frameThickness = 20;
+        Color frameColor = new Color(40, 40, 45, 255);
+        
+        // Top frame
+        Raylib.DrawRectangle(0, 0, screenWidth - 250, frameThickness, frameColor);
+        // Bottom frame
+        Raylib.DrawRectangle(0, screenHeight - frameThickness, screenWidth - 250, frameThickness, frameColor);
+        // Left frame
+        Raylib.DrawRectangle(0, 0, frameThickness, screenHeight, frameColor);
+        // Right frame (before panel)
+        Raylib.DrawRectangle(screenWidth - 250 - frameThickness, 0, frameThickness, screenHeight, frameColor);
+        
+        // Draw status text
+        Raylib.DrawText("CANOPY VIEW", 30, 30, 24, Color.WHITE);
+        Raylib.DrawText("Engines: OFF", 30, 60, 18, Color.RED);
+        Raylib.DrawText("Use Navigator menu to access Starmap", 30, screenHeight - 50, 16, Color.YELLOW);
     }
 
     private void DrawMenu(int panelX, ref int yPos, int panelWidth, int panelPadding, int menuFontSize, int lineSpacing)
