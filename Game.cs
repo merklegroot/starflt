@@ -21,6 +21,12 @@ public class Game
     private Ship ship;
     private StarMap starMap;
     public bool ShouldExit { get; private set; } = false;
+    
+    // Menu state
+    private int selectedMenuIndex = 0;
+    private int menuLevel = 0; // 0 = top level, 1 = submenu
+    private readonly string[] topMenuItems = { "Captain", "Navigator" };
+    private readonly string[] navigatorSubMenuItems = { "Manuever", "Starmap" };
 
     public Game(int width, int height)
     {
@@ -46,6 +52,8 @@ public class Game
             return;
         }
 
+        UpdateMenuNavigation();
+        
         switch (currentState)
         {
             case GameState.StarMap:
@@ -84,7 +92,8 @@ public class Game
 
     private void UpdatePlanetaryExploration()
     {
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        // Only handle ESC for game state if not in a menu submenu
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && menuLevel == 0)
         {
             currentState = GameState.StarMap;
             currentPlanet = null;
@@ -102,6 +111,85 @@ public class Game
         {
             currentState = GameState.StarMap;
         }
+    }
+
+    private void UpdateMenuNavigation()
+    {
+        // Only allow menu navigation when not in ShipStatus screen
+        if (currentState == GameState.ShipStatus)
+            return;
+        
+        // Handle ESC to go back to previous menu level
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        {
+            if (menuLevel > 0)
+            {
+                menuLevel = 0;
+                selectedMenuIndex = 0;
+            }
+            // If at top level, ESC is handled by game state (don't interfere)
+            return;
+        }
+        
+        // Get current menu items based on level
+        string[] currentMenuItems = menuLevel == 0 ? topMenuItems : navigatorSubMenuItems;
+        
+        // Navigate menu with arrow keys
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_UP))
+        {
+            selectedMenuIndex = Math.Max(0, selectedMenuIndex - 1);
+        }
+        else if (Raylib.IsKeyPressed(KeyboardKey.KEY_DOWN))
+        {
+            selectedMenuIndex = Math.Min(currentMenuItems.Length - 1, selectedMenuIndex + 1);
+        }
+        
+        // Number keys for direct selection (only at top level)
+        if (menuLevel == 0)
+        {
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_ONE))
+            {
+                selectedMenuIndex = 0;
+            }
+            else if (Raylib.IsKeyPressed(KeyboardKey.KEY_TWO))
+            {
+                selectedMenuIndex = 1;
+            }
+        }
+        
+        // Handle selection with SPACE or ENTER
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_SPACE) || Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER))
+        {
+            if (menuLevel == 0)
+            {
+                // Top level selection
+                if (selectedMenuIndex == 0) // Captain
+                {
+                    // TODO: Handle Captain menu
+                }
+                else if (selectedMenuIndex == 1) // Navigator
+                {
+                    // Enter Navigator submenu
+                    menuLevel = 1;
+                    selectedMenuIndex = 0;
+                }
+            }
+            else if (menuLevel == 1)
+            {
+                // Navigator submenu selection
+                if (selectedMenuIndex == 0) // Manuever
+                {
+                    // TODO: Handle Manuever
+                }
+                else if (selectedMenuIndex == 1) // Starmap
+                {
+                    // TODO: Handle Starmap
+                }
+            }
+        }
+        
+        // Clamp menu index
+        selectedMenuIndex = Math.Clamp(selectedMenuIndex, 0, currentMenuItems.Length - 1);
     }
 
     public void Draw()
@@ -188,8 +276,8 @@ public class Game
         const int panelWidth = 250;
         int panelX = screenWidth - panelWidth;
         const int panelPadding = 15;
-        const int titleFontSize = 24;
         const int textFontSize = 18;
+        const int menuFontSize = 20;
         const int lineSpacing = 25;
 
         // Draw panel background
@@ -198,12 +286,13 @@ public class Game
         // Draw panel border
         Raylib.DrawLine(panelX, 0, panelX, screenHeight, Color.DARKGRAY);
         
-        // Draw title
         int yPos = panelPadding;
-        Raylib.DrawText("SHIP STATUS", panelX + panelPadding, yPos, titleFontSize, Color.WHITE);
+        
+        // Draw menu
+        DrawMenu(panelX, ref yPos, panelWidth, panelPadding, menuFontSize, lineSpacing);
         
         // Draw separator line
-        yPos += titleFontSize + 10;
+        yPos += 10;
         Raylib.DrawLine(panelX + panelPadding, yPos, panelX + panelWidth - panelPadding, yPos, Color.DARKGRAY);
         
         // Draw ship status information
@@ -237,5 +326,45 @@ public class Game
         Raylib.DrawText($"X: {ship.Position.X:F1}", panelX + panelPadding + 10, yPos, textFontSize - 2, Color.LIGHTGRAY);
         yPos += lineSpacing - 5;
         Raylib.DrawText($"Y: {ship.Position.Y:F1}", panelX + panelPadding + 10, yPos, textFontSize - 2, Color.LIGHTGRAY);
+    }
+
+    private void DrawMenu(int panelX, ref int yPos, int panelWidth, int panelPadding, int menuFontSize, int lineSpacing)
+    {
+        // Draw menu title
+        string menuTitle = menuLevel == 0 ? "MENU" : "NAVIGATOR";
+        Raylib.DrawText(menuTitle, panelX + panelPadding, yPos, menuFontSize, Color.WHITE);
+        yPos += menuFontSize + 15;
+        
+        // Get current menu items based on level
+        string[] currentMenuItems = menuLevel == 0 ? topMenuItems : navigatorSubMenuItems;
+        
+        // Draw menu items
+        for (int i = 0; i < currentMenuItems.Length; i++)
+        {
+            Color itemColor = i == selectedMenuIndex ? Color.YELLOW : Color.LIGHTGRAY;
+            Color bgColor = i == selectedMenuIndex ? new Color(60, 60, 70, 255) : Color.BLANK;
+            
+            // Draw selection background
+            if (i == selectedMenuIndex)
+            {
+                Raylib.DrawRectangle(panelX + panelPadding - 5, yPos - 2, panelWidth - panelPadding * 2 + 10, menuFontSize + 4, bgColor);
+            }
+            
+            // Draw menu item
+            string prefix = menuLevel == 0 ? $"{i + 1}. " : "  ";
+            Raylib.DrawText($"{prefix}{currentMenuItems[i]}", panelX + panelPadding, yPos, menuFontSize, itemColor);
+            yPos += lineSpacing;
+        }
+        
+        // Draw navigation hints
+        yPos += 10;
+        if (menuLevel > 0)
+        {
+            Raylib.DrawText("ESC: Back", panelX + panelPadding, yPos, menuFontSize - 4, Color.DARKGRAY);
+        }
+        else
+        {
+            Raylib.DrawText("SPACE/ENTER: Select", panelX + panelPadding, yPos, menuFontSize - 4, Color.DARKGRAY);
+        }
     }
 }
