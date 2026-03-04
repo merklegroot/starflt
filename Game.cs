@@ -28,6 +28,7 @@ public class Game
     private int menuLevel = 0; // 0 = top level, 1 = submenu
     private readonly string[] topMenuItems = { "Captain", "Navigator" };
     private readonly string[] navigatorSubMenuItems = { "Manuever", "Starmap" };
+    private bool justSwitchedState = false; // Flag to prevent key press propagation
     
     // Canopy view - starfield
     private List<Vector2> starfield = new List<Vector2>();
@@ -88,7 +89,17 @@ public class Game
 
     private void UpdateStarMap()
     {
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER) && currentSystem != null && currentSystem.Planets.Count > 0)
+        // Reset flag after first update
+        if (justSwitchedState)
+        {
+            justSwitchedState = false;
+            starMap.Update(ship);
+            currentSystem = starMap.GetSystemAtPosition(ship.Position);
+            return; // Skip processing keys on the frame we switch states
+        }
+        
+        // Don't process ENTER if we're in a menu (menu handles it)
+        if (menuLevel == 0 && Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER) && currentSystem != null && currentSystem.Planets.Count > 0)
         {
             // Enter planetary exploration - select first planet
             currentPlanet = currentSystem.Planets[0];
@@ -152,14 +163,17 @@ public class Game
         // Get current menu items based on level
         string[] currentMenuItems = menuLevel == 0 ? topMenuItems : navigatorSubMenuItems;
         
-        // Navigate menu with arrow keys
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_UP))
+        // Navigate menu with arrow keys (but not in StarMap mode where arrows move camera)
+        if (currentState != GameState.StarMap)
         {
-            selectedMenuIndex = Math.Max(0, selectedMenuIndex - 1);
-        }
-        else if (Raylib.IsKeyPressed(KeyboardKey.KEY_DOWN))
-        {
-            selectedMenuIndex = Math.Min(currentMenuItems.Length - 1, selectedMenuIndex + 1);
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_UP))
+            {
+                selectedMenuIndex = Math.Max(0, selectedMenuIndex - 1);
+            }
+            else if (Raylib.IsKeyPressed(KeyboardKey.KEY_DOWN))
+            {
+                selectedMenuIndex = Math.Min(currentMenuItems.Length - 1, selectedMenuIndex + 1);
+            }
         }
         
         // Number keys for direct selection (only at top level)
@@ -203,8 +217,9 @@ public class Game
                 {
                     // Switch to StarMap view
                     currentState = GameState.StarMap;
-                    menuLevel = 0;
-                    selectedMenuIndex = 0;
+                    // Keep menu state: stay in Navigator submenu with Starmap selected
+                    // menuLevel stays at 1, selectedMenuIndex stays at 1
+                    justSwitchedState = true; // Set flag to prevent key propagation
                 }
             }
         }
