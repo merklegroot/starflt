@@ -370,6 +370,9 @@ public class Game
 
     private void DrawCanopyView()
     {
+        const int panelWidth = 250;
+        int viewWidth = screenWidth - panelWidth;
+        
         // Draw starfield background
         foreach (var star in starfield)
         {
@@ -384,23 +387,60 @@ public class Game
             Raylib.DrawCircle((int)star.X, (int)star.Y, 1, Color.WHITE);
         }
         
+        // Draw ship in the center
+        int shipCenterX = viewWidth / 2;
+        int shipCenterY = screenHeight / 2;
+        DrawShip(shipCenterX, shipCenterY);
+        
         // Draw canopy frame/border to simulate ship window
         int frameThickness = 20;
         Color frameColor = new Color(40, 40, 45, 255);
         
         // Top frame
-        Raylib.DrawRectangle(0, 0, screenWidth - 250, frameThickness, frameColor);
+        Raylib.DrawRectangle(0, 0, viewWidth, frameThickness, frameColor);
         // Bottom frame
-        Raylib.DrawRectangle(0, screenHeight - frameThickness, screenWidth - 250, frameThickness, frameColor);
+        Raylib.DrawRectangle(0, screenHeight - frameThickness, viewWidth, frameThickness, frameColor);
         // Left frame
         Raylib.DrawRectangle(0, 0, frameThickness, screenHeight, frameColor);
         // Right frame (before panel)
-        Raylib.DrawRectangle(screenWidth - 250 - frameThickness, 0, frameThickness, screenHeight, frameColor);
+        Raylib.DrawRectangle(viewWidth - frameThickness, 0, frameThickness, screenHeight, frameColor);
         
         // Draw status text
         Raylib.DrawText("CANOPY VIEW", 30, 30, 24, Color.WHITE);
         Raylib.DrawText("Engines: OFF", 30, 60, 18, Color.RED);
         Raylib.DrawText("Use Navigator menu to access Starmap", 30, screenHeight - 50, 16, Color.YELLOW);
+    }
+
+    private void DrawShip(int centerX, int centerY)
+    {
+        // Draw ship as a simple triangular shape (viewed from front/back)
+        // Main body triangle
+        Vector2[] shipPoints = new Vector2[]
+        {
+            new Vector2(centerX, centerY - 30),      // Top point (nose)
+            new Vector2(centerX - 25, centerY + 20), // Bottom left
+            new Vector2(centerX + 25, centerY + 20)  // Bottom right
+        };
+        
+        // Draw ship body
+        Raylib.DrawTriangle(shipPoints[0], shipPoints[1], shipPoints[2], Color.GRAY);
+        Raylib.DrawTriangleLines(shipPoints[0], shipPoints[1], shipPoints[2], Color.WHITE);
+        
+        // Draw cockpit window
+        Vector2[] cockpitPoints = new Vector2[]
+        {
+            new Vector2(centerX, centerY - 15),
+            new Vector2(centerX - 8, centerY - 5),
+            new Vector2(centerX + 8, centerY - 5)
+        };
+        Raylib.DrawTriangle(cockpitPoints[0], cockpitPoints[1], cockpitPoints[2], new Color(50, 100, 150, 200));
+        
+        // Draw engine nozzles at the back
+        Raylib.DrawRectangle(centerX - 20, centerY + 20, 8, 12, Color.DARKGRAY);
+        Raylib.DrawRectangle(centerX + 12, centerY + 20, 8, 12, Color.DARKGRAY);
+        
+        // Draw some detail lines
+        Raylib.DrawLine(centerX - 15, centerY + 5, centerX + 15, centerY + 5, Color.DARKGRAY);
     }
 
     private void DrawMenu(int panelX, ref int yPos, int panelWidth, int panelPadding, int menuFontSize, int lineSpacing)
