@@ -10,6 +10,7 @@ public class Ship
     public int Credits { get; set; } = 1000;
     public int Minerals { get; set; } = 0;
     public float Speed { get; set; } = 2.0f;
+    public float Rotation { get; set; } = -MathF.PI / 2.0f; // Default: pointing up (0 degrees = right, -90 = up)
     
     private const float FuelConsumptionRate = 0.05f;
     private const float MaxFuel = 100.0f;

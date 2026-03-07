@@ -126,6 +126,11 @@ public class Game
         
         if (movement != Vector2.Zero)
         {
+            // Update ship rotation to face movement direction
+            // Atan2 gives angle where 0 = right, PI/2 = down, -PI/2 = up
+            // Ship base points up (-PI/2), so add PI/2 to align properly
+            ship.Rotation = MathF.Atan2(movement.Y, movement.X) + MathF.PI / 2.0f;
+            
             ship.Position += movement;
             ship.ConsumeFuelForMovement();
             
@@ -469,7 +474,9 @@ public class Game
         // Draw ship in the center
         int shipCenterX = viewWidth / 2;
         int shipCenterY = screenHeight / 2;
-        DrawShip(shipCenterX, shipCenterY);
+        // In Maneuver mode, use ship's rotation; otherwise point up
+        float rotation = currentState == GameState.Maneuver ? ship.Rotation : -MathF.PI / 2.0f;
+        DrawShip(shipCenterX, shipCenterY, rotation);
         
         // Draw canopy frame/border to simulate ship window
         int frameThickness = 20;
@@ -500,15 +507,37 @@ public class Game
         }
     }
 
-    private void DrawShip(int centerX, int centerY)
+    private void DrawShip(int centerX, int centerY, float rotation)
     {
-        // Draw ship as a simple triangular shape (viewed from front/back)
-        // Main body triangle
-        Vector2[] shipPoints = new Vector2[]
+        // Rotate points around the center
+        Vector2 RotatePoint(Vector2 point, Vector2 center, float angle)
+        {
+            float cos = MathF.Cos(angle);
+            float sin = MathF.Sin(angle);
+            float dx = point.X - center.X;
+            float dy = point.Y - center.Y;
+            return new Vector2(
+                center.X + dx * cos - dy * sin,
+                center.Y + dx * sin + dy * cos
+            );
+        }
+        
+        Vector2 center = new Vector2(centerX, centerY);
+        
+        // Base ship points (pointing up, -90 degrees)
+        Vector2[] baseShipPoints = new Vector2[]
         {
             new Vector2(centerX, centerY - 30),      // Top point (nose)
             new Vector2(centerX - 25, centerY + 20), // Bottom left
             new Vector2(centerX + 25, centerY + 20)  // Bottom right
+        };
+        
+        // Rotate ship points (rotation already includes the offset from base orientation)
+        Vector2[] shipPoints = new Vector2[]
+        {
+            RotatePoint(baseShipPoints[0], center, rotation),
+            RotatePoint(baseShipPoints[1], center, rotation),
+            RotatePoint(baseShipPoints[2], center, rotation)
         };
         
         // Draw ship body
@@ -516,20 +545,40 @@ public class Game
         Raylib.DrawTriangleLines(shipPoints[0], shipPoints[1], shipPoints[2], Color.WHITE);
         
         // Draw cockpit window
-        Vector2[] cockpitPoints = new Vector2[]
+        Vector2[] baseCockpitPoints = new Vector2[]
         {
             new Vector2(centerX, centerY - 15),
             new Vector2(centerX - 8, centerY - 5),
             new Vector2(centerX + 8, centerY - 5)
         };
+        
+        Vector2[] cockpitPoints = new Vector2[]
+        {
+            RotatePoint(baseCockpitPoints[0], center, rotation),
+            RotatePoint(baseCockpitPoints[1], center, rotation),
+            RotatePoint(baseCockpitPoints[2], center, rotation)
+        };
         Raylib.DrawTriangle(cockpitPoints[0], cockpitPoints[1], cockpitPoints[2], new Color(50, 100, 150, 200));
         
-        // Draw engine nozzles at the back
-        Raylib.DrawRectangle(centerX - 20, centerY + 20, 8, 12, Color.DARKGRAY);
-        Raylib.DrawRectangle(centerX + 12, centerY + 20, 8, 12, Color.DARKGRAY);
+        // Draw engine nozzles at the back (rotated)
+        Vector2[] enginePositions = new Vector2[]
+        {
+            new Vector2(centerX - 20, centerY + 20),
+            new Vector2(centerX + 12, centerY + 20)
+        };
         
-        // Draw some detail lines
-        Raylib.DrawLine(centerX - 15, centerY + 5, centerX + 15, centerY + 5, Color.DARKGRAY);
+        foreach (var enginePos in enginePositions)
+        {
+            Vector2 rotatedPos = RotatePoint(enginePos, center, rotation);
+            // Draw rotated rectangle (simplified as a small rectangle)
+            // For simplicity, we'll draw a small square at the rotated position
+            Raylib.DrawRectangle((int)rotatedPos.X - 4, (int)rotatedPos.Y - 6, 8, 12, Color.DARKGRAY);
+        }
+        
+        // Draw some detail lines (rotated)
+        Vector2 lineStart = RotatePoint(new Vector2(centerX - 15, centerY + 5), center, rotation);
+        Vector2 lineEnd = RotatePoint(new Vector2(centerX + 15, centerY + 5), center, rotation);
+        Raylib.DrawLine((int)lineStart.X, (int)lineStart.Y, (int)lineEnd.X, (int)lineEnd.Y, Color.DARKGRAY);
     }
 
     private void DrawMenu(int panelX, ref int yPos, int panelWidth, int panelPadding, int menuFontSize, int lineSpacing)
