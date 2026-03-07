@@ -31,9 +31,20 @@ public class Game
     private readonly string[] navigatorSubMenuItems = { "Manuever", "Starmap" };
     private bool justSwitchedState = false; // Flag to prevent key press propagation
     
-    // Canopy view - starfield
-    private List<Vector2> starfield = new List<Vector2>();
+    // Canopy view - starfield with parallax layers
+    private class StarLayer
+    {
+        public List<Vector2> Stars { get; set; } = new List<Vector2>();
+        public float SpeedMultiplier { get; set; } = 1.0f;
+        public Color StarColor { get; set; } = Color.WHITE;
+        public int StarSize { get; set; } = 1; // 0 = pixel, 1 = small circle, 2 = larger circle
+    }
+    
+    private List<StarLayer> starfieldLayers = new List<StarLayer>();
     private Random starfieldRandom = new Random();
+    private Vector2 previousShipPosition = Vector2.Zero;
+    private Vector2 displayedCoordinates = Vector2.Zero;
+    private int coordinateUpdateCounter = 0;
 
     public Game(int width, int height)
     {
@@ -49,8 +60,8 @@ public class Game
             ship.Position = currentSystem.Position;
         }
         
-        // Initialize starfield for canopy view
-        GenerateStarfield();
+        // Initialize parallax starfield for canopy view
+        GenerateParallaxStarfield();
     }
 
     public void Update()
@@ -97,6 +108,7 @@ public class Game
         if (justSwitchedState)
         {
             justSwitchedState = false;
+            previousShipPosition = ship.Position;
             return; // Skip processing keys on the frame we switch states
         }
         
@@ -134,9 +146,15 @@ public class Game
             ship.Position += movement;
             ship.ConsumeFuelForMovement();
             
+            // Move starfield in opposite direction to create parallax effect
+            // Each layer moves at its own speed multiplier for depth
+            UpdateStarfieldMovement(-movement);
+            
             // Update current system based on ship position
             currentSystem = starMap.GetSystemAtPosition(ship.Position);
         }
+        
+        previousShipPosition = ship.Position;
     }
 
     private void UpdateStarMap()
@@ -437,18 +455,89 @@ public class Game
             Raylib.DrawText($"Y: {ship.Position.Y:F1}", panelX + panelPadding + 10, yPos, textFontSize - 2, Color.LIGHTGRAY);
     }
 
-    private void GenerateStarfield()
+    private void GenerateParallaxStarfield()
     {
-        starfield.Clear();
-        int starCount = 200;
+        starfieldLayers.Clear();
         const int panelWidth = 250; // Match the panel width
+        int viewWidth = screenWidth - panelWidth;
         
-        for (int i = 0; i < starCount; i++)
+        // Layer 1: Far stars (slowest, dimmest, smallest)
+        var farLayer = new StarLayer
         {
-            starfield.Add(new Vector2(
-                starfieldRandom.Next(0, screenWidth - panelWidth),
+            SpeedMultiplier = 8.0f, // 2.0f * 4
+            StarColor = new Color(150, 150, 150, 255), // Dim gray
+            StarSize = 0 // Pixels
+        };
+        for (int i = 0; i < 150; i++)
+        {
+            farLayer.Stars.Add(new Vector2(
+                starfieldRandom.Next(0, viewWidth),
                 starfieldRandom.Next(0, screenHeight)
             ));
+        }
+        starfieldLayers.Add(farLayer);
+        
+        // Layer 2: Mid stars (medium speed, medium brightness)
+        var midLayer = new StarLayer
+        {
+            SpeedMultiplier = 20.0f, // 5.0f * 4
+            StarColor = Color.WHITE,
+            StarSize = 0 // Pixels
+        };
+        for (int i = 0; i < 100; i++)
+        {
+            midLayer.Stars.Add(new Vector2(
+                starfieldRandom.Next(0, viewWidth),
+                starfieldRandom.Next(0, screenHeight)
+            ));
+        }
+        starfieldLayers.Add(midLayer);
+        
+        // Layer 3: Close stars (fastest, brightest, larger)
+        var closeLayer = new StarLayer
+        {
+            SpeedMultiplier = 48.0f, // 12.0f * 4
+            StarColor = Color.WHITE,
+            StarSize = 1 // Small circles
+        };
+        for (int i = 0; i < 50; i++)
+        {
+            closeLayer.Stars.Add(new Vector2(
+                starfieldRandom.Next(0, viewWidth),
+                starfieldRandom.Next(0, screenHeight)
+            ));
+        }
+        starfieldLayers.Add(closeLayer);
+    }
+
+    private void UpdateStarfieldMovement(Vector2 movement)
+    {
+        const int panelWidth = 250;
+        int viewWidth = screenWidth - panelWidth;
+        
+        // Update each parallax layer at different speeds
+        foreach (var layer in starfieldLayers)
+        {
+            Vector2 layerMovement = movement * layer.SpeedMultiplier;
+            
+            for (int i = 0; i < layer.Stars.Count; i++)
+            {
+                Vector2 star = layer.Stars[i];
+                star += layerMovement;
+                
+                // Wrap stars around when they go off screen
+                if (star.X < 0)
+                    star.X = viewWidth;
+                else if (star.X > viewWidth)
+                    star.X = 0;
+                
+                if (star.Y < 0)
+                    star.Y = screenHeight;
+                else if (star.Y > screenHeight)
+                    star.Y = 0;
+                
+                layer.Stars[i] = star;
+            }
         }
     }
 
@@ -457,18 +546,27 @@ public class Game
         const int panelWidth = 250;
         int viewWidth = screenWidth - panelWidth;
         
-        // Draw starfield background
-        foreach (var star in starfield)
+        // Draw parallax starfield layers (far to near for proper depth)
+        foreach (var layer in starfieldLayers)
         {
-            // Draw stars as small white dots
-            Raylib.DrawPixel((int)star.X, (int)star.Y, Color.WHITE);
-        }
-        
-        // Draw some brighter stars (every 10th star)
-        for (int i = 0; i < starfield.Count; i += 10)
-        {
-            var star = starfield[i];
-            Raylib.DrawCircle((int)star.X, (int)star.Y, 1, Color.WHITE);
+            foreach (var star in layer.Stars)
+            {
+                if (layer.StarSize == 0)
+                {
+                    // Draw as pixel
+                    Raylib.DrawPixel((int)star.X, (int)star.Y, layer.StarColor);
+                }
+                else if (layer.StarSize == 1)
+                {
+                    // Draw as small circle
+                    Raylib.DrawCircle((int)star.X, (int)star.Y, 1, layer.StarColor);
+                }
+                else
+                {
+                    // Draw as larger circle
+                    Raylib.DrawCircle((int)star.X, (int)star.Y, 2, layer.StarColor);
+                }
+            }
         }
         
         // Draw ship in the center
@@ -494,15 +592,47 @@ public class Game
         // Draw status text
         Raylib.DrawText("CANOPY VIEW", 30, 30, 24, Color.WHITE);
         
+        // Draw coordinates at the top center (update slowly, rounded to integers)
+        if (currentState == GameState.Maneuver)
+        {
+            // Gradually move displayed coordinates towards actual position, rounded to nearest integer
+            Vector2 targetPos = new Vector2(
+                MathF.Round(ship.Position.X),
+                MathF.Round(ship.Position.Y)
+            );
+            
+            // Move displayed coordinates by 1 unit at a time towards target
+            if (MathF.Abs(displayedCoordinates.X - targetPos.X) >= 1.0f)
+            {
+                displayedCoordinates.X += MathF.Sign(targetPos.X - displayedCoordinates.X);
+            }
+            if (MathF.Abs(displayedCoordinates.Y - targetPos.Y) >= 1.0f)
+            {
+                displayedCoordinates.Y += MathF.Sign(targetPos.Y - displayedCoordinates.Y);
+            }
+        }
+        else
+        {
+            displayedCoordinates = new Vector2(
+                MathF.Round(ship.Position.X),
+                MathF.Round(ship.Position.Y)
+            );
+        }
+        
+        string coordText = $"Coordinates: ({displayedCoordinates.X:F0}, {displayedCoordinates.Y:F0})";
+        int coordTextWidth = Raylib.MeasureText(coordText, 18);
+        int coordX = (viewWidth - coordTextWidth) / 2;
+        Raylib.DrawText(coordText, coordX, 60, 18, Color.SKYBLUE);
+        
         // Show engine status based on current state
         if (currentState == GameState.Maneuver)
         {
-            Raylib.DrawText("Engines: ON", 30, 60, 18, Color.GREEN);
+            Raylib.DrawText("Engines: ON", 30, 90, 18, Color.GREEN);
             Raylib.DrawText("WASD/Arrow Keys: Move | ESC: Disengage", 30, screenHeight - 50, 16, Color.YELLOW);
         }
         else
         {
-            Raylib.DrawText("Engines: OFF", 30, 60, 18, Color.RED);
+            Raylib.DrawText("Engines: OFF", 30, 90, 18, Color.RED);
             Raylib.DrawText("Use Navigator menu to access Starmap", 30, screenHeight - 50, 16, Color.YELLOW);
         }
     }
