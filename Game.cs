@@ -6,6 +6,7 @@ namespace StarflightGame;
 public enum GameState
 {
     CanopyView,
+    Maneuver,
     StarMap,
     PlanetaryExploration,
     ShipStatus
@@ -68,6 +69,9 @@ public class Game
             case GameState.CanopyView:
                 UpdateCanopyView();
                 break;
+            case GameState.Maneuver:
+                UpdateManeuver();
+                break;
             case GameState.StarMap:
                 UpdateStarMap();
                 break;
@@ -85,6 +89,49 @@ public class Game
         // Engines are not engaged - no movement
         // Can navigate to other views through menu
         // Navigator -> Starmap should switch to StarMap view
+    }
+
+    private void UpdateManeuver()
+    {
+        // Reset flag after first update
+        if (justSwitchedState)
+        {
+            justSwitchedState = false;
+            return; // Skip processing keys on the frame we switch states
+        }
+        
+        // Handle ESC to return to CanopyView
+        // Keep menu state (menuLevel and selectedMenuIndex) unchanged
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        {
+            currentState = GameState.CanopyView;
+            // Keep menuLevel and selectedMenuIndex unchanged to preserve selection
+            return;
+        }
+        
+        // Ship movement in maneuver mode
+        if (!ship.CanMove()) return;
+        
+        Vector2 movement = Vector2.Zero;
+        float speed = ship.Speed;
+        
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_W) || Raylib.IsKeyDown(KeyboardKey.KEY_UP))
+            movement.Y -= speed;
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_S) || Raylib.IsKeyDown(KeyboardKey.KEY_DOWN))
+            movement.Y += speed;
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_A) || Raylib.IsKeyDown(KeyboardKey.KEY_LEFT))
+            movement.X -= speed;
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_D) || Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
+            movement.X += speed;
+        
+        if (movement != Vector2.Zero)
+        {
+            ship.Position += movement;
+            ship.ConsumeFuelForMovement();
+            
+            // Update current system based on ship position
+            currentSystem = starMap.GetSystemAtPosition(ship.Position);
+        }
     }
 
     private void UpdateStarMap()
@@ -157,8 +204,8 @@ public class Game
             return;
         
         // Handle ESC to go back to previous menu level
-        // But don't handle ESC in StarMap mode - let UpdateStarMap handle it
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && currentState != GameState.StarMap)
+        // But don't handle ESC in StarMap or Maneuver mode - let those states handle it
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && currentState != GameState.StarMap && currentState != GameState.Maneuver)
         {
             if (menuLevel > 0)
             {
@@ -172,8 +219,8 @@ public class Game
         // Get current menu items based on level
         string[] currentMenuItems = menuLevel == 0 ? topMenuItems : navigatorSubMenuItems;
         
-        // Navigate menu with arrow keys (but not in StarMap mode where arrows move camera)
-        if (currentState != GameState.StarMap)
+        // Navigate menu with arrow keys (but not in StarMap or Maneuver mode where arrows move ship/camera)
+        if (currentState != GameState.StarMap && currentState != GameState.Maneuver)
         {
             if (Raylib.IsKeyPressed(KeyboardKey.KEY_UP))
             {
@@ -220,7 +267,11 @@ public class Game
                 // Navigator submenu selection
                 if (selectedMenuIndex == 0) // Manuever
                 {
-                    // TODO: Handle Manuever
+                    // Switch to Maneuver mode
+                    currentState = GameState.Maneuver;
+                    // Keep menu state: stay in Navigator submenu with Maneuver selected
+                    // menuLevel stays at 1, selectedMenuIndex stays at 0
+                    justSwitchedState = true; // Set flag to prevent key propagation
                 }
                 else if (selectedMenuIndex == 1) // Starmap
                 {
@@ -245,6 +296,10 @@ public class Game
         switch (currentState)
         {
             case GameState.CanopyView:
+                DrawCanopyView();
+                DrawRightPanel();
+                break;
+            case GameState.Maneuver:
                 DrawCanopyView();
                 DrawRightPanel();
                 break;
@@ -431,8 +486,18 @@ public class Game
         
         // Draw status text
         Raylib.DrawText("CANOPY VIEW", 30, 30, 24, Color.WHITE);
-        Raylib.DrawText("Engines: OFF", 30, 60, 18, Color.RED);
-        Raylib.DrawText("Use Navigator menu to access Starmap", 30, screenHeight - 50, 16, Color.YELLOW);
+        
+        // Show engine status based on current state
+        if (currentState == GameState.Maneuver)
+        {
+            Raylib.DrawText("Engines: ON", 30, 60, 18, Color.GREEN);
+            Raylib.DrawText("WASD/Arrow Keys: Move | ESC: Disengage", 30, screenHeight - 50, 16, Color.YELLOW);
+        }
+        else
+        {
+            Raylib.DrawText("Engines: OFF", 30, 60, 18, Color.RED);
+            Raylib.DrawText("Use Navigator menu to access Starmap", 30, screenHeight - 50, 16, Color.YELLOW);
+        }
     }
 
     private void DrawShip(int centerX, int centerY)
@@ -515,11 +580,14 @@ public class Game
     {
         if (level == 1) // Navigator submenu
         {
+            if (index == 0) // Maneuver
+            {
+                return currentState == GameState.Maneuver;
+            }
             if (index == 1) // Starmap
             {
                 return currentState == GameState.StarMap;
             }
-            // Add other active checks here as needed
         }
         // Add checks for other menu levels as needed
         return false;
