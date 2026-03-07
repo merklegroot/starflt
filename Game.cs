@@ -98,6 +98,14 @@ public class Game
             return; // Skip processing keys on the frame we switch states
         }
         
+        // Handle ESC to return to CanopyView
+        // If in a menu submenu, keep menu state (menuLevel and selectedMenuIndex) unchanged
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        {
+            currentState = GameState.CanopyView;
+            // Keep menuLevel and selectedMenuIndex unchanged to preserve selection
+        }
+        
         // Don't process ENTER if we're in a menu (menu handles it)
         if (menuLevel == 0 && Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER) && currentSystem != null && currentSystem.Planets.Count > 0)
         {
@@ -149,7 +157,8 @@ public class Game
             return;
         
         // Handle ESC to go back to previous menu level
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        // But don't handle ESC in StarMap mode - let UpdateStarMap handle it
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && currentState != GameState.StarMap)
         {
             if (menuLevel > 0)
             {
@@ -480,9 +489,13 @@ public class Game
                 Raylib.DrawRectangle(panelX + panelPadding - 5, yPos - 2, panelWidth - panelPadding * 2 + 10, menuFontSize + 4, bgColor);
             }
             
+            // Check if this menu item is active
+            bool isActive = IsMenuItemActive(menuLevel, i);
+            string activeIndicator = isActive ? "● " : "";
+            
             // Draw menu item
             string prefix = menuLevel == 0 ? $"{i + 1}. " : "  ";
-            Raylib.DrawText($"{prefix}{currentMenuItems[i]}", panelX + panelPadding, yPos, menuFontSize, itemColor);
+            Raylib.DrawText($"{prefix}{activeIndicator}{currentMenuItems[i]}", panelX + panelPadding, yPos, menuFontSize, itemColor);
             yPos += lineSpacing;
         }
         
@@ -496,5 +509,19 @@ public class Game
         {
             Raylib.DrawText("SPACE/ENTER: Select", panelX + panelPadding, yPos, menuFontSize - 4, Color.DARKGRAY);
         }
+    }
+
+    private bool IsMenuItemActive(int level, int index)
+    {
+        if (level == 1) // Navigator submenu
+        {
+            if (index == 1) // Starmap
+            {
+                return currentState == GameState.StarMap;
+            }
+            // Add other active checks here as needed
+        }
+        // Add checks for other menu levels as needed
+        return false;
     }
 }
