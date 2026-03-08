@@ -6,7 +6,7 @@ namespace StarflightGame;
 
 public class StarMapView
 {
-    private List<StarSystem> systems;
+    private List<StarSystem> _systems = new List<StarSystem>();
     private Vector2 cameraOffset;
     private float zoom = 1.0f;
     private const float MinZoom = 0.5f;
@@ -14,7 +14,6 @@ public class StarMapView
 
     public StarMapView()
     {
-        systems = new List<StarSystem>();
         cameraOffset = Vector2.Zero;
         InitializeSystems();
     }
@@ -22,15 +21,15 @@ public class StarMapView
     private void InitializeSystems()
     {
         // Create a small galaxy with multiple star systems
-        systems.Add(new StarSystem("Sol", new Vector2(0, 0), Color.YELLOW));
-        systems.Add(new StarSystem("Alpha Centauri", new Vector2(200, 150), Color.WHITE));
-        systems.Add(new StarSystem("Vega", new Vector2(-150, 200), Color.BLUE));
-        systems.Add(new StarSystem("Betelgeuse", new Vector2(300, -100), Color.RED));
-        systems.Add(new StarSystem("Sirius", new Vector2(-200, -150), Color.SKYBLUE));
+        _systems.Add(new StarSystem("Sol", new Vector2(0, 0), Color.YELLOW));
+        _systems.Add(new StarSystem("Alpha Centauri", new Vector2(200, 150), Color.WHITE));
+        _systems.Add(new StarSystem("Vega", new Vector2(-150, 200), Color.BLUE));
+        _systems.Add(new StarSystem("Betelgeuse", new Vector2(300, -100), Color.RED));
+        _systems.Add(new StarSystem("Sirius", new Vector2(-200, -150), Color.SKYBLUE));
 
         // Add planets to each system
         var random = new Random();
-        foreach (var system in systems)
+        foreach (var system in _systems)
         {
             int planetCount = random.Next(2, 5);
             string[] planetNames = { "Arid", "Ocean", "Desert", "Ice", "Volcanic", "Terra" };
@@ -62,15 +61,15 @@ public class StarMapView
 
     public StarSystem? GetSystem(int index)
     {
-        if (index >= 0 && index < systems.Count)
-            return systems[index];
+        if (index >= 0 && index < _systems.Count)
+            return _systems[index];
         return null;
     }
 
     public StarSystem? GetSystemAtPosition(Vector2 position)
     {
         const float systemRange = 30.0f;
-        foreach (var system in systems)
+        foreach (var system in _systems)
         {
             if (Vector2.Distance(position, system.Position) < systemRange)
             {
@@ -122,7 +121,7 @@ public class StarMapView
         StarSystem? nearest = null;
         float minDistance = float.MaxValue;
 
-        foreach (var system in systems)
+        foreach (var system in _systems)
         {
             float distance = Vector2.Distance(position, system.Position);
             if (distance < minDistance)
@@ -140,7 +139,7 @@ public class StarMapView
         Vector2 center = new Vector2(screenWidth / 2, screenHeight / 2);
 
         // Draw star systems
-        foreach (var system in systems)
+        foreach (var system in _systems)
         {
             Vector2 screenPos = center + (system.Position - cameraOffset) * zoom;
             
