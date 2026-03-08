@@ -21,7 +21,7 @@ public class Game
     private StarSystem? currentSystem;
     private Planet? currentPlanet;
     private Ship ship;
-    private StarMap starMap;
+    private StarMapView starMap;
     public bool ShouldExit { get; private set; } = false;
     
     // Menu state
@@ -65,7 +65,7 @@ public class Game
         screenHeight = height;
         
         ship = new Ship();
-        starMap = new StarMap();
+        starMap = new StarMapView();
         currentSystem = starMap.GetSystem(0);
         // Initialize ship at first system
         if (currentSystem != null)
