@@ -58,6 +58,22 @@ public class Game
     private Vector2 displayedCoordinates = Vector2.Zero;
     private int coordinateUpdateCounter = 0;
     private float twinkleTime = 0.0f;
+    private float starburstWobbleTime = 0.0f;
+    
+    // Particle system for star systems
+    private class StarParticle
+    {
+        public Vector2 BasePosition { get; set; } // Base position relative to star center
+        public float WobblePhase { get; set; } // Phase for wobble animation
+        public float WobbleSpeed { get; set; } // Speed of wobble
+        public float WobbleAmount { get; set; } // Amount of wobble
+        public float Size { get; set; }
+        public Color Color { get; set; }
+        public float Life { get; set; }
+        public float MaxLife { get; set; }
+    }
+    
+    private Dictionary<StarSystem, List<StarParticle>> starParticles = new Dictionary<StarSystem, List<StarParticle>>();
 
     public Game(int width, int height)
     {
@@ -122,6 +138,9 @@ public class Game
     {
         // Update twinkle time
         twinkleTime += 0.016f; // Approximate frame time
+        
+        // Update starburst wobble time
+        starburstWobbleTime += 0.016f;
         
         // Update twinkling for all layers
         foreach (var layer in starfieldLayers)
@@ -787,134 +806,69 @@ public class Game
         {
             // Calculate screen position relative to ship (ship is centered)
             Vector2 relativePos = system.Position - ship.Position;
-            int screenX = shipCenterX + (int)relativePos.X;
-            int screenY = shipCenterY + (int)relativePos.Y;
+            
+            // Apply wobble to the entire star system center
+            float wobbleAmount = 1.5f;
+            float wobbleSpeed = 2.0f;
+            float wobbleX = MathF.Sin(starburstWobbleTime * wobbleSpeed) * wobbleAmount;
+            float wobbleY = MathF.Cos(starburstWobbleTime * wobbleSpeed * 1.3f) * wobbleAmount;
+            
+            int baseScreenX = shipCenterX + (int)relativePos.X;
+            int baseScreenY = shipCenterY + (int)relativePos.Y;
+            int screenX = baseScreenX + (int)wobbleX;
+            int screenY = baseScreenY + (int)wobbleY;
+            
+            // Initialize particles for this system if not already done
+            if (!starParticles.ContainsKey(system))
+            {
+                var particles = new List<StarParticle>();
+                var random = new Random(system.Name.GetHashCode());
+                int particleCount = 12;
+                
+                for (int i = 0; i < particleCount; i++)
+                {
+                    // Place particles closer to center (25-35 units instead of 45-65)
+                    float angle = (float)(random.NextDouble() * Math.PI * 2);
+                    float distance = 25 + (float)(random.NextDouble() * 10);
+                    Vector2 basePos = new Vector2(
+                        MathF.Cos(angle) * distance,
+                        MathF.Sin(angle) * distance
+                    );
+                    
+                    particles.Add(new StarParticle
+                    {
+                        BasePosition = basePos,
+                        WobblePhase = (float)(random.NextDouble() * Math.PI * 2),
+                        WobbleSpeed = 1.5f + (float)(random.NextDouble() * 1.0f),
+                        WobbleAmount = 2.0f + (float)(random.NextDouble() * 3.0f),
+                        Size = 1.5f + (float)(random.NextDouble() * 2.0f),
+                        Color = new Color(system.StarColor.R, system.StarColor.G, system.StarColor.B, (byte)(system.StarColor.A * 0.6f)),
+                        Life = (float)(random.NextDouble() * 5.0f),
+                        MaxLife = 5.0f
+                    });
+                }
+                starParticles[system] = particles;
+            }
+            
+            // Update particles
+            var particlesList = starParticles[system];
+            foreach (var particle in particlesList)
+            {
+                particle.WobblePhase += particle.WobbleSpeed * 0.016f;
+                particle.Life += 0.016f;
+                if (particle.Life > particle.MaxLife)
+                {
+                    particle.Life = 0.0f;
+                    particle.WobblePhase = (float)(new Random().NextDouble() * Math.PI * 2);
+                }
+            }
             
             // Only draw if within reasonable bounds (with some margin for glow)
             if (screenX > -50 && screenX < viewWidth + 50 && screenY > -50 && screenY < screenHeight + 50)
             {
                 const int starRadius = 20; // Much larger than starfield stars
-                const int starburstSize = 35; // Size of the diamond starburst
-                const float curvature = 2.5f; // Controls how much the edges curve inward (very extreme)
                 
-                // Draw diamond-shaped starburst with curved edges (edges curve toward center)
-                Color fillColor = new Color((byte)255, (byte)255, (byte)255, (byte)60); // More transparent white
-                Color starburstColor = fillColor; // Outline matches fill color
-                
-                // Diamond corners (rotated 45 degrees)
-                Vector2 top = new Vector2(screenX, screenY - starburstSize);
-                Vector2 right = new Vector2(screenX + starburstSize, screenY);
-                Vector2 bottom = new Vector2(screenX, screenY + starburstSize);
-                Vector2 left = new Vector2(screenX - starburstSize, screenY);
-                
-                // Build points for the curved diamond shape
-                int segments = 40;
-                List<Vector2> diamondPoints = new List<Vector2>();
-                Vector2 center = new Vector2(screenX, screenY);
-                
-                // Top to right edge (curved inward)
-                for (int i = 0; i <= segments; i++)
-                {
-                    float t = (float)i / segments;
-                    Vector2 p = Vector2.Lerp(top, right, t);
-                    float dist = Vector2.Distance(p, center);
-                    float curve = curvature * (starburstSize - dist) / starburstSize;
-                    Vector2 dir = Vector2.Normalize(center - p);
-                    p += dir * curve * starburstSize;
-                    diamondPoints.Add(p);
-                }
-                
-                // Right to bottom edge
-                for (int i = 1; i <= segments; i++)
-                {
-                    float t = (float)i / segments;
-                    Vector2 p = Vector2.Lerp(right, bottom, t);
-                    float dist = Vector2.Distance(p, center);
-                    float curve = curvature * (starburstSize - dist) / starburstSize;
-                    Vector2 dir = Vector2.Normalize(center - p);
-                    p += dir * curve * starburstSize;
-                    diamondPoints.Add(p);
-                }
-                
-                // Bottom to left edge
-                for (int i = 1; i <= segments; i++)
-                {
-                    float t = (float)i / segments;
-                    Vector2 p = Vector2.Lerp(bottom, left, t);
-                    float dist = Vector2.Distance(p, center);
-                    float curve = curvature * (starburstSize - dist) / starburstSize;
-                    Vector2 dir = Vector2.Normalize(center - p);
-                    p += dir * curve * starburstSize;
-                    diamondPoints.Add(p);
-                }
-                
-                // Left to top edge
-                for (int i = 1; i < segments; i++)
-                {
-                    float t = (float)i / segments;
-                    Vector2 p = Vector2.Lerp(left, top, t);
-                    float dist = Vector2.Distance(p, center);
-                    float curve = curvature * (starburstSize - dist) / starburstSize;
-                    Vector2 dir = Vector2.Normalize(center - p);
-                    p += dir * curve * starburstSize;
-                    diamondPoints.Add(p);
-                }
-                
-                // Draw starburst first (behind everything else)
-                // Fill the diamond shape using scanline fill (bucket fill approach)
-                if (diamondPoints.Count >= 3)
-                {
-                    // Find bounding box
-                    float minY = float.MaxValue;
-                    float maxY = float.MinValue;
-                    foreach (var point in diamondPoints)
-                    {
-                        if (point.Y < minY) minY = point.Y;
-                        if (point.Y > maxY) maxY = point.Y;
-                    }
-                    
-                    // For each scanline (Y coordinate), find left and right edges
-                    for (float y = minY; y <= maxY; y += 1.0f)
-                    {
-                        List<float> intersections = new List<float>();
-                        
-                        // Find intersections with each edge
-                        for (int i = 0; i < diamondPoints.Count; i++)
-                        {
-                            int next = (i + 1) % diamondPoints.Count;
-                            Vector2 p1 = diamondPoints[i];
-                            Vector2 p2 = diamondPoints[next];
-                            
-                            // Check if scanline intersects this edge
-                            if ((p1.Y <= y && p2.Y > y) || (p1.Y > y && p2.Y <= y))
-                            {
-                                // Calculate intersection X
-                                float t = (y - p1.Y) / (p2.Y - p1.Y);
-                                float x = p1.X + t * (p2.X - p1.X);
-                                intersections.Add(x);
-                            }
-                        }
-                        
-                        // Sort intersections and draw horizontal lines between pairs
-                        intersections.Sort();
-                        for (int i = 0; i < intersections.Count - 1; i += 2)
-                        {
-                            int x1 = (int)intersections[i];
-                            int x2 = (int)intersections[i + 1];
-                            Raylib.DrawLine(x1, (int)y, x2, (int)y, fillColor);
-                        }
-                    }
-                }
-                
-                // Draw curved edges outline (on top of fill)
-                for (int i = 0; i < diamondPoints.Count; i++)
-                {
-                    int next = (i + 1) % diamondPoints.Count;
-                    Raylib.DrawLine((int)diamondPoints[i].X, (int)diamondPoints[i].Y, 
-                        (int)diamondPoints[next].X, (int)diamondPoints[next].Y, starburstColor);
-                }
-                
-                // Draw glow layers for prominent appearance (on top of starburst)
+                // Draw glow layers for prominent appearance
                 // Outer glow (very dim, translucent)
                 Color outerGlow = new Color(system.StarColor.R, system.StarColor.G, system.StarColor.B, (byte)(system.StarColor.A * 0.1f));
                 Raylib.DrawCircle(screenX, screenY, starRadius + 8, outerGlow);
@@ -934,6 +888,29 @@ public class Game
                 // Bright center (translucent)
                 Color brightCenter = new Color((byte)255, (byte)255, (byte)255, (byte)(system.StarColor.A * 0.6f));
                 Raylib.DrawCircle(screenX, screenY, starRadius / 2, brightCenter);
+                
+                // Draw particles wobbling around the star
+                foreach (var particle in particlesList)
+                {
+                    float alpha = 1.0f - (particle.Life / particle.MaxLife);
+                    
+                    // Calculate wobble offset
+                    float particleWobbleX = MathF.Sin(particle.WobblePhase) * particle.WobbleAmount;
+                    float particleWobbleY = MathF.Cos(particle.WobblePhase * 1.3f) * particle.WobbleAmount;
+                    
+                    // Final position is base position + wobble offset
+                    float particleX = screenX + particle.BasePosition.X + particleWobbleX;
+                    float particleY = screenY + particle.BasePosition.Y + particleWobbleY;
+                    
+                    Color particleColor = new Color(
+                        particle.Color.R,
+                        particle.Color.G,
+                        particle.Color.B,
+                        (byte)(particle.Color.A * alpha * 0.8f)
+                    );
+                    
+                    Raylib.DrawCircle((int)particleX, (int)particleY, (int)particle.Size, particleColor);
+                }
                 
                 // Draw system name if close enough
                 float distance = Vector2.Distance(ship.Position, system.Position);
