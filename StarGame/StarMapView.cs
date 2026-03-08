@@ -12,7 +12,7 @@ public class StarMapView
     private const float MinZoom = 0.5f;
     private const float MaxZoom = 3.0f;
 
-    public StarMap()
+    public StarMapView()
     {
         systems = new List<StarSystem>();
         cameraOffset = Vector2.Zero;
