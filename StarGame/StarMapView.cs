@@ -6,27 +6,22 @@ namespace StarflightGame;
 
 public class StarMapView
 {
-    private List<StarSystem> _systems = new List<StarSystem>();
-    private Vector2 cameraOffset;
-    private float zoom = 1.0f;
+    private List<StarSystem> _systems = new List<StarSystem>
+    {
+        new StarSystem("Sol", new Vector2(0, 0), Color.YELLOW),
+        new StarSystem("Alpha Centauri", new Vector2(200, 150), Color.WHITE),
+        new StarSystem("Vega", new Vector2(-150, 200), Color.BLUE),
+        new StarSystem("Betelgeuse", new Vector2(300, -100), Color.RED),
+        new StarSystem("Sirius", new Vector2(-200, -150), Color.SKYBLUE)
+    };
+
+    private Vector2 _cameraOffset = Vector2.Zero;
+    private float _zoom = 1.0f;
     private const float MinZoom = 0.5f;
     private const float MaxZoom = 3.0f;
 
     public StarMapView()
     {
-        cameraOffset = Vector2.Zero;
-        InitializeSystems();
-    }
-
-    private void InitializeSystems()
-    {
-        // Create a small galaxy with multiple star systems
-        _systems.Add(new StarSystem("Sol", new Vector2(0, 0), Color.YELLOW));
-        _systems.Add(new StarSystem("Alpha Centauri", new Vector2(200, 150), Color.WHITE));
-        _systems.Add(new StarSystem("Vega", new Vector2(-150, 200), Color.BLUE));
-        _systems.Add(new StarSystem("Betelgeuse", new Vector2(300, -100), Color.RED));
-        _systems.Add(new StarSystem("Sirius", new Vector2(-200, -150), Color.SKYBLUE));
-
         // Add planets to each system
         var random = new Random();
         foreach (var system in _systems)
@@ -76,6 +71,7 @@ public class StarMapView
                 return system;
             }
         }
+
         return null;
     }
 
@@ -83,7 +79,7 @@ public class StarMapView
     {
         // Camera movement
         Vector2 movement = Vector2.Zero;
-        float speed = 5.0f / zoom;
+        float speed = 5.0f / _zoom;
 
         if (Raylib.IsKeyDown(KeyboardKey.KEY_W) || Raylib.IsKeyDown(KeyboardKey.KEY_UP))
             movement.Y -= speed;
@@ -94,13 +90,13 @@ public class StarMapView
         if (Raylib.IsKeyDown(KeyboardKey.KEY_D) || Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
             movement.X += speed;
 
-        cameraOffset += movement;
+        _cameraOffset += movement;
 
         // Zoom
         float wheelMove = Raylib.GetMouseWheelMove();
         if (wheelMove != 0)
         {
-            zoom = Math.Clamp(zoom + wheelMove * 0.1f, MinZoom, MaxZoom);
+            _zoom = Math.Clamp(_zoom + wheelMove * 0.1f, MinZoom, MaxZoom);
         }
 
         // Ship movement in star map (warp travel)
@@ -141,30 +137,30 @@ public class StarMapView
         // Draw star systems
         foreach (var system in _systems)
         {
-            Vector2 screenPos = center + (system.Position - cameraOffset) * zoom;
+            Vector2 screenPos = center + (system.Position - _cameraOffset) * _zoom;
             
             // Draw star
-            Raylib.DrawCircleV(screenPos, 8 * zoom, system.StarColor);
+            Raylib.DrawCircleV(screenPos, 8 * _zoom, system.StarColor);
             
             // Draw system name
-            if (zoom > 0.7f)
+            if (_zoom > 0.7f)
             {
                 Raylib.DrawText(system.Name, (int)(screenPos.X + 15), (int)(screenPos.Y - 10), 
-                    (int)(16 * zoom), Color.WHITE);
+                    (int)(16 * _zoom), Color.WHITE);
             }
 
             // Draw planets orbiting the star
             foreach (var planet in system.Planets)
             {
-                Vector2 planetScreenPos = center + (planet.Position - cameraOffset) * zoom;
-                Raylib.DrawCircleV(planetScreenPos, 4 * zoom, planet.SurfaceColor);
+                Vector2 planetScreenPos = center + (planet.Position - _cameraOffset) * _zoom;
+                Raylib.DrawCircleV(planetScreenPos, 4 * _zoom, planet.SurfaceColor);
             }
         }
 
         // Draw ship
-        Vector2 shipScreenPos = center + (ship.Position - cameraOffset) * zoom;
-        Raylib.DrawCircleV(shipScreenPos, 6 * zoom, Color.WHITE);
-        Raylib.DrawCircleV(shipScreenPos, 4 * zoom, Color.BLUE);
+        Vector2 shipScreenPos = center + (ship.Position - _cameraOffset) * _zoom;
+        Raylib.DrawCircleV(shipScreenPos, 6 * _zoom, Color.WHITE);
+        Raylib.DrawCircleV(shipScreenPos, 4 * _zoom, Color.BLUE);
 
         // Draw instructions
         Raylib.DrawText("WASD: Move | Mouse Wheel: Zoom | TAB: Warp to nearest system", 
