@@ -1,24 +1,77 @@
 using Raylib_cs;
 using System.Numerics;
 using System;
+using System.IO;
+using System.Text.Json;
+using System.Reflection;
 
 namespace StarflightGame;
 
 public class StarMapView
 {
-    private List<StarSystem> _systems = new List<StarSystem>
-    {
-        new StarSystem("Sol", new Vector2(0, 0), Color.YELLOW),
-        new StarSystem("Alpha Centauri", new Vector2(200, 150), Color.WHITE),
-        new StarSystem("Vega", new Vector2(-150, 200), Color.BLUE),
-        new StarSystem("Betelgeuse", new Vector2(300, -100), Color.RED),
-        new StarSystem("Sirius", new Vector2(-200, -150), Color.SKYBLUE)
-    };
+    private List<StarSystem> _systems = LoadStarSystems();
 
     private Vector2 _cameraOffset = Vector2.Zero;
     private float _zoom = 1.0f;
     private const float MinZoom = 0.5f;
     private const float MaxZoom = 3.0f;
+
+    private static List<StarSystem> LoadStarSystems()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceName = "StarflightGame.starSystems.json";
+
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream == null)
+        {
+            throw new InvalidOperationException($"Could not find embedded resource: {resourceName}");
+        }
+
+        using var reader = new StreamReader(stream);
+        var json = reader.ReadToEnd();
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        var starSystemData = JsonSerializer.Deserialize<List<StarSystemData>>(json, options);
+        if (starSystemData == null)
+        {
+            throw new InvalidOperationException("Failed to deserialize star systems data");
+        }
+
+        var systems = new List<StarSystem>();
+        foreach (var data in starSystemData)
+        {
+            var position = new Vector2(data.Position.X, data.Position.Y);
+            var color = new Color(data.StarColor.R, data.StarColor.G, data.StarColor.B, data.StarColor.A);
+            systems.Add(new StarSystem(data.Name, position, color));
+        }
+
+        return systems;
+    }
+
+    private class StarSystemData
+    {
+        public string Name { get; set; } = "";
+        public Vector2Data Position { get; set; }
+        public ColorData StarColor { get; set; }
+    }
+
+    private class Vector2Data
+    {
+        public float X { get; set; }
+        public float Y { get; set; }
+    }
+
+    private class ColorData
+    {
+        public byte R { get; set; }
+        public byte G { get; set; }
+        public byte B { get; set; }
+        public byte A { get; set; }
+    }
 
     public StarMapView()
     {

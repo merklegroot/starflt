@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Sol",
+    "position": { "x": 0, "y": 0 },
+    "starColor": { "r": 255, "g": 255, "b": 0, "a": 255 }
+  },
+  {
+    "name": "Alpha Centauri",
+    "position": { "x": 200, "y": 150 },
+    "starColor": { "r": 255, "g": 255, "b": 255, "a": 255 }
+  },
+  {
+    "name": "Vega",
+    "position": { "x": -150, "y": 200 },
+    "starColor": { "r": 0, "g": 162, "b": 232, "a": 255 }
+  },
+  {
+    "name": "Betelgeuse",
+    "position": { "x": 300, "y": -100 },
+    "starColor": { "r": 255, "g": 0, "b": 0, "a": 255 }
+  },
+  {
+    "name": "Sirius",
+    "position": { "x": -200, "y": -150 },
+    "starColor": { "r": 135, "g": 206, "b": 250, "a": 255 }
+  }
+]
