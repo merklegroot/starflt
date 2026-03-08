@@ -1,5 +1,6 @@
 using Raylib_cs;
 using System.Numerics;
+using System.Linq;
 
 namespace StarflightGame;
 
@@ -9,6 +10,7 @@ public enum GameState
     Maneuver,
     StarMap,
     PlanetaryExploration,
+    PlanetaryEncounter,
     ShipStatus
 }
 
@@ -27,7 +29,7 @@ public class Game
     // Menu state
     private int selectedMenuIndex = 0;
     private int menuLevel = 0; // 0 = top level, 1 = submenu
-    private readonly string[] topMenuItems = { "Captain", "Navigator" };
+    private readonly string[] topMenuItems = { "Planet", "Captain", "Navigator" };
     private readonly string[] navigatorSubMenuItems = { "Manuever", "Starmap" };
     private bool justSwitchedState = false; // Flag to prevent key press propagation
     
@@ -117,6 +119,9 @@ public class Game
                 break;
             case GameState.PlanetaryExploration:
                 UpdatePlanetaryExploration();
+                break;
+            case GameState.PlanetaryEncounter:
+                UpdatePlanetaryEncounter();
                 break;
             case GameState.ShipStatus:
                 UpdateShipStatus();
@@ -274,6 +279,15 @@ public class Game
         }
     }
 
+    private void UpdatePlanetaryEncounter()
+    {
+        // Handle ESC to return to CanopyView
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && menuLevel == 0)
+        {
+            currentState = GameState.CanopyView;
+        }
+    }
+
     private void UpdateShipStatus()
     {
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
@@ -289,8 +303,8 @@ public class Game
             return;
         
         // Handle ESC to go back to previous menu level
-        // But don't handle ESC in StarMap or Maneuver mode - let those states handle it
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && currentState != GameState.StarMap && currentState != GameState.Maneuver)
+        // But don't handle ESC in StarMap, Maneuver, or PlanetaryEncounter mode - let those states handle it
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && currentState != GameState.StarMap && currentState != GameState.Maneuver && currentState != GameState.PlanetaryEncounter)
         {
             if (menuLevel > 0)
             {
@@ -328,6 +342,10 @@ public class Game
             {
                 selectedMenuIndex = 1;
             }
+            else if (Raylib.IsKeyPressed(KeyboardKey.KEY_THREE))
+            {
+                selectedMenuIndex = 2;
+            }
         }
         
         // Handle selection with SPACE or ENTER
@@ -346,11 +364,22 @@ public class Game
             if (menuLevel == 0)
             {
                 // Top level selection
-                if (selectedMenuIndex == 0) // Captain
+                if (selectedMenuIndex == 0) // Planet
+                {
+                    // Set current planet if not already set and we have a system with planets
+                    if (currentPlanet == null && currentSystem != null && currentSystem.Planets.Count > 0)
+                    {
+                        currentPlanet = currentSystem.Planets[0];
+                    }
+                    // Switch to Planetary Encounter view
+                    currentState = GameState.PlanetaryEncounter;
+                    justSwitchedState = true;
+                }
+                else if (selectedMenuIndex == 1) // Captain
                 {
                     // TODO: Handle Captain menu
                 }
-                else if (selectedMenuIndex == 1) // Navigator
+                else if (selectedMenuIndex == 2) // Navigator
                 {
                     // Enter Navigator submenu
                     menuLevel = 1;
@@ -411,6 +440,10 @@ public class Game
                 DrawPlanetaryUI();
                 DrawRightPanel();
                 break;
+            case GameState.PlanetaryEncounter:
+                DrawPlanetaryEncounter();
+                DrawRightPanel();
+                break;
             case GameState.ShipStatus:
                 DrawShipStatus();
                 break;
@@ -449,6 +482,145 @@ public class Game
                 Raylib.DrawText("Press SPACE to mine", 10, 85, 18, Color.YELLOW);
             }
         }
+    }
+
+    private void DrawPlanetaryEncounter()
+    {
+        const int panelWidth = 250;
+        int viewWidth = screenWidth - panelWidth;
+        int viewHeight = screenHeight;
+        
+        // Draw starfield background
+        DrawEncounterStarfield(viewWidth, viewHeight);
+        
+        if (currentPlanet == null)
+        {
+            // No planet available
+            Raylib.DrawText("PLANETARY ENCOUNTER", viewWidth / 2 - 150, 50, 32, Color.WHITE);
+            Raylib.DrawText("No planet encountered", viewWidth / 2 - 120, viewHeight / 2, 24, Color.YELLOW);
+            Raylib.DrawText("Press ESC to return | X to quit", 50, screenHeight - 50, 20, Color.YELLOW);
+            return;
+        }
+        
+        // Calculate planet position (centered, slightly above center)
+        Vector2 planetCenter = new Vector2(viewWidth / 2, viewHeight / 2 - 50);
+        float planetRadius = Math.Min(viewWidth, viewHeight) * 0.25f; // Large planet display
+        
+        // Draw planet with glow effect
+        DrawPlanetWithGlow(planetCenter, planetRadius, currentPlanet);
+        
+        // Draw planet information panel at bottom
+        int infoPanelY = viewHeight - 180;
+        int infoPanelHeight = 150;
+        Color panelBg = new Color((byte)20, (byte)20, (byte)25, (byte)230);
+        Raylib.DrawRectangle(20, infoPanelY, viewWidth - 40, infoPanelHeight, panelBg);
+        Raylib.DrawRectangleLines(20, infoPanelY, viewWidth - 40, infoPanelHeight, Color.DARKGRAY);
+        
+        // Draw planet details
+        int textY = infoPanelY + 20;
+        Raylib.DrawText($"PLANET: {currentPlanet.Name}", 40, textY, 28, Color.WHITE);
+        textY += 35;
+        
+        Raylib.DrawText($"Radius: {currentPlanet.Radius:F1} units", 40, textY, 20, Color.LIGHTGRAY);
+        textY += 25;
+        
+        int unminedMinerals = currentPlanet.Minerals.Count(m => !m.Mined);
+        Raylib.DrawText($"Minerals Detected: {unminedMinerals}", 40, textY, 20, Color.GOLD);
+        textY += 25;
+        
+        if (currentSystem != null)
+        {
+            Raylib.DrawText($"System: {currentSystem.Name}", 40, textY, 18, Color.SKYBLUE);
+        }
+        
+        // Draw title at top
+        Raylib.DrawText("PLANETARY ENCOUNTER", viewWidth / 2 - 150, 30, 32, Color.WHITE);
+        
+        // Draw instructions
+        Raylib.DrawText("Press ESC to return | X to quit", 40, viewHeight - 30, 18, Color.YELLOW);
+    }
+    
+    private void DrawEncounterStarfield(int viewWidth, int viewHeight)
+    {
+        // Draw a simple starfield background
+        Random starRandom = new Random(42); // Fixed seed for consistent stars
+        for (int i = 0; i < 100; i++)
+        {
+            int x = starRandom.Next(0, viewWidth);
+            int y = starRandom.Next(0, viewHeight);
+            float brightness = (float)(starRandom.NextDouble() * 0.5 + 0.5);
+            Color starColor = new Color(
+                (byte)(255 * brightness),
+                (byte)(255 * brightness),
+                (byte)(255 * brightness),
+                (byte)255
+            );
+            Raylib.DrawPixel(x, y, starColor);
+        }
+    }
+    
+    private void DrawPlanetWithGlow(Vector2 center, float radius, Planet planet)
+    {
+        // Draw multiple glow layers for atmospheric effect
+        // Outer glow (very dim)
+        Color outerGlow = new Color(planet.SurfaceColor.R, planet.SurfaceColor.G, planet.SurfaceColor.B, (byte)30);
+        Raylib.DrawCircleV(center, radius + 30, outerGlow);
+        
+        // Mid glow
+        Color midGlow = new Color(planet.SurfaceColor.R, planet.SurfaceColor.G, planet.SurfaceColor.B, (byte)60);
+        Raylib.DrawCircleV(center, radius + 15, midGlow);
+        
+        // Inner glow
+        Color innerGlow = new Color(planet.SurfaceColor.R, planet.SurfaceColor.G, planet.SurfaceColor.B, (byte)100);
+        Raylib.DrawCircleV(center, radius + 5, innerGlow);
+        
+        // Main planet body
+        Raylib.DrawCircleV(center, radius, planet.SurfaceColor);
+        
+        // Add some surface detail (craters/features)
+        Random detailRandom = new Random(planet.Name.GetHashCode());
+        for (int i = 0; i < 8; i++)
+        {
+            float angle = (float)(detailRandom.NextDouble() * Math.PI * 2);
+            float distance = (float)(detailRandom.NextDouble() * radius * 0.7f);
+            Vector2 detailPos = center + new Vector2(
+                MathF.Cos(angle) * distance,
+                MathF.Sin(angle) * distance
+            );
+            
+            // Draw small dark craters
+            Color craterColor = new Color(
+                (byte)(planet.SurfaceColor.R * 0.6f),
+                (byte)(planet.SurfaceColor.G * 0.6f),
+                (byte)(planet.SurfaceColor.B * 0.6f),
+                (byte)200
+            );
+            float craterSize = (float)(detailRandom.NextDouble() * 8 + 3);
+            Raylib.DrawCircleV(detailPos, craterSize, craterColor);
+        }
+        
+        // Draw terminator line (day/night boundary) for 3D effect
+        float terminatorOffset = radius * 0.3f;
+        Vector2 terminatorStart = center + new Vector2(-radius, -terminatorOffset);
+        Vector2 terminatorEnd = center + new Vector2(-radius, radius + terminatorOffset);
+        
+        // Draw a subtle shadow gradient
+        for (int i = 0; i < 20; i++)
+        {
+            float t = i / 20.0f;
+            float x = center.X - radius + t * radius * 0.4f;
+            float y1 = center.Y - radius * MathF.Sqrt(1 - MathF.Pow((x - center.X) / radius, 2));
+            float y2 = center.Y + radius * MathF.Sqrt(1 - MathF.Pow((x - center.X) / radius, 2));
+            
+            byte alpha = (byte)(100 * (1 - t));
+            Color shadowColor = new Color((byte)0, (byte)0, (byte)0, alpha);
+            Raylib.DrawLine((int)x, (int)y1, (int)x, (int)y2, shadowColor);
+        }
+        
+        // Draw highlight on the lit side
+        Vector2 highlightPos = center + new Vector2(radius * 0.3f, -radius * 0.3f);
+        Color highlightColor = new Color((byte)255, (byte)255, (byte)255, (byte)80);
+        Raylib.DrawCircleV(highlightPos, radius * 0.15f, highlightColor);
     }
 
     private void DrawShipStatus()
@@ -1150,7 +1322,14 @@ public class Game
 
     private bool IsMenuItemActive(int level, int index)
     {
-        if (level == 1) // Navigator submenu
+        if (level == 0) // Top level menu
+        {
+            if (index == 0) // Planet
+            {
+                return currentState == GameState.PlanetaryEncounter;
+            }
+        }
+        else if (level == 1) // Navigator submenu
         {
             if (index == 0) // Maneuver
             {
