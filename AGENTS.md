@@ -1,3 +1,9 @@
+---
+description: Coding conventions and standards for this codebase
+globs: ["**/*.cs"]
+alwaysApply: true
+---
+
 # Agent Coding Guidelines
 
 This document outlines C# coding conventions that must be followed when working on this codebase.
