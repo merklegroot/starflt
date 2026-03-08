@@ -505,7 +505,7 @@ public class Game
         yPos += lineSpacing;
         Raylib.DrawText($"X: {ship.Position.X:F1}", panelX + panelPadding + 10, yPos, textFontSize - 2, Color.LIGHTGRAY);
         yPos += lineSpacing - 5;
-            Raylib.DrawText($"Y: {ship.Position.Y:F1}", panelX + panelPadding + 10, yPos, textFontSize - 2, Color.LIGHTGRAY);
+        Raylib.DrawText($"Y: {ship.Position.Y:F1}", panelX + panelPadding + 10, yPos, textFontSize - 2, Color.LIGHTGRAY);
     }
 
     private void GenerateParallaxStarfield()
@@ -778,9 +778,177 @@ public class Game
             }
         }
         
-        // Draw ship in the center
+        // Draw star systems (much larger than starfield stars)
         int shipCenterX = viewWidth / 2;
         int shipCenterY = screenHeight / 2;
+        var systems = starMap.GetAllSystems();
+        
+        foreach (var system in systems)
+        {
+            // Calculate screen position relative to ship (ship is centered)
+            Vector2 relativePos = system.Position - ship.Position;
+            int screenX = shipCenterX + (int)relativePos.X;
+            int screenY = shipCenterY + (int)relativePos.Y;
+            
+            // Only draw if within reasonable bounds (with some margin for glow)
+            if (screenX > -50 && screenX < viewWidth + 50 && screenY > -50 && screenY < screenHeight + 50)
+            {
+                const int starRadius = 20; // Much larger than starfield stars
+                const int starburstSize = 35; // Size of the diamond starburst
+                const float curvature = 2.5f; // Controls how much the edges curve inward (very extreme)
+                
+                // Draw diamond-shaped starburst with curved edges (edges curve toward center)
+                Color fillColor = new Color((byte)255, (byte)255, (byte)255, (byte)60); // More transparent white
+                Color starburstColor = fillColor; // Outline matches fill color
+                
+                // Diamond corners (rotated 45 degrees)
+                Vector2 top = new Vector2(screenX, screenY - starburstSize);
+                Vector2 right = new Vector2(screenX + starburstSize, screenY);
+                Vector2 bottom = new Vector2(screenX, screenY + starburstSize);
+                Vector2 left = new Vector2(screenX - starburstSize, screenY);
+                
+                // Build points for the curved diamond shape
+                int segments = 40;
+                List<Vector2> diamondPoints = new List<Vector2>();
+                Vector2 center = new Vector2(screenX, screenY);
+                
+                // Top to right edge (curved inward)
+                for (int i = 0; i <= segments; i++)
+                {
+                    float t = (float)i / segments;
+                    Vector2 p = Vector2.Lerp(top, right, t);
+                    float dist = Vector2.Distance(p, center);
+                    float curve = curvature * (starburstSize - dist) / starburstSize;
+                    Vector2 dir = Vector2.Normalize(center - p);
+                    p += dir * curve * starburstSize;
+                    diamondPoints.Add(p);
+                }
+                
+                // Right to bottom edge
+                for (int i = 1; i <= segments; i++)
+                {
+                    float t = (float)i / segments;
+                    Vector2 p = Vector2.Lerp(right, bottom, t);
+                    float dist = Vector2.Distance(p, center);
+                    float curve = curvature * (starburstSize - dist) / starburstSize;
+                    Vector2 dir = Vector2.Normalize(center - p);
+                    p += dir * curve * starburstSize;
+                    diamondPoints.Add(p);
+                }
+                
+                // Bottom to left edge
+                for (int i = 1; i <= segments; i++)
+                {
+                    float t = (float)i / segments;
+                    Vector2 p = Vector2.Lerp(bottom, left, t);
+                    float dist = Vector2.Distance(p, center);
+                    float curve = curvature * (starburstSize - dist) / starburstSize;
+                    Vector2 dir = Vector2.Normalize(center - p);
+                    p += dir * curve * starburstSize;
+                    diamondPoints.Add(p);
+                }
+                
+                // Left to top edge
+                for (int i = 1; i < segments; i++)
+                {
+                    float t = (float)i / segments;
+                    Vector2 p = Vector2.Lerp(left, top, t);
+                    float dist = Vector2.Distance(p, center);
+                    float curve = curvature * (starburstSize - dist) / starburstSize;
+                    Vector2 dir = Vector2.Normalize(center - p);
+                    p += dir * curve * starburstSize;
+                    diamondPoints.Add(p);
+                }
+                
+                // Draw starburst first (behind everything else)
+                // Fill the diamond shape using scanline fill (bucket fill approach)
+                if (diamondPoints.Count >= 3)
+                {
+                    // Find bounding box
+                    float minY = float.MaxValue;
+                    float maxY = float.MinValue;
+                    foreach (var point in diamondPoints)
+                    {
+                        if (point.Y < minY) minY = point.Y;
+                        if (point.Y > maxY) maxY = point.Y;
+                    }
+                    
+                    // For each scanline (Y coordinate), find left and right edges
+                    for (float y = minY; y <= maxY; y += 1.0f)
+                    {
+                        List<float> intersections = new List<float>();
+                        
+                        // Find intersections with each edge
+                        for (int i = 0; i < diamondPoints.Count; i++)
+                        {
+                            int next = (i + 1) % diamondPoints.Count;
+                            Vector2 p1 = diamondPoints[i];
+                            Vector2 p2 = diamondPoints[next];
+                            
+                            // Check if scanline intersects this edge
+                            if ((p1.Y <= y && p2.Y > y) || (p1.Y > y && p2.Y <= y))
+                            {
+                                // Calculate intersection X
+                                float t = (y - p1.Y) / (p2.Y - p1.Y);
+                                float x = p1.X + t * (p2.X - p1.X);
+                                intersections.Add(x);
+                            }
+                        }
+                        
+                        // Sort intersections and draw horizontal lines between pairs
+                        intersections.Sort();
+                        for (int i = 0; i < intersections.Count - 1; i += 2)
+                        {
+                            int x1 = (int)intersections[i];
+                            int x2 = (int)intersections[i + 1];
+                            Raylib.DrawLine(x1, (int)y, x2, (int)y, fillColor);
+                        }
+                    }
+                }
+                
+                // Draw curved edges outline (on top of fill)
+                for (int i = 0; i < diamondPoints.Count; i++)
+                {
+                    int next = (i + 1) % diamondPoints.Count;
+                    Raylib.DrawLine((int)diamondPoints[i].X, (int)diamondPoints[i].Y, 
+                        (int)diamondPoints[next].X, (int)diamondPoints[next].Y, starburstColor);
+                }
+                
+                // Draw glow layers for prominent appearance (on top of starburst)
+                // Outer glow (very dim, translucent)
+                Color outerGlow = new Color(system.StarColor.R, system.StarColor.G, system.StarColor.B, (byte)(system.StarColor.A * 0.1f));
+                Raylib.DrawCircle(screenX, screenY, starRadius + 8, outerGlow);
+                
+                // Mid glow (translucent)
+                Color midGlow = new Color(system.StarColor.R, system.StarColor.G, system.StarColor.B, (byte)(system.StarColor.A * 0.3f));
+                Raylib.DrawCircle(screenX, screenY, starRadius + 4, midGlow);
+                
+                // Core glow (translucent)
+                Color coreGlow = new Color(system.StarColor.R, system.StarColor.G, system.StarColor.B, (byte)(system.StarColor.A * 0.5f));
+                Raylib.DrawCircle(screenX, screenY, starRadius + 2, coreGlow);
+                
+                // Main star (translucent)
+                Color translucentStarColor = new Color(system.StarColor.R, system.StarColor.G, system.StarColor.B, (byte)(system.StarColor.A * 0.7f));
+                Raylib.DrawCircle(screenX, screenY, starRadius, translucentStarColor);
+                
+                // Bright center (translucent)
+                Color brightCenter = new Color((byte)255, (byte)255, (byte)255, (byte)(system.StarColor.A * 0.6f));
+                Raylib.DrawCircle(screenX, screenY, starRadius / 2, brightCenter);
+                
+                // Draw system name if close enough
+                float distance = Vector2.Distance(ship.Position, system.Position);
+                if (distance < 300)
+                {
+                    int nameY = screenY - starRadius - 25;
+                    if (nameY > 100) // Don't draw name if too close to top UI
+                    {
+                        Raylib.DrawText(system.Name, screenX - Raylib.MeasureText(system.Name, 16) / 2, nameY, 16, Color.WHITE);
+                    }
+                }
+            }
+        }
+        
+        // Draw ship in the center
         // In Maneuver mode, use ship's rotation; otherwise point up
         float rotation = currentState == GameState.Maneuver ? ship.Rotation : -MathF.PI / 2.0f;
         DrawShip(shipCenterX, shipCenterY, rotation);

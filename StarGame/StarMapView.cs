@@ -114,6 +114,11 @@ public class StarMapView
         return null;
     }
 
+    public List<StarSystem> GetAllSystems()
+    {
+        return _systems;
+    }
+
     public StarSystem? GetSystemAtPosition(Vector2 position)
     {
         const float systemRange = 30.0f;
