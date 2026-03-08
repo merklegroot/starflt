@@ -32,12 +32,24 @@ public class Game
     private bool justSwitchedState = false; // Flag to prevent key press propagation
     
     // Canopy view - starfield with parallax layers
+    private class Star
+    {
+        public Vector2 Position { get; set; }
+        public float Brightness { get; set; } = 1.0f;
+        public float TwinklePhase { get; set; } = 0.0f;
+        public float TwinkleSpeed { get; set; } = 0.0f;
+        public Color BaseColor { get; set; } = Color.WHITE;
+        public float Size { get; set; } = 1.0f;
+    }
+    
     private class StarLayer
     {
-        public List<Vector2> Stars { get; set; } = new List<Vector2>();
+        public List<Star> Stars { get; set; } = new List<Star>();
         public float SpeedMultiplier { get; set; } = 1.0f;
-        public Color StarColor { get; set; } = Color.WHITE;
-        public int StarSize { get; set; } = 1; // 0 = pixel, 1 = small circle, 2 = larger circle
+        public Color BaseColor { get; set; } = Color.WHITE;
+        public float MinBrightness { get; set; } = 0.3f;
+        public float MaxBrightness { get; set; } = 1.0f;
+        public bool EnableTwinkle { get; set; } = false;
     }
     
     private List<StarLayer> starfieldLayers = new List<StarLayer>();
@@ -45,6 +57,7 @@ public class Game
     private Vector2 previousShipPosition = Vector2.Zero;
     private Vector2 displayedCoordinates = Vector2.Zero;
     private int coordinateUpdateCounter = 0;
+    private float twinkleTime = 0.0f;
 
     public Game(int width, int height)
     {
@@ -100,6 +113,33 @@ public class Game
         // Engines are not engaged - no movement
         // Can navigate to other views through menu
         // Navigator -> Starmap should switch to StarMap view
+        
+        // Update starfield twinkling even when stationary
+        UpdateStarfieldTwinkling();
+    }
+    
+    private void UpdateStarfieldTwinkling()
+    {
+        // Update twinkle time
+        twinkleTime += 0.016f; // Approximate frame time
+        
+        // Update twinkling for all layers
+        foreach (var layer in starfieldLayers)
+        {
+            if (!layer.EnableTwinkle) continue;
+            
+            for (int i = 0; i < layer.Stars.Count; i++)
+            {
+                Star star = layer.Stars[i];
+                if (star.TwinkleSpeed > 0)
+                {
+                    star.TwinklePhase += star.TwinkleSpeed * 0.016f;
+                    float twinkle = (MathF.Sin(star.TwinklePhase) + 1.0f) * 0.5f; // 0 to 1
+                    star.Brightness = layer.MinBrightness + (layer.MaxBrightness - layer.MinBrightness) * twinkle;
+                    layer.Stars[i] = star;
+                }
+            }
+        }
     }
 
     private void UpdateManeuver()
@@ -120,6 +160,9 @@ public class Game
             // Keep menuLevel and selectedMenuIndex unchanged to preserve selection
             return;
         }
+        
+        // Update starfield twinkling
+        UpdateStarfieldTwinkling();
         
         // Ship movement in maneuver mode
         if (!ship.CanMove()) return;
@@ -461,53 +504,167 @@ public class Game
         const int panelWidth = 250; // Match the panel width
         int viewWidth = screenWidth - panelWidth;
         
-        // Layer 1: Far stars (slowest, dimmest, smallest)
+        // Layer 1: Very far stars (slowest, dimmest, smallest, many)
+        var veryFarLayer = new StarLayer
+        {
+            SpeedMultiplier = 4.0f,
+            BaseColor = new Color(100, 100, 120, 255),
+            MinBrightness = 0.2f,
+            MaxBrightness = 0.5f,
+            EnableTwinkle = true
+        };
+        for (int i = 0; i < 300; i++)
+        {
+            veryFarLayer.Stars.Add(new Star
+            {
+                Position = new Vector2(
+                    starfieldRandom.Next(0, viewWidth),
+                    starfieldRandom.Next(0, screenHeight)
+                ),
+                Brightness = (float)(starfieldRandom.NextDouble() * 0.3 + 0.2),
+                TwinklePhase = (float)(starfieldRandom.NextDouble() * Math.PI * 2),
+                TwinkleSpeed = (float)(starfieldRandom.NextDouble() * 0.5 + 0.3),
+                BaseColor = new Color(100, 100, 120, 255),
+                Size = 0.5f
+            });
+        }
+        starfieldLayers.Add(veryFarLayer);
+        
+        // Layer 2: Far stars (slow, dim, small)
         var farLayer = new StarLayer
         {
-            SpeedMultiplier = 8.0f, // 2.0f * 4
-            StarColor = new Color(150, 150, 150, 255), // Dim gray
-            StarSize = 0 // Pixels
+            SpeedMultiplier = 8.0f,
+            BaseColor = new Color(150, 150, 160, 255),
+            MinBrightness = 0.4f,
+            MaxBrightness = 0.7f,
+            EnableTwinkle = true
         };
-        for (int i = 0; i < 150; i++)
+        for (int i = 0; i < 200; i++)
         {
-            farLayer.Stars.Add(new Vector2(
-                starfieldRandom.Next(0, viewWidth),
-                starfieldRandom.Next(0, screenHeight)
-            ));
+            farLayer.Stars.Add(new Star
+            {
+                Position = new Vector2(
+                    starfieldRandom.Next(0, viewWidth),
+                    starfieldRandom.Next(0, screenHeight)
+                ),
+                Brightness = (float)(starfieldRandom.NextDouble() * 0.3 + 0.4),
+                TwinklePhase = (float)(starfieldRandom.NextDouble() * Math.PI * 2),
+                TwinkleSpeed = (float)(starfieldRandom.NextDouble() * 0.8 + 0.5),
+                BaseColor = new Color(150, 150, 160, 255),
+                Size = 0.8f
+            });
         }
         starfieldLayers.Add(farLayer);
         
-        // Layer 2: Mid stars (medium speed, medium brightness)
+        // Layer 3: Mid stars (medium speed, medium brightness, varied colors)
         var midLayer = new StarLayer
         {
-            SpeedMultiplier = 20.0f, // 5.0f * 4
-            StarColor = Color.WHITE,
-            StarSize = 0 // Pixels
+            SpeedMultiplier = 20.0f,
+            BaseColor = Color.WHITE,
+            MinBrightness = 0.6f,
+            MaxBrightness = 1.0f,
+            EnableTwinkle = true
         };
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 150; i++)
         {
-            midLayer.Stars.Add(new Vector2(
-                starfieldRandom.Next(0, viewWidth),
-                starfieldRandom.Next(0, screenHeight)
-            ));
+            // Vary star colors (white, blue-white, yellow-white)
+            Color starColor = Color.WHITE;
+            float colorChoice = (float)starfieldRandom.NextDouble();
+            if (colorChoice < 0.3f)
+                starColor = new Color(200, 220, 255, 255); // Blue-white
+            else if (colorChoice < 0.6f)
+                starColor = new Color(255, 250, 200, 255); // Yellow-white
+            else
+                starColor = Color.WHITE;
+            
+            midLayer.Stars.Add(new Star
+            {
+                Position = new Vector2(
+                    starfieldRandom.Next(0, viewWidth),
+                    starfieldRandom.Next(0, screenHeight)
+                ),
+                Brightness = (float)(starfieldRandom.NextDouble() * 0.4 + 0.6),
+                TwinklePhase = (float)(starfieldRandom.NextDouble() * Math.PI * 2),
+                TwinkleSpeed = (float)(starfieldRandom.NextDouble() * 1.0 + 0.7),
+                BaseColor = starColor,
+                Size = 1.0f
+            });
         }
         starfieldLayers.Add(midLayer);
         
-        // Layer 3: Close stars (fastest, brightest, larger)
+        // Layer 4: Close stars (fast, bright, larger, colorful)
         var closeLayer = new StarLayer
         {
-            SpeedMultiplier = 48.0f, // 12.0f * 4
-            StarColor = Color.WHITE,
-            StarSize = 1 // Small circles
+            SpeedMultiplier = 48.0f,
+            BaseColor = Color.WHITE,
+            MinBrightness = 0.8f,
+            MaxBrightness = 1.0f,
+            EnableTwinkle = false
         };
-        for (int i = 0; i < 50; i++)
+        for (int i = 0; i < 80; i++)
         {
-            closeLayer.Stars.Add(new Vector2(
-                starfieldRandom.Next(0, viewWidth),
-                starfieldRandom.Next(0, screenHeight)
-            ));
+            // More varied colors for close stars
+            Color starColor = Color.WHITE;
+            float colorChoice = (float)starfieldRandom.NextDouble();
+            if (colorChoice < 0.25f)
+                starColor = new Color(180, 200, 255, 255); // Blue
+            else if (colorChoice < 0.5f)
+                starColor = new Color(255, 240, 180, 255); // Yellow
+            else if (colorChoice < 0.7f)
+                starColor = new Color(255, 200, 200, 255); // Red-white
+            else
+                starColor = Color.WHITE;
+            
+            closeLayer.Stars.Add(new Star
+            {
+                Position = new Vector2(
+                    starfieldRandom.Next(0, viewWidth),
+                    starfieldRandom.Next(0, screenHeight)
+                ),
+                Brightness = (float)(starfieldRandom.NextDouble() * 0.2 + 0.8),
+                TwinklePhase = 0.0f,
+                TwinkleSpeed = 0.0f,
+                BaseColor = starColor,
+                Size = (float)(starfieldRandom.NextDouble() * 1.5 + 1.5) // 1.5 to 3.0
+            });
         }
         starfieldLayers.Add(closeLayer);
+        
+        // Layer 5: Very close stars (fastest, brightest, largest, rare)
+        var veryCloseLayer = new StarLayer
+        {
+            SpeedMultiplier = 80.0f,
+            BaseColor = Color.WHITE,
+            MinBrightness = 1.0f,
+            MaxBrightness = 1.0f,
+            EnableTwinkle = false
+        };
+        for (int i = 0; i < 20; i++)
+        {
+            // Bright, colorful close stars
+            Color starColor = Color.WHITE;
+            float colorChoice = (float)starfieldRandom.NextDouble();
+            if (colorChoice < 0.3f)
+                starColor = new Color(150, 180, 255, 255); // Bright blue
+            else if (colorChoice < 0.6f)
+                starColor = new Color(255, 220, 150, 255); // Bright yellow
+            else
+                starColor = Color.WHITE;
+            
+            veryCloseLayer.Stars.Add(new Star
+            {
+                Position = new Vector2(
+                    starfieldRandom.Next(0, viewWidth),
+                    starfieldRandom.Next(0, screenHeight)
+                ),
+                Brightness = 1.0f,
+                TwinklePhase = 0.0f,
+                TwinkleSpeed = 0.0f,
+                BaseColor = starColor,
+                Size = (float)(starfieldRandom.NextDouble() * 2.0 + 3.0) // 3.0 to 5.0
+            });
+        }
+        starfieldLayers.Add(veryCloseLayer);
     }
 
     private void UpdateStarfieldMovement(Vector2 movement)
@@ -522,19 +679,32 @@ public class Game
             
             for (int i = 0; i < layer.Stars.Count; i++)
             {
-                Vector2 star = layer.Stars[i];
-                star += layerMovement;
+                Star star = layer.Stars[i];
+                
+                // Update position
+                star.Position += layerMovement;
+                
+                // Update twinkling
+                if (layer.EnableTwinkle && star.TwinkleSpeed > 0)
+                {
+                    star.TwinklePhase += star.TwinkleSpeed * 0.016f;
+                    float twinkle = (MathF.Sin(star.TwinklePhase) + 1.0f) * 0.5f; // 0 to 1
+                    star.Brightness = layer.MinBrightness + (layer.MaxBrightness - layer.MinBrightness) * twinkle;
+                }
                 
                 // Wrap stars around when they go off screen
-                if (star.X < 0)
-                    star.X = viewWidth;
-                else if (star.X > viewWidth)
-                    star.X = 0;
+                Vector2 pos = star.Position;
+                if (pos.X < 0)
+                    pos.X = viewWidth;
+                else if (pos.X > viewWidth)
+                    pos.X = 0;
                 
-                if (star.Y < 0)
-                    star.Y = screenHeight;
-                else if (star.Y > screenHeight)
-                    star.Y = 0;
+                if (pos.Y < 0)
+                    pos.Y = screenHeight;
+                else if (pos.Y > screenHeight)
+                    pos.Y = 0;
+                
+                star.Position = pos;
                 
                 layer.Stars[i] = star;
             }
@@ -551,20 +721,49 @@ public class Game
         {
             foreach (var star in layer.Stars)
             {
-                if (layer.StarSize == 0)
+                // Calculate final color with brightness
+                Color finalColor = new Color(
+                    (byte)(star.BaseColor.R * star.Brightness),
+                    (byte)(star.BaseColor.G * star.Brightness),
+                    (byte)(star.BaseColor.B * star.Brightness),
+                    star.BaseColor.A
+                );
+                
+                float size = star.Size;
+                
+                if (size < 1.0f)
                 {
-                    // Draw as pixel
-                    Raylib.DrawPixel((int)star.X, (int)star.Y, layer.StarColor);
+                    // Very small stars - draw as pixel
+                    Raylib.DrawPixel((int)star.Position.X, (int)star.Position.Y, finalColor);
                 }
-                else if (layer.StarSize == 1)
+                else if (size < 2.0f)
                 {
-                    // Draw as small circle
-                    Raylib.DrawCircle((int)star.X, (int)star.Y, 1, layer.StarColor);
+                    // Small stars - draw as small circle
+                    Raylib.DrawCircle((int)star.Position.X, (int)star.Position.Y, 1, finalColor);
+                }
+                else if (size < 3.5f)
+                {
+                    // Medium stars - draw with glow effect
+                    // Outer glow (dimmer)
+                    Color glowColor = new Color(finalColor.R, finalColor.G, finalColor.B, (byte)(finalColor.A * 0.3f));
+                    Raylib.DrawCircle((int)star.Position.X, (int)star.Position.Y, (int)size + 1, glowColor);
+                    // Core
+                    Raylib.DrawCircle((int)star.Position.X, (int)star.Position.Y, (int)size, finalColor);
                 }
                 else
                 {
-                    // Draw as larger circle
-                    Raylib.DrawCircle((int)star.X, (int)star.Y, 2, layer.StarColor);
+                    // Large bright stars - draw with multiple glow layers
+                    // Outer glow (very dim)
+                    Color outerGlow = new Color(finalColor.R, finalColor.G, finalColor.B, (byte)(finalColor.A * 0.2f));
+                    Raylib.DrawCircle((int)star.Position.X, (int)star.Position.Y, (int)size + 2, outerGlow);
+                    // Mid glow
+                    Color midGlow = new Color(finalColor.R, finalColor.G, finalColor.B, (byte)(finalColor.A * 0.5f));
+                    Raylib.DrawCircle((int)star.Position.X, (int)star.Position.Y, (int)size + 1, midGlow);
+                    // Core
+                    Raylib.DrawCircle((int)star.Position.X, (int)star.Position.Y, (int)size, finalColor);
+                    // Bright center
+                    Color brightCenter = new Color((byte)255, (byte)255, (byte)255, (byte)(finalColor.A * 0.8f));
+                    Raylib.DrawCircle((int)star.Position.X, (int)star.Position.Y, (int)(size * 0.5f), brightCenter);
                 }
             }
         }
