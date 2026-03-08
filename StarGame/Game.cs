@@ -314,6 +314,16 @@ public class Game
         // Handle selection with SPACE or ENTER
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_SPACE) || Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER))
         {
+            // Check if the currently selected item is active - if so, exit it
+            bool isCurrentlyActive = IsMenuItemActive(menuLevel, selectedMenuIndex);
+            if (isCurrentlyActive)
+            {
+                // Exit the active item by returning to CanopyView
+                currentState = GameState.CanopyView;
+                justSwitchedState = true;
+                return;
+            }
+            
             if (menuLevel == 0)
             {
                 // Top level selection
@@ -920,25 +930,64 @@ public class Game
         // Get current menu items based on level
         string[] currentMenuItems = menuLevel == 0 ? topMenuItems : navigatorSubMenuItems;
         
+        // Box dimensions - indicator boxes to the left of menu items
+        const int indicatorSize = 16;
+        const int indicatorSpacing = 8;
+        const int innerBoxPadding = 2;
+        
         // Draw menu items
         for (int i = 0; i < currentMenuItems.Length; i++)
         {
-            Color itemColor = i == selectedMenuIndex ? Color.YELLOW : Color.LIGHTGRAY;
-            Color bgColor = i == selectedMenuIndex ? new Color(60, 60, 70, 255) : Color.BLANK;
+            bool isFocused = i == selectedMenuIndex;
+            bool isActive = IsMenuItemActive(menuLevel, i);
             
-            // Draw selection background
-            if (i == selectedMenuIndex)
+            Color itemColor = isFocused ? Color.YELLOW : Color.LIGHTGRAY;
+            
+            // Calculate indicator box position (to the left of text)
+            int indicatorX = panelX + panelPadding;
+            int indicatorY = yPos;
+            int textX = indicatorX + indicatorSize + indicatorSpacing;
+            
+            // Draw outer box: always visible, filled when focused
+            if (isFocused)
             {
-                Raylib.DrawRectangle(panelX + panelPadding - 5, yPos - 2, panelWidth - panelPadding * 2 + 10, menuFontSize + 4, bgColor);
+                // Outer box filled when focused
+                Color outerBoxColor = new Color(150, 150, 200, 255); // Bright blue-gray
+                Raylib.DrawRectangle(indicatorX, indicatorY, indicatorSize, indicatorSize, outerBoxColor);
+                // Draw outline on top
+                Color outerBoxOutline = new Color(200, 200, 255, 255);
+                Raylib.DrawRectangleLines(indicatorX, indicatorY, indicatorSize, indicatorSize, outerBoxOutline);
+            }
+            else
+            {
+                // Outer box outline when not focused
+                Color outerBoxOutline = new Color(100, 100, 120, 255);
+                Raylib.DrawRectangleLines(indicatorX, indicatorY, indicatorSize, indicatorSize, outerBoxOutline);
             }
             
-            // Check if this menu item is active
-            bool isActive = IsMenuItemActive(menuLevel, i);
-            string activeIndicator = isActive ? "● " : "";
+            // Draw inner box: filled when active, outline when focused but not active
+            int innerBoxX = indicatorX + innerBoxPadding;
+            int innerBoxY = indicatorY + innerBoxPadding;
+            int innerBoxSize = indicatorSize - innerBoxPadding * 2;
             
-            // Draw menu item
-            string prefix = menuLevel == 0 ? $"{i + 1}. " : "  ";
-            Raylib.DrawText($"{prefix}{activeIndicator}{currentMenuItems[i]}", panelX + panelPadding, yPos, menuFontSize, itemColor);
+            if (isActive)
+            {
+                // Inner box filled when active
+                Color innerBoxColor = new Color(220, 240, 255, 255); // Very bright
+                Raylib.DrawRectangle(innerBoxX, innerBoxY, innerBoxSize, innerBoxSize, innerBoxColor);
+            }
+            else if (isFocused)
+            {
+                // When focused but not active: clear inner area (use panel background color) then draw outline
+                Color panelBgColor = new Color(30, 30, 35, 255);
+                Raylib.DrawRectangle(innerBoxX, innerBoxY, innerBoxSize, innerBoxSize, panelBgColor);
+                // Draw inner box outline
+                Color innerBoxOutline = new Color(255, 255, 255, 255); // White outline
+                Raylib.DrawRectangleLines(innerBoxX, innerBoxY, innerBoxSize, innerBoxSize, innerBoxOutline);
+            }
+            
+            // Draw menu item text (no numbering)
+            Raylib.DrawText(currentMenuItems[i], textX, yPos, menuFontSize, itemColor);
             yPos += lineSpacing;
         }
         
