@@ -286,6 +286,15 @@ public class Game
         {
             currentState = GameState.CanopyView;
         }
+        
+        // Handle R to regenerate planet terrain
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_R) && currentPlanet != null)
+        {
+            // Use a truly random seed for visible variation
+            Random regenRandom = new Random();
+            int newSeed = regenRandom.Next();
+            currentPlanet.RegenerateTerrain(newSeed);
+        }
     }
 
     private void UpdateShipStatus()
@@ -537,7 +546,7 @@ public class Game
         Raylib.DrawText("PLANETARY ENCOUNTER", viewWidth / 2 - 150, 30, 32, Color.WHITE);
         
         // Draw instructions
-        Raylib.DrawText("Press ESC to return | X to quit", 40, viewHeight - 30, 18, Color.YELLOW);
+        Raylib.DrawText("Press ESC to return | R to regenerate | X to quit", 40, viewHeight - 30, 18, Color.YELLOW);
     }
     
     private void DrawEncounterStarfield(int viewWidth, int viewHeight)
@@ -561,6 +570,9 @@ public class Game
     
     private void DrawPlanetWithGlow(Vector2 center, float radius, Planet planet)
     {
+        // Update planet rotation for this view
+        planet.UpdateRotation(Raylib.GetFrameTime());
+        
         // Draw multiple glow layers for atmospheric effect
         // Outer glow (very dim)
         Color outerGlow = new Color(planet.SurfaceColor.R, planet.SurfaceColor.G, planet.SurfaceColor.B, (byte)30);
@@ -574,29 +586,37 @@ public class Game
         Color innerGlow = new Color(planet.SurfaceColor.R, planet.SurfaceColor.G, planet.SurfaceColor.B, (byte)100);
         Raylib.DrawCircleV(center, radius + 5, innerGlow);
         
-        // Main planet body
+        // Main planet body base
         Raylib.DrawCircleV(center, radius, planet.SurfaceColor);
         
-        // Add some surface detail (craters/features)
-        Random detailRandom = new Random(planet.Name.GetHashCode());
-        for (int i = 0; i < 8; i++)
+        // Draw procedural terrain if available
+        if (planet.Terrain != null)
         {
-            float angle = (float)(detailRandom.NextDouble() * Math.PI * 2);
-            float distance = (float)(detailRandom.NextDouble() * radius * 0.7f);
-            Vector2 detailPos = center + new Vector2(
-                MathF.Cos(angle) * distance,
-                MathF.Sin(angle) * distance
-            );
-            
-            // Draw small dark craters
-            Color craterColor = new Color(
-                (byte)(planet.SurfaceColor.R * 0.6f),
-                (byte)(planet.SurfaceColor.G * 0.6f),
-                (byte)(planet.SurfaceColor.B * 0.6f),
-                (byte)200
-            );
-            float craterSize = (float)(detailRandom.NextDouble() * 8 + 3);
-            Raylib.DrawCircleV(detailPos, craterSize, craterColor);
+            planet.Terrain.DrawTerrainPixels(center, radius, planet.RotationAngle);
+        }
+        else
+        {
+            // Fallback: Add some surface detail (craters/features)
+            Random detailRandom = new Random(planet.Name.GetHashCode());
+            for (int i = 0; i < 8; i++)
+            {
+                float angle = (float)(detailRandom.NextDouble() * Math.PI * 2);
+                float distance = (float)(detailRandom.NextDouble() * radius * 0.7f);
+                Vector2 detailPos = center + new Vector2(
+                    MathF.Cos(angle) * distance,
+                    MathF.Sin(angle) * distance
+                );
+                
+                // Draw small dark craters
+                Color craterColor = new Color(
+                    (byte)(planet.SurfaceColor.R * 0.6f),
+                    (byte)(planet.SurfaceColor.G * 0.6f),
+                    (byte)(planet.SurfaceColor.B * 0.6f),
+                    (byte)200
+                );
+                float craterSize = (float)(detailRandom.NextDouble() * 8 + 3);
+                Raylib.DrawCircleV(detailPos, craterSize, craterColor);
+            }
         }
         
         // Draw terminator line (day/night boundary) for 3D effect

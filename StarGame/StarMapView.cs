@@ -75,33 +75,16 @@ public class StarMapView
 
     public StarMapView()
     {
-        // Add planets to each system
+        // Generate planets for each system using PlanetGenerator
         var random = new Random();
         foreach (var system in _systems)
         {
-            int planetCount = random.Next(2, 5);
-            string[] planetNames = { "Arid", "Ocean", "Desert", "Ice", "Volcanic", "Terra" };
-            Color[] planetColors = { 
-                Color.BROWN, Color.BLUE, Color.ORANGE, 
-                Color.LIGHTGRAY, Color.RED, Color.GREEN 
-            };
-
+            // Generate 2-6 planets per system
+            int planetCount = random.Next(2, 7);
+            
             for (int i = 0; i < planetCount; i++)
             {
-                float angle = (float)(random.NextDouble() * Math.PI * 2);
-                float distance = 50 + i * 30;
-                Vector2 planetPos = system.Position + new Vector2(
-                    (float)Math.Cos(angle) * distance,
-                    (float)Math.Sin(angle) * distance
-                );
-
-                int planetType = random.Next(planetNames.Length);
-                Planet planet = new Planet(
-                    $"{system.Name} {planetNames[planetType]}",
-                    planetPos,
-                    40 + random.Next(0, 20),
-                    planetColors[planetType]
-                );
+                Planet planet = PlanetGenerator.GeneratePlanet(system.Name, system.Position, i, random);
                 system.AddPlanet(planet);
             }
         }

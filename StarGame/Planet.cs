@@ -11,7 +11,31 @@ public class Planet
     public float Radius { get; set; }
     public Color SurfaceColor { get; set; }
     public List<Mineral> Minerals { get; private set; }
+    public PlanetTerrain? Terrain { get; private set; }
     private Random random;
+    private static Random regenerationRandom = new Random();
+    private float _rotationAngle = 0.0f;
+    private const float RotationSpeed = 0.8f; // radians per second (visible planet rotation speed)
+    
+    public float RotationAngle => _rotationAngle;
+    
+    public void UpdateRotation(float deltaTime)
+    {
+        // Ensure deltaTime is valid (should be ~0.016 for 60fps)
+        if (deltaTime > 0 && deltaTime < 1.0f)
+        {
+            _rotationAngle += RotationSpeed * deltaTime;
+            // Keep rotation in 0-2PI range for precision
+            while (_rotationAngle >= MathF.PI * 2.0f)
+            {
+                _rotationAngle -= MathF.PI * 2.0f;
+            }
+            while (_rotationAngle < 0.0f)
+            {
+                _rotationAngle += MathF.PI * 2.0f;
+            }
+        }
+    }
 
     public Planet(string name, Vector2 position, float radius, Color surfaceColor)
     {
@@ -23,6 +47,20 @@ public class Planet
         random = new Random(name.GetHashCode());
         
         GenerateMinerals();
+        GenerateTerrain();
+    }
+    
+    private void GenerateTerrain()
+    {
+        int seed = Name.GetHashCode();
+        Terrain = new PlanetTerrain(this, seed);
+    }
+    
+    public void RegenerateTerrain(int? seed = null)
+    {
+        // If no seed provided, use a truly random seed
+        int terrainSeed = seed ?? regenerationRandom.Next();
+        Terrain = new PlanetTerrain(this, terrainSeed);
     }
 
     private void GenerateMinerals()
@@ -110,12 +148,22 @@ public class Planet
 
     public void Draw(int screenWidth, int screenHeight, Ship ship)
     {
+        // Update planet rotation here to ensure it updates every frame
+        UpdateRotation(Raylib.GetFrameTime());
+        
         // Draw planet surface (scaled view)
         float scale = Math.Min(screenWidth, screenHeight) / (Radius * 2.5f);
         Vector2 center = new Vector2(screenWidth / 2, screenHeight / 2);
+        float planetRadius = Radius * scale;
         
-        // Draw planet circle
-        Raylib.DrawCircleV(center, Radius * scale, SurfaceColor);
+        // Draw planet base circle
+        Raylib.DrawCircleV(center, planetRadius, SurfaceColor);
+        
+        // Draw terrain if available
+        if (Terrain != null)
+        {
+            Terrain.DrawTerrainPixels(center, planetRadius, _rotationAngle);
+        }
         
         // Draw minerals
         foreach (var mineral in Minerals)
