@@ -25,6 +25,7 @@ public class Game
     private Ship ship;
     private StarMapView starMap;
     public bool ShouldExit { get; private set; } = false;
+    private float _planetRotationAngle = 0.0f;
     
     // Menu state
     private int selectedMenuIndex = 0;
@@ -84,6 +85,7 @@ public class Game
         
         ship = new Ship();
         starMap = new StarMapView();
+        
         currentSystem = starMap.GetSystem(0);
         // Initialize ship at first system
         if (currentSystem != null)
@@ -244,12 +246,9 @@ public class Game
         }
         
         // Don't process ENTER if we're in a menu (menu handles it)
-        if (menuLevel == 0 && Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER) && currentSystem != null && currentSystem.Planets.Count > 0)
+        if (menuLevel == 0 && Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER) && currentSystem != null)
         {
-            // Enter planetary exploration - select first planet
-            currentPlanet = currentSystem.Planets[0];
-            // Initialize ship position on planet surface
-            ship.Position = currentPlanet.Position;
+            // Enter planetary exploration screen
             currentState = GameState.PlanetaryExploration;
         }
         
@@ -270,12 +269,6 @@ public class Game
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && menuLevel == 0)
         {
             currentState = GameState.StarMap;
-            currentPlanet = null;
-        }
-
-        if (currentPlanet != null)
-        {
-            currentPlanet.Update(ship);
         }
     }
 
@@ -285,15 +278,6 @@ public class Game
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && menuLevel == 0)
         {
             currentState = GameState.CanopyView;
-        }
-        
-        // Handle R to regenerate planet terrain
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_R) && currentPlanet != null)
-        {
-            // Use a truly random seed for visible variation
-            Random regenRandom = new Random();
-            int newSeed = regenRandom.Next();
-            currentPlanet.RegenerateTerrain(newSeed);
         }
     }
 
@@ -375,11 +359,6 @@ public class Game
                 // Top level selection
                 if (selectedMenuIndex == 0) // Planet
                 {
-                    // Set current planet if not already set and we have a system with planets
-                    if (currentPlanet == null && currentSystem != null && currentSystem.Planets.Count > 0)
-                    {
-                        currentPlanet = currentSystem.Planets[0];
-                    }
                     // Switch to Planetary Encounter view
                     currentState = GameState.PlanetaryEncounter;
                     justSwitchedState = true;
@@ -442,10 +421,7 @@ public class Game
                 DrawRightPanel();
                 break;
             case GameState.PlanetaryExploration:
-                if (currentPlanet != null)
-                {
-                    currentPlanet.Draw(screenWidth - 250, screenHeight, ship);
-                }
+                DrawPlanetaryExploration();
                 DrawPlanetaryUI();
                 DrawRightPanel();
                 break;
@@ -466,31 +442,42 @@ public class Game
         // Fuel and resources display
         Raylib.DrawText($"Fuel: {ship.Fuel:F1}%", 10, 10, 20, Color.WHITE);
         Raylib.DrawText($"Credits: {ship.Credits}", 10, 35, 20, Color.WHITE);
-        if (currentSystem != null && currentSystem.Planets.Count > 0)
-        {
-            Raylib.DrawText($"Press ENTER to explore {currentSystem.Planets[0].Name} | I for ship status | X to quit", 10, screenHeight - 30, 16, Color.YELLOW);
-        }
-        else
-        {
-            Raylib.DrawText($"Press I for ship status | TAB to warp to nearest system | X to quit", 10, screenHeight - 30, 16, Color.YELLOW);
-        }
+        Raylib.DrawText($"Press ENTER to explore planet | I for ship status | X to quit", 10, screenHeight - 30, 16, Color.YELLOW);
     }
 
+    private void DrawPlanetaryExploration()
+    {
+        // Create or get planet
+        if (currentPlanet == null && currentSystem != null)
+        {
+            currentPlanet = new Planet(currentSystem.Name + " I", Vector2.Zero, 50.0f, Color.GREEN);
+        }
+        
+        if (currentPlanet != null)
+        {
+            // Calculate planet position (centered)
+            Vector2 planetCenter = new Vector2((screenWidth - 250) / 2, screenHeight / 2);
+            float displayRadius = Math.Min(screenWidth - 250, screenHeight) * 0.3f;
+            
+            // Update rotation
+            float deltaTime = Raylib.GetFrameTime();
+            float rotationSpeed = 0.5f;
+            _planetRotationAngle += rotationSpeed * deltaTime;
+            if (_planetRotationAngle >= MathF.PI * 2.0f)
+            {
+                _planetRotationAngle -= MathF.PI * 2.0f;
+            }
+            
+            // Draw sphere points
+            currentPlanet.DrawSpherePoints(planetCenter, displayRadius, _planetRotationAngle);
+        }
+    }
+    
     private void DrawPlanetaryUI()
     {
         Raylib.DrawText($"Fuel: {ship.Fuel:F1}%", 10, 10, 20, Color.WHITE);
         Raylib.DrawText($"Minerals: {ship.Minerals}", 10, 35, 20, Color.WHITE);
         Raylib.DrawText($"Press ESC to return to star map | X to quit", 10, screenHeight - 30, 16, Color.YELLOW);
-        
-        if (currentPlanet != null)
-        {
-            var mineral = currentPlanet.GetMineralAt(ship.Position);
-            if (mineral != null)
-            {
-                Raylib.DrawText($"Mineral detected: {mineral.Name} ({mineral.Value} credits)", 10, 60, 18, Color.GREEN);
-                Raylib.DrawText("Press SPACE to mine", 10, 85, 18, Color.YELLOW);
-            }
-        }
     }
 
     private void DrawPlanetaryEncounter()
@@ -502,51 +489,40 @@ public class Game
         // Draw starfield background
         DrawEncounterStarfield(viewWidth, viewHeight);
         
-        if (currentPlanet == null)
+        // Create or get planet
+        if (currentPlanet == null && currentSystem != null)
         {
-            // No planet available
-            Raylib.DrawText("PLANETARY ENCOUNTER", viewWidth / 2 - 150, 50, 32, Color.WHITE);
-            Raylib.DrawText("No planet encountered", viewWidth / 2 - 120, viewHeight / 2, 24, Color.YELLOW);
-            Raylib.DrawText("Press ESC to return | X to quit", 50, screenHeight - 50, 20, Color.YELLOW);
-            return;
+            currentPlanet = new Planet(currentSystem.Name + " I", Vector2.Zero, 50.0f, Color.BLUE);
         }
         
-        // Calculate planet position (centered, slightly above center)
-        Vector2 planetCenter = new Vector2(viewWidth / 2, viewHeight / 2 - 50);
-        float planetRadius = Math.Min(viewWidth, viewHeight) * 0.25f; // Large planet display
-        
-        // Draw planet with glow effect
-        DrawPlanetWithGlow(planetCenter, planetRadius, currentPlanet);
-        
-        // Draw planet information panel at bottom
-        int infoPanelY = viewHeight - 180;
-        int infoPanelHeight = 150;
-        Color panelBg = new Color((byte)20, (byte)20, (byte)25, (byte)230);
-        Raylib.DrawRectangle(20, infoPanelY, viewWidth - 40, infoPanelHeight, panelBg);
-        Raylib.DrawRectangleLines(20, infoPanelY, viewWidth - 40, infoPanelHeight, Color.DARKGRAY);
-        
-        // Draw planet details
-        int textY = infoPanelY + 20;
-        Raylib.DrawText($"PLANET: {currentPlanet.Name}", 40, textY, 28, Color.WHITE);
-        textY += 35;
-        
-        Raylib.DrawText($"Radius: {currentPlanet.Radius:F1} units", 40, textY, 20, Color.LIGHTGRAY);
-        textY += 25;
-        
-        int unminedMinerals = currentPlanet.Minerals.Count(m => !m.Mined);
-        Raylib.DrawText($"Minerals Detected: {unminedMinerals}", 40, textY, 20, Color.GOLD);
-        textY += 25;
-        
-        if (currentSystem != null)
+        if (currentPlanet != null)
         {
-            Raylib.DrawText($"System: {currentSystem.Name}", 40, textY, 18, Color.SKYBLUE);
+            // Calculate planet position (centered)
+            Vector2 planetCenter = new Vector2(viewWidth / 2, viewHeight / 2);
+            float displayRadius = Math.Min(viewWidth, viewHeight) * 0.3f;
+            
+            // Update rotation
+            float deltaTime = Raylib.GetFrameTime();
+            float rotationSpeed = 0.5f;
+            _planetRotationAngle += rotationSpeed * deltaTime;
+            if (_planetRotationAngle >= MathF.PI * 2.0f)
+            {
+                _planetRotationAngle -= MathF.PI * 2.0f;
+            }
+            
+            // Draw sphere points
+            currentPlanet.DrawSpherePoints(planetCenter, displayRadius, _planetRotationAngle);
+            
+            // Draw title
+            Raylib.DrawText("PLANETARY ENCOUNTER", viewWidth / 2 - 150, 30, 32, Color.WHITE);
+            
+            if (currentSystem != null)
+            {
+                Raylib.DrawText($"System: {currentSystem.Name}", 40, viewHeight - 100, 18, Color.SKYBLUE);
+            }
         }
         
-        // Draw title at top
-        Raylib.DrawText("PLANETARY ENCOUNTER", viewWidth / 2 - 150, 30, 32, Color.WHITE);
-        
-        // Draw instructions
-        Raylib.DrawText("Press ESC to return | R to regenerate | X to quit", 40, viewHeight - 30, 18, Color.YELLOW);
+        Raylib.DrawText("Press ESC to return | X to quit", 40, viewHeight - 30, 18, Color.YELLOW);
     }
     
     private void DrawEncounterStarfield(int viewWidth, int viewHeight)
@@ -568,80 +544,6 @@ public class Game
         }
     }
     
-    private void DrawPlanetWithGlow(Vector2 center, float radius, Planet planet)
-    {
-        // Update planet rotation for this view
-        planet.UpdateRotation(Raylib.GetFrameTime());
-        
-        // Draw multiple glow layers for atmospheric effect
-        // Outer glow (very dim)
-        Color outerGlow = new Color(planet.SurfaceColor.R, planet.SurfaceColor.G, planet.SurfaceColor.B, (byte)30);
-        Raylib.DrawCircleV(center, radius + 30, outerGlow);
-        
-        // Mid glow
-        Color midGlow = new Color(planet.SurfaceColor.R, planet.SurfaceColor.G, planet.SurfaceColor.B, (byte)60);
-        Raylib.DrawCircleV(center, radius + 15, midGlow);
-        
-        // Inner glow
-        Color innerGlow = new Color(planet.SurfaceColor.R, planet.SurfaceColor.G, planet.SurfaceColor.B, (byte)100);
-        Raylib.DrawCircleV(center, radius + 5, innerGlow);
-        
-        // Main planet body base
-        Raylib.DrawCircleV(center, radius, planet.SurfaceColor);
-        
-        // Draw procedural terrain if available
-        if (planet.Terrain != null)
-        {
-            planet.Terrain.DrawTerrainPixels(center, radius, planet.RotationAngle);
-        }
-        else
-        {
-            // Fallback: Add some surface detail (craters/features)
-            Random detailRandom = new Random(planet.Name.GetHashCode());
-            for (int i = 0; i < 8; i++)
-            {
-                float angle = (float)(detailRandom.NextDouble() * Math.PI * 2);
-                float distance = (float)(detailRandom.NextDouble() * radius * 0.7f);
-                Vector2 detailPos = center + new Vector2(
-                    MathF.Cos(angle) * distance,
-                    MathF.Sin(angle) * distance
-                );
-                
-                // Draw small dark craters
-                Color craterColor = new Color(
-                    (byte)(planet.SurfaceColor.R * 0.6f),
-                    (byte)(planet.SurfaceColor.G * 0.6f),
-                    (byte)(planet.SurfaceColor.B * 0.6f),
-                    (byte)200
-                );
-                float craterSize = (float)(detailRandom.NextDouble() * 8 + 3);
-                Raylib.DrawCircleV(detailPos, craterSize, craterColor);
-            }
-        }
-        
-        // Draw terminator line (day/night boundary) for 3D effect
-        float terminatorOffset = radius * 0.3f;
-        Vector2 terminatorStart = center + new Vector2(-radius, -terminatorOffset);
-        Vector2 terminatorEnd = center + new Vector2(-radius, radius + terminatorOffset);
-        
-        // Draw a subtle shadow gradient
-        for (int i = 0; i < 20; i++)
-        {
-            float t = i / 20.0f;
-            float x = center.X - radius + t * radius * 0.4f;
-            float y1 = center.Y - radius * MathF.Sqrt(1 - MathF.Pow((x - center.X) / radius, 2));
-            float y2 = center.Y + radius * MathF.Sqrt(1 - MathF.Pow((x - center.X) / radius, 2));
-            
-            byte alpha = (byte)(100 * (1 - t));
-            Color shadowColor = new Color((byte)0, (byte)0, (byte)0, alpha);
-            Raylib.DrawLine((int)x, (int)y1, (int)x, (int)y2, shadowColor);
-        }
-        
-        // Draw highlight on the lit side
-        Vector2 highlightPos = center + new Vector2(radius * 0.3f, -radius * 0.3f);
-        Color highlightColor = new Color((byte)255, (byte)255, (byte)255, (byte)80);
-        Raylib.DrawCircleV(highlightPos, radius * 0.15f, highlightColor);
-    }
 
     private void DrawShipStatus()
     {

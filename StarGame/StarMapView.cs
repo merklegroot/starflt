@@ -75,19 +75,6 @@ public class StarMapView
 
     public StarMapView()
     {
-        // Generate planets for each system using PlanetGenerator
-        var random = new Random();
-        foreach (var system in _systems)
-        {
-            // Generate 2-6 planets per system
-            int planetCount = random.Next(2, 7);
-            
-            for (int i = 0; i < planetCount; i++)
-            {
-                Planet planet = PlanetGenerator.GeneratePlanet(system.Name, system.Position, i, random);
-                system.AddPlanet(planet);
-            }
-        }
     }
 
     public StarSystem? GetSystem(int index)
@@ -190,12 +177,6 @@ public class StarMapView
                     (int)(16 * _zoom), Color.WHITE);
             }
 
-            // Draw planets orbiting the star
-            foreach (var planet in system.Planets)
-            {
-                Vector2 planetScreenPos = center + (planet.Position - _cameraOffset) * _zoom;
-                Raylib.DrawCircleV(planetScreenPos, 4 * _zoom, planet.SurfaceColor);
-            }
         }
 
         // Draw ship
