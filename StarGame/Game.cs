@@ -1,6 +1,7 @@
 using Raylib_cs;
 using System.Numerics;
 using System.Linq;
+using System;
 
 namespace StarflightGame;
 
@@ -276,6 +277,7 @@ public class Game
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_R))
         {
             currentPlanet = null; // Force regeneration with new seed
+            _planetRotationAngle = 0.0f; // Reset rotation
         }
     }
 
@@ -291,6 +293,7 @@ public class Game
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_R))
         {
             currentPlanet = null; // Force regeneration with new seed
+            _planetRotationAngle = 0.0f; // Reset rotation
         }
     }
 
@@ -464,7 +467,8 @@ public class Game
         if (currentPlanet == null && currentSystem != null)
         {
             // Add random component to name to ensure different terrain each regeneration
-            string planetName = currentSystem.Name + " I " + _planetRegenRandom.Next(10000);
+            // Use timestamp and GUID to ensure unique seed each time
+            string planetName = currentSystem.Name + " I " + _planetRegenRandom.Next(1000000) + "_" + DateTime.Now.Ticks + "_" + Guid.NewGuid().ToString("N").Substring(0, 8);
             currentPlanet = new Planet(planetName, Vector2.Zero, 50.0f, Color.GREEN);
         }
         
@@ -508,7 +512,8 @@ public class Game
         if (currentPlanet == null && currentSystem != null)
         {
             // Add random component to name to ensure different terrain each regeneration
-            string planetName = currentSystem.Name + " I " + _planetRegenRandom.Next(10000);
+            // Use timestamp and GUID to ensure unique seed each time
+            string planetName = currentSystem.Name + " I " + _planetRegenRandom.Next(1000000) + "_" + DateTime.Now.Ticks + "_" + Guid.NewGuid().ToString("N").Substring(0, 8);
             currentPlanet = new Planet(planetName, Vector2.Zero, 50.0f, Color.BLUE);
         }
         

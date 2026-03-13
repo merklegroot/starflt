@@ -17,6 +17,7 @@ public class Planet
     private List<float> _pointHeights = new();
     private List<List<int>> _ringIndices = new();
     private Random _random;
+    private Vector3 _noiseOffset; // Offset for noise sampling to make each planet unique
 
     private float _minHeight = float.MaxValue;
     private float _maxHeight = float.MinValue;
@@ -28,7 +29,17 @@ public class Planet
         Position = position;
         Radius = radius;
         SurfaceColor = surfaceColor;
-        _random = new Random(name.GetHashCode());
+        int seed = name.GetHashCode();
+        _random = new Random(seed);
+        
+        // Create a unique noise offset using the seeded random number generator
+        // This ensures each planet samples different parts of the noise space
+        // Using Random ensures variation even if hash codes are similar
+        _noiseOffset = new Vector3(
+            _random.Next(100000, 999999),
+            _random.Next(100000, 999999),
+            _random.Next(100000, 999999)
+        );
 
         GenerateSpherePoints();
         BuildTriangles();
@@ -306,7 +317,12 @@ public class Planet
 
             for (int o = 0; o < octaves; o++)
             {
-                float sample = Noise3D.Get(p.X * frequency, p.Y * frequency, p.Z * frequency);
+                // Add noise offset to ensure each planet samples different parts of noise space
+                float sample = Noise3D.Get(
+                    (p.X * frequency) + _noiseOffset.X,
+                    (p.Y * frequency) + _noiseOffset.Y,
+                    (p.Z * frequency) + _noiseOffset.Z
+                );
                 noise += sample * amp;
                 amp *= persistence;
                 frequency *= lacunarity;
