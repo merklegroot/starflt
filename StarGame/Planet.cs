@@ -44,8 +44,8 @@ public class Planet
 
     private void GenerateSpherePoints()
     {
-        const int pointsPerRing = 80;
-        const int numRings = 60;
+        const int pointsPerRing = 160; // Doubled: was 80
+        const int numRings = 120; // Doubled: was 60
 
         for (int ring = 0; ring < numRings; ring++)
         {
