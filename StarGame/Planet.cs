@@ -2,6 +2,7 @@ using Raylib_cs;
 using System.Numerics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace StarflightGame;
 
@@ -81,7 +82,7 @@ public class Planet
 
     private void BuildTriangles()
     {
-        // Build triangles from rings with heights applied
+        // Build triangles from rings with heights applied using fractional mapping
         for (int ring = 0; ring < _ringIndices.Count - 1; ring++)
         {
             List<int> currentRing = _ringIndices[ring];
@@ -90,7 +91,7 @@ public class Planet
             // Handle poles (single point rings)
             if (currentRing.Count == 1)
             {
-                // Connect pole to first ring
+                // Connect pole to first ring - full fan coverage
                 int poleIdx = currentRing[0];
                 Vector3 poleVertex = _spherePoints[poleIdx] * _pointHeights[poleIdx];
                 Color poleColor = GetColorForHeight(_pointHeights[poleIdx]);
@@ -104,14 +105,14 @@ public class Planet
                     Vector3 v2 = _spherePoints[nextIdx] * _pointHeights[nextIdx];
                     Vector3 v3 = _spherePoints[nextIdx2] * _pointHeights[nextIdx2];
                     
-                    // Ensure outward-facing winding (normal should point away from origin)
+                    // Ensure outward-facing winding (counter-clockwise from outside)
                     TriangleData tri = EnsureOutwardFacing(new TriangleData { V1 = v1, V2 = v2, V3 = v3, Color = AverageColor(poleColor, GetColorForHeight(_pointHeights[nextIdx]), GetColorForHeight(_pointHeights[nextIdx2])) });
                     _triangles.Add(tri);
                 }
             }
             else if (nextRing.Count == 1)
             {
-                // Connect last ring to pole
+                // Connect last ring to pole - full fan coverage
                 int poleIdx = nextRing[0];
                 Vector3 poleVertex = _spherePoints[poleIdx] * _pointHeights[poleIdx];
                 Color poleColor = GetColorForHeight(_pointHeights[poleIdx]);
@@ -132,58 +133,120 @@ public class Planet
             }
             else
             {
-                // Connect two rings with multiple points
-                for (int i = 0; i < currentRing.Count; i++)
+                // Connect two rings with density-aware fan/quad fill
+                // This ensures every point is connected, even when point counts differ dramatically
+                int n1 = currentRing.Count;
+                int n2 = nextRing.Count;
+                float ratio = n2 / (float)n1;
+                
+                // Build a set to track which connections we've made (to avoid duplicates)
+                HashSet<(int, int, int)> addedTriangles = new HashSet<(int, int, int)>();
+                
+                // Helper to add triangle if not already added
+                void AddTriangleIfNew(int idx1, int idx2, int idx3)
                 {
-                    int currIdx = currentRing[i];
-                    int currIdx2 = currentRing[(i + 1) % currentRing.Count];
+                    // Normalize triangle indices (smallest first) for duplicate detection
+                    int min = Math.Min(Math.Min(idx1, idx2), idx3);
+                    int max = Math.Max(Math.Max(idx1, idx2), idx3);
+                    int mid = idx1 + idx2 + idx3 - min - max;
+                    var key = (min, mid, max);
                     
-                    // Calculate phi angle for this edge's midpoint
-                    float currPhi = ((i + 0.5f) / currentRing.Count) * MathF.PI * 2f;
-                    
-                    // Find the two closest points in next ring
-                    int nextIdx1 = FindClosestPointInRingByPhi(nextRing, currPhi);
-                    int nextRingPos = GetRingPosition(nextRing, nextIdx1);
-                    int nextIdx2 = nextRing[(nextRingPos + 1) % nextRing.Count];
-                    
-                    // Triangle 1: currIdx, currIdx2, nextIdx1
-                    Vector3 v1_1 = _spherePoints[currIdx] * _pointHeights[currIdx];
-                    Vector3 v2_1 = _spherePoints[currIdx2] * _pointHeights[currIdx2];
-                    Vector3 v3_1 = _spherePoints[nextIdx1] * _pointHeights[nextIdx1];
-                    TriangleData tri1 = EnsureOutwardFacing(new TriangleData { V1 = v1_1, V2 = v2_1, V3 = v3_1, Color = AverageColor(GetColorForHeight(_pointHeights[currIdx]), GetColorForHeight(_pointHeights[currIdx2]), GetColorForHeight(_pointHeights[nextIdx1])) });
-                    _triangles.Add(tri1);
-                    
-                    // Triangle 2: currIdx2, nextIdx1, nextIdx2
-                    Vector3 v1_2 = v2_1;
-                    Vector3 v2_2 = v3_1;
-                    Vector3 v3_2 = _spherePoints[nextIdx2] * _pointHeights[nextIdx2];
-                    TriangleData tri2 = EnsureOutwardFacing(new TriangleData { V1 = v1_2, V2 = v2_2, V3 = v3_2, Color = AverageColor(GetColorForHeight(_pointHeights[currIdx2]), GetColorForHeight(_pointHeights[nextIdx1]), GetColorForHeight(_pointHeights[nextIdx2])) });
-                    _triangles.Add(tri2);
+                    if (!addedTriangles.Contains(key))
+                    {
+                        addedTriangles.Add(key);
+                        Vector3 v1 = _spherePoints[idx1] * _pointHeights[idx1];
+                        Vector3 v2 = _spherePoints[idx2] * _pointHeights[idx2];
+                        Vector3 v3 = _spherePoints[idx3] * _pointHeights[idx3];
+                        Color avgColor = AverageColor(GetColorForHeight(_pointHeights[idx1]), GetColorForHeight(_pointHeights[idx2]), GetColorForHeight(_pointHeights[idx3]));
+                        TriangleData tri = EnsureOutwardFacing(new TriangleData { V1 = v1, V2 = v2, V3 = v3, Color = avgColor });
+                        _triangles.Add(tri);
+                    }
                 }
                 
-                // Also ensure all points in next ring are connected
-                for (int i = 0; i < nextRing.Count; i++)
+                // For each edge in current ring, connect to all points in next ring that map to it
+                for (int i = 0; i < n1; i++)
                 {
-                    int nextIdx = nextRing[i];
-                    int nextIdx2 = nextRing[(i + 1) % nextRing.Count];
+                    int currIdx = currentRing[i];
+                    int currIdx2 = currentRing[(i + 1) % n1]; // Wrap for seam
                     
-                    // Calculate phi angle for this edge's midpoint
-                    float nextPhi = ((i + 0.5f) / nextRing.Count) * MathF.PI * 2f;
+                    // Use fractional mapping to find range of points in next ring
+                    float mappedStart = i * ratio;
+                    float mappedEnd = (i + 1) * ratio;
+                    if (i + 1 == n1) mappedEnd = n2; // Explicitly handle seam
                     
-                    // Find the two closest points in current ring
-                    int currIdx1 = FindClosestPointInRingByPhi(currentRing, nextPhi);
-                    int currRingPos = GetRingPosition(currentRing, currIdx1);
-                    int currIdx2 = currentRing[(currRingPos + 1) % currentRing.Count];
+                    int nextStart = WrapIndex((int)MathF.Floor(mappedStart), n2);
+                    int nextEnd = WrapIndex((int)MathF.Ceiling(mappedEnd - 0.0001f), n2); // Use slightly less than mappedEnd to avoid including next edge's start
                     
-                    // Draw triangle connecting next ring edge to current ring
-                    Vector3 v1 = _spherePoints[nextIdx] * _pointHeights[nextIdx];
-                    Vector3 v2 = _spherePoints[nextIdx2] * _pointHeights[nextIdx2];
-                    Vector3 v3 = _spherePoints[currIdx1] * _pointHeights[currIdx1];
-                    TriangleData tri = EnsureOutwardFacing(new TriangleData { V1 = v1, V2 = v2, V3 = v3, Color = AverageColor(GetColorForHeight(_pointHeights[nextIdx]), GetColorForHeight(_pointHeights[nextIdx2]), GetColorForHeight(_pointHeights[currIdx1])) });
-                    _triangles.Add(tri);
+                    // Collect all points in next ring that should connect to this edge
+                    List<int> nextPoints = new List<int>();
+                    
+                    // Add points from nextStart to nextEnd (handling wrap-around)
+                    if (nextEnd >= nextStart)
+                    {
+                        // Normal case: no wrap-around
+                        for (int j = nextStart; j <= nextEnd; j++)
+                        {
+                            nextPoints.Add(nextRing[j]);
+                        }
+                    }
+                    else
+                    {
+                        // Wrap-around case: nextEnd < nextStart means we wrapped past the seam
+                        for (int j = nextStart; j < n2; j++)
+                        {
+                            nextPoints.Add(nextRing[j]);
+                        }
+                        for (int j = 0; j <= nextEnd; j++)
+                        {
+                            nextPoints.Add(nextRing[j]);
+                        }
+                    }
+                    
+                    // Ensure we have at least one point (should always be true)
+                    if (nextPoints.Count == 0)
+                    {
+                        nextPoints.Add(nextRing[nextStart]);
+                    }
+                    
+                    // Remove duplicates while preserving order
+                    nextPoints = nextPoints.Distinct().ToList();
+                    
+                    // Connect edge currIdx->currIdx2 to all points in nextPoints using fan pattern
+                    // This ensures complete coverage
+                    if (nextPoints.Count == 1)
+                    {
+                        // Single point: just one triangle
+                        AddTriangleIfNew(currIdx, currIdx2, nextPoints[0]);
+                    }
+                    else
+                    {
+                        // Multiple points: fan pattern
+                        // First triangle: currIdx, currIdx2, first point
+                        AddTriangleIfNew(currIdx, currIdx2, nextPoints[0]);
+                        
+                        // Fan: connect each consecutive pair to currIdx2
+                        for (int k = 0; k < nextPoints.Count - 1; k++)
+                        {
+                            AddTriangleIfNew(currIdx2, nextPoints[k], nextPoints[k + 1]);
+                        }
+                        
+                        // Also connect currIdx to points for better quad coverage
+                        for (int k = 1; k < nextPoints.Count; k++)
+                        {
+                            AddTriangleIfNew(currIdx, nextPoints[k - 1], nextPoints[k]);
+                        }
+                    }
                 }
             }
         }
+    }
+
+    private int WrapIndex(int index, int count)
+    {
+        // Wrap index to valid range [0, count)
+        index = index % count;
+        if (index < 0) index += count;
+        return index;
     }
 
     private TriangleData EnsureOutwardFacing(TriangleData tri)
@@ -331,37 +394,6 @@ public class Planet
         Raylib.EndMode3D();
     }
 
-    private int FindClosestPointInRingByPhi(List<int> ringIndices, float targetPhi)
-    {
-        int bestIdx = ringIndices[0];
-        float bestDist = float.MaxValue;
-
-        for (int i = 0; i < ringIndices.Count; i++)
-        {
-            int idx = ringIndices[i];
-            float phi = (i / (float)ringIndices.Count) * MathF.PI * 2f;
-            float dist = MathF.Abs(phi - targetPhi);
-            if (dist > MathF.PI) dist = MathF.PI * 2f - dist; // Wrap around
-
-            if (dist < bestDist)
-            {
-                bestDist = dist;
-                bestIdx = idx;
-            }
-        }
-
-        return bestIdx;
-    }
-
-    private int GetRingPosition(List<int> ringIndices, int pointIdx)
-    {
-        for (int i = 0; i < ringIndices.Count; i++)
-        {
-            if (ringIndices[i] == pointIdx)
-                return i;
-        }
-        return 0;
-    }
 
 }
 
