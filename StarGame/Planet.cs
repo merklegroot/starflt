@@ -313,17 +313,17 @@ public class Planet
             }
 
             noise /= maxPossible;           // ~ -1 .. 1
-            float height = 1.0f + noise * 0.38f;
+            float height = 1.0f + noise * 0.095f; // Reduced by half again: was 0.19f
 
             // Optional ridge / mountain sharpening
             if (noise > 0.15f)
-                height += (noise - 0.15f) * 0.45f;
+                height += (noise - 0.15f) * 0.1125f; // Reduced by half again: was 0.225f
 
             // Optional ocean flattening
             if (height < 1.0f)
                 height = 1.0f + (height - 1.0f) * 0.3f;
 
-            height = MathF.Max(0.75f, MathF.Min(1.45f, height));
+            height = MathF.Max(0.9375f, MathF.Min(1.0625f, height)); // Reduced range by half again: was [0.875, 1.125], now [0.9375, 1.0625]
 
             _pointHeights[i] = height;
 
