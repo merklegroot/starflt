@@ -12,6 +12,7 @@ public class Planet
     public Color SurfaceColor { get; set; }
     private List<Vector3> _spherePoints = new List<Vector3>();
     private List<float> _pointHeights = new List<float>();
+    private List<List<int>> _ringIndices = new List<List<int>>(); // Store point indices for each ring
     private Random _random;
     private float _minHeight = float.MaxValue;
     private float _maxHeight = float.MinValue;
@@ -30,7 +31,7 @@ public class Planet
     private void GenerateSpherePoints()
     {
         // Generate points on a unit sphere using spherical coordinates
-        // Then scale by radius
+        // Organize by rings for triangle generation
         const int pointsPerRing = 80;
         const int numRings = 60;
         
@@ -43,6 +44,8 @@ public class Planet
             float ringRadius = MathF.Cos(theta);
             int pointsInRing = (int)(pointsPerRing * MathF.Abs(ringRadius));
             if (pointsInRing < 1) pointsInRing = 1;
+            
+            List<int> ringPointIndices = new List<int>();
             
             for (int point = 0; point < pointsInRing; point++)
             {
@@ -62,9 +65,13 @@ public class Planet
                 if (height < _minHeight) _minHeight = height;
                 if (height > _maxHeight) _maxHeight = height;
                 
+                int pointIndex = _spherePoints.Count;
                 _spherePoints.Add(new Vector3(x, y, z));
                 _pointHeights.Add(height);
+                ringPointIndices.Add(pointIndex);
             }
+            
+            _ringIndices.Add(ringPointIndices);
         }
     }
     
@@ -129,35 +136,42 @@ public class Planet
         return new Color(r, g, b, (byte)255);
     }
     
+    private Vector2 Project3DTo2D(Vector3 point3D, Vector2 center, float displayRadius)
+    {
+        // Project 3D point to 2D screen (orthographic projection)
+        // For a sphere viewed head-on, we project X and Y to screen
+        return new Vector2(
+            center.X + point3D.X * displayRadius,
+            center.Y + point3D.Y * displayRadius
+        );
+    }
+    
+    private Vector3 TransformPoint(Vector3 point, float height, float rotationAngle)
+    {
+        // Apply height to point (scale distance from center)
+        Vector3 heightAdjustedPoint = point * height;
+        
+        // Rotate point around Y-axis (vertical)
+        float cosRot = MathF.Cos(rotationAngle);
+        float sinRot = MathF.Sin(rotationAngle);
+        
+        return new Vector3(
+            heightAdjustedPoint.X * cosRot - heightAdjustedPoint.Z * sinRot,
+            heightAdjustedPoint.Y,
+            heightAdjustedPoint.X * sinRot + heightAdjustedPoint.Z * cosRot
+        );
+    }
+    
     public void DrawSpherePoints(Vector2 center, float displayRadius, float rotationAngle = 0.0f)
     {
-        // Draw each point on the sphere
+        // Draw individual points
         for (int i = 0; i < _spherePoints.Count; i++)
         {
-            var point = _spherePoints[i];
-            float height = _pointHeights[i];
+            Vector3 point3D = TransformPoint(_spherePoints[i], _pointHeights[i], rotationAngle);
+            Vector2 screenPos = Project3DTo2D(point3D, center, displayRadius);
+            Color color = GetColorForHeight(_pointHeights[i]);
             
-            // Get color based on height
-            Color pointColor = GetColorForHeight(height);
-            
-            // Apply height to point (scale distance from center)
-            Vector3 heightAdjustedPoint = point * height;
-            
-            // Rotate point around Y-axis (vertical)
-            float cosRot = MathF.Cos(rotationAngle);
-            float sinRot = MathF.Sin(rotationAngle);
-            
-            float rotatedX = heightAdjustedPoint.X * cosRot - heightAdjustedPoint.Z * sinRot;
-            float rotatedZ = heightAdjustedPoint.X * sinRot + heightAdjustedPoint.Z * cosRot;
-            float rotatedY = heightAdjustedPoint.Y;
-            
-            // Project 3D point to 2D screen (orthographic projection)
-            // For a sphere viewed head-on, we project X and Y to screen
-            float screenX = center.X + rotatedX * displayRadius;
-            float screenY = center.Y + rotatedY * displayRadius;
-            
-            // Draw point with height-based color
-            Raylib.DrawPixel((int)screenX, (int)screenY, pointColor);
+            Raylib.DrawCircleV(screenPos, 2.0f, color);
         }
     }
 }
