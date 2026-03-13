@@ -158,16 +158,178 @@ public class Planet
         );
     }
 
+    private void DrawTriangleWithBackface(Vector2 v1, Vector2 v2, Vector2 v3, Vector3 p1_3d, Vector3 p2_3d, Vector3 p3_3d, Color color)
+    {
+        // Calculate triangle normal in 3D space
+        Vector3 edge1 = p2_3d - p1_3d;
+        Vector3 edge2 = p3_3d - p1_3d;
+        Vector3 normal = Vector3.Cross(edge1, edge2);
+        
+        // Camera is looking along -Z axis (from positive Z towards origin in 2D projection)
+        // For 2D orthographic projection, we want to draw triangles facing the camera
+        // The normal's Z component tells us which way the triangle is facing
+        // Since we're doing a simple 2D projection (ignoring Z), draw both orientations to be safe
+        // This ensures all triangles are visible regardless of rotation
+        
+        // Draw in original order
+        Raylib.DrawTriangle(v1, v2, v3, color);
+        // Also draw in reverse order to ensure back-facing triangles are visible
+        Raylib.DrawTriangle(v3, v2, v1, color);
+    }
+
     public void DrawSpherePoints(Vector2 center, float displayRadius, float rotationAngle = 0f)
     {
+        // Transform all points to screen space and 3D space
+        Vector2[] screenPoints = new Vector2[_spherePoints.Count];
+        Vector3[] transformed3DPoints = new Vector3[_spherePoints.Count];
+        Color[] pointColors = new Color[_spherePoints.Count];
+
         for (int i = 0; i < _spherePoints.Count; i++)
         {
             Vector3 p = TransformPoint(_spherePoints[i], _pointHeights[i], rotationAngle);
-            Vector2 screen = Project3DTo2D(p, center, displayRadius);
-            Color col = GetColorForHeight(_pointHeights[i]);
-
-            Raylib.DrawCircleV(screen, 2f, col);
+            transformed3DPoints[i] = p;
+            screenPoints[i] = Project3DTo2D(p, center, displayRadius);
+            pointColors[i] = GetColorForHeight(_pointHeights[i]);
         }
+
+        // Draw triangles between rings
+        for (int ring = 0; ring < _ringIndices.Count - 1; ring++)
+        {
+            List<int> currentRing = _ringIndices[ring];
+            List<int> nextRing = _ringIndices[ring + 1];
+
+            // Handle poles (single point rings)
+            if (currentRing.Count == 1)
+            {
+                // Connect pole to first ring
+                int poleIdx = currentRing[0];
+                for (int i = 0; i < nextRing.Count; i++)
+                {
+                    int nextIdx = nextRing[i];
+                    int nextIdx2 = nextRing[(i + 1) % nextRing.Count];
+
+                    Color avgColor = AverageColor(pointColors[poleIdx], pointColors[nextIdx], pointColors[nextIdx2]);
+                    DrawTriangleWithBackface(
+                        screenPoints[poleIdx], screenPoints[nextIdx], screenPoints[nextIdx2],
+                        transformed3DPoints[poleIdx], transformed3DPoints[nextIdx], transformed3DPoints[nextIdx2],
+                        avgColor);
+                }
+            }
+            else if (nextRing.Count == 1)
+            {
+                // Connect last ring to pole
+                int poleIdx = nextRing[0];
+                for (int i = 0; i < currentRing.Count; i++)
+                {
+                    int currIdx = currentRing[i];
+                    int currIdx2 = currentRing[(i + 1) % currentRing.Count];
+
+                    Color avgColor = AverageColor(pointColors[currIdx], pointColors[currIdx2], pointColors[poleIdx]);
+                    DrawTriangleWithBackface(
+                        screenPoints[currIdx], screenPoints[currIdx2], screenPoints[poleIdx],
+                        transformed3DPoints[currIdx], transformed3DPoints[currIdx2], transformed3DPoints[poleIdx],
+                        avgColor);
+                }
+            }
+            else
+            {
+                // Connect two rings with multiple points
+                // Simple and reliable: connect each edge in current ring to nearest edges in next ring
+                for (int i = 0; i < currentRing.Count; i++)
+                {
+                    int currIdx = currentRing[i];
+                    int currIdx2 = currentRing[(i + 1) % currentRing.Count];
+                    
+                    // Calculate phi angle for this edge's midpoint
+                    float currPhi = ((i + 0.5f) / currentRing.Count) * MathF.PI * 2f;
+                    
+                    // Find the two closest points in next ring
+                    int nextIdx1 = FindClosestPointInRingByPhi(nextRing, currPhi);
+                    int nextRingPos = GetRingPosition(nextRing, nextIdx1);
+                    int nextIdx2 = nextRing[(nextRingPos + 1) % nextRing.Count];
+                    
+                    // Draw two triangles forming a quad
+                    // Triangle 1: currIdx, currIdx2, nextIdx1
+                    Color avgColor1 = AverageColor(pointColors[currIdx], pointColors[currIdx2], pointColors[nextIdx1]);
+                    DrawTriangleWithBackface(
+                        screenPoints[currIdx], screenPoints[currIdx2], screenPoints[nextIdx1],
+                        transformed3DPoints[currIdx], transformed3DPoints[currIdx2], transformed3DPoints[nextIdx1],
+                        avgColor1);
+                    
+                    // Triangle 2: currIdx2, nextIdx1, nextIdx2
+                    Color avgColor2 = AverageColor(pointColors[currIdx2], pointColors[nextIdx1], pointColors[nextIdx2]);
+                    DrawTriangleWithBackface(
+                        screenPoints[currIdx2], screenPoints[nextIdx1], screenPoints[nextIdx2],
+                        transformed3DPoints[currIdx2], transformed3DPoints[nextIdx1], transformed3DPoints[nextIdx2],
+                        avgColor2);
+                }
+                
+                // Also ensure all points in next ring are connected by drawing from next ring's perspective
+                // This fills in any gaps when next ring has more points
+                for (int i = 0; i < nextRing.Count; i++)
+                {
+                    int nextIdx = nextRing[i];
+                    int nextIdx2 = nextRing[(i + 1) % nextRing.Count];
+                    
+                    // Calculate phi angle for this edge's midpoint
+                    float nextPhi = ((i + 0.5f) / nextRing.Count) * MathF.PI * 2f;
+                    
+                    // Find the two closest points in current ring
+                    int currIdx1 = FindClosestPointInRingByPhi(currentRing, nextPhi);
+                    int currRingPos = GetRingPosition(currentRing, currIdx1);
+                    int currIdx2 = currentRing[(currRingPos + 1) % currentRing.Count];
+                    
+                    // Draw triangle connecting next ring edge to current ring
+                    Color avgColor = AverageColor(pointColors[nextIdx], pointColors[nextIdx2], pointColors[currIdx1]);
+                    DrawTriangleWithBackface(
+                        screenPoints[nextIdx], screenPoints[nextIdx2], screenPoints[currIdx1],
+                        transformed3DPoints[nextIdx], transformed3DPoints[nextIdx2], transformed3DPoints[currIdx1],
+                        avgColor);
+                }
+            }
+        }
+    }
+
+    private int FindClosestPointInRingByPhi(List<int> ringIndices, float targetPhi)
+    {
+        int bestIdx = ringIndices[0];
+        float bestDist = float.MaxValue;
+
+        for (int i = 0; i < ringIndices.Count; i++)
+        {
+            int idx = ringIndices[i];
+            float phi = (i / (float)ringIndices.Count) * MathF.PI * 2f;
+            float dist = MathF.Abs(phi - targetPhi);
+            if (dist > MathF.PI) dist = MathF.PI * 2f - dist; // Wrap around
+
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                bestIdx = idx;
+            }
+        }
+
+        return bestIdx;
+    }
+
+    private int GetRingPosition(List<int> ringIndices, int pointIdx)
+    {
+        for (int i = 0; i < ringIndices.Count; i++)
+        {
+            if (ringIndices[i] == pointIdx)
+                return i;
+        }
+        return 0;
+    }
+
+    private Color AverageColor(Color c1, Color c2, Color c3)
+    {
+        return new Color(
+            (byte)((c1.R + c2.R + c3.R) / 3),
+            (byte)((c1.G + c2.G + c3.G) / 3),
+            (byte)((c1.B + c2.B + c3.B) / 3),
+            (byte)255
+        );
     }
 }
 
