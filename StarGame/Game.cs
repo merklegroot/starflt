@@ -26,6 +26,7 @@ public class Game
     private StarMapView starMap;
     public bool ShouldExit { get; private set; } = false;
     private float _planetRotationAngle = 0.0f;
+    private Random _planetRegenRandom = new Random();
     
     // Menu state
     private int selectedMenuIndex = 0;
@@ -270,6 +271,12 @@ public class Game
         {
             currentState = GameState.StarMap;
         }
+        
+        // Regenerate planet when R is pressed
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_R))
+        {
+            currentPlanet = null; // Force regeneration with new seed
+        }
     }
 
     private void UpdatePlanetaryEncounter()
@@ -278,6 +285,12 @@ public class Game
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && menuLevel == 0)
         {
             currentState = GameState.CanopyView;
+        }
+        
+        // Regenerate planet when R is pressed
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_R))
+        {
+            currentPlanet = null; // Force regeneration with new seed
         }
     }
 
@@ -450,7 +463,9 @@ public class Game
         // Create or get planet
         if (currentPlanet == null && currentSystem != null)
         {
-            currentPlanet = new Planet(currentSystem.Name + " I", Vector2.Zero, 50.0f, Color.GREEN);
+            // Add random component to name to ensure different terrain each regeneration
+            string planetName = currentSystem.Name + " I " + _planetRegenRandom.Next(10000);
+            currentPlanet = new Planet(planetName, Vector2.Zero, 50.0f, Color.GREEN);
         }
         
         if (currentPlanet != null)
@@ -477,7 +492,7 @@ public class Game
     {
         Raylib.DrawText($"Fuel: {ship.Fuel:F1}%", 10, 10, 20, Color.WHITE);
         Raylib.DrawText($"Minerals: {ship.Minerals}", 10, 35, 20, Color.WHITE);
-        Raylib.DrawText($"Press ESC to return to star map | X to quit", 10, screenHeight - 30, 16, Color.YELLOW);
+        Raylib.DrawText($"Press ESC to return to star map | R to regenerate | X to quit", 10, screenHeight - 30, 16, Color.YELLOW);
     }
 
     private void DrawPlanetaryEncounter()
@@ -492,7 +507,9 @@ public class Game
         // Create or get planet
         if (currentPlanet == null && currentSystem != null)
         {
-            currentPlanet = new Planet(currentSystem.Name + " I", Vector2.Zero, 50.0f, Color.BLUE);
+            // Add random component to name to ensure different terrain each regeneration
+            string planetName = currentSystem.Name + " I " + _planetRegenRandom.Next(10000);
+            currentPlanet = new Planet(planetName, Vector2.Zero, 50.0f, Color.BLUE);
         }
         
         if (currentPlanet != null)
@@ -522,7 +539,7 @@ public class Game
             }
         }
         
-        Raylib.DrawText("Press ESC to return | X to quit", 40, viewHeight - 30, 18, Color.YELLOW);
+        Raylib.DrawText("Press ESC to return | R to regenerate | X to quit", 40, viewHeight - 30, 18, Color.YELLOW);
     }
     
     private void DrawEncounterStarfield(int viewWidth, int viewHeight)
