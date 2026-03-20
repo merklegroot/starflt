@@ -363,7 +363,7 @@ public class Planet
         return new Color(220, 230, 240, 255);                      // snow
     }
 
-    public void DrawSpherePoints(Vector2 center, float displayRadius, float rotationAngle = 0f)
+    public void DrawSpherePointsToTexture(RenderTexture2D target, float displayRadius, float rotationAngle = 0f)
     {
         // Set up 3D camera looking at planet head-on (along Z-axis)
         // Position camera far enough away to see the entire planet (2.5x the radius)
@@ -391,6 +391,10 @@ public class Planet
             );
         }
 
+        // Begin rendering to texture
+        Raylib.BeginTextureMode(target);
+        Raylib.ClearBackground(Color.BLACK);
+
         // Begin 3D mode
         Raylib.BeginMode3D(camera);
 
@@ -408,6 +412,9 @@ public class Planet
 
         // End 3D mode
         Raylib.EndMode3D();
+
+        // End rendering to texture
+        Raylib.EndTextureMode();
     }
 
 

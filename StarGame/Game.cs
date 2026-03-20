@@ -28,6 +28,7 @@ public class Game
     public bool ShouldExit { get; private set; } = false;
     private float _planetRotationAngle = 0.0f;
     private Random _planetRegenRandom = new Random();
+    private RenderTexture2D? _planetRenderTexture = null;
     
     // Menu state
     private int selectedMenuIndex = 0;
@@ -474,9 +475,27 @@ public class Game
         
         if (currentPlanet != null)
         {
-            // Calculate planet position (centered)
-            Vector2 planetCenter = new Vector2((screenWidth - 250) / 2, screenHeight / 2);
-            float displayRadius = Math.Min(screenWidth - 250, screenHeight) * 0.3f;
+            // Define panel rectangle for 3D planet view
+            const int panelX = 200;
+            const int panelY = 100;
+            const int panelWidth = 400;
+            const int panelHeight = 400;
+            
+            // Initialize render texture if needed
+            if (_planetRenderTexture == null || _planetRenderTexture.Value.Texture.Width != panelWidth || _planetRenderTexture.Value.Texture.Height != panelHeight)
+            {
+                // Unload existing texture if it exists
+                if (_planetRenderTexture != null)
+                {
+                    Raylib.UnloadRenderTexture(_planetRenderTexture.Value);
+                }
+                
+                // Create new render texture
+                _planetRenderTexture = Raylib.LoadRenderTexture(panelWidth, panelHeight);
+            }
+            
+            // Calculate display radius based on panel size
+            float displayRadius = Math.Min(panelWidth, panelHeight) * 0.3f;
             
             // Update rotation
             float deltaTime = Raylib.GetFrameTime();
@@ -487,8 +506,19 @@ public class Game
                 _planetRotationAngle -= MathF.PI * 2.0f;
             }
             
-            // Draw sphere points
-            currentPlanet.DrawSpherePoints(planetCenter, displayRadius, _planetRotationAngle);
+            // Render planet to texture
+            currentPlanet.DrawSpherePointsToTexture(_planetRenderTexture.Value, displayRadius, _planetRotationAngle);
+            
+            // Draw the texture to the panel rectangle
+            Raylib.DrawTextureRec(
+                _planetRenderTexture.Value.Texture,
+                new Rectangle(0, 0, panelWidth, -panelHeight), // Negative height to flip Y
+                new Vector2(panelX, panelY),
+                Color.WHITE
+            );
+            
+            // Optionally draw a border around the panel
+            Raylib.DrawRectangleLines(panelX, panelY, panelWidth, panelHeight, Color.GRAY);
         }
     }
     
@@ -519,10 +549,19 @@ public class Game
         
         if (currentPlanet != null)
         {
-            // Calculate planet position (centered)
-            Vector2 planetCenter = new Vector2(viewWidth / 2, viewHeight / 2);
+            // Initialize render texture to main view size so 3D projection matches the left area (not full window)
+            if (_planetRenderTexture == null || _planetRenderTexture.Value.Texture.Width != viewWidth || _planetRenderTexture.Value.Texture.Height != viewHeight)
+            {
+                if (_planetRenderTexture != null)
+                {
+                    Raylib.UnloadRenderTexture(_planetRenderTexture.Value);
+                }
+
+                _planetRenderTexture = Raylib.LoadRenderTexture(viewWidth, viewHeight);
+            }
+
             float displayRadius = Math.Min(viewWidth, viewHeight) * 0.3f;
-            
+
             // Update rotation
             float deltaTime = Raylib.GetFrameTime();
             float rotationSpeed = 0.5f;
@@ -531,10 +570,15 @@ public class Game
             {
                 _planetRotationAngle -= MathF.PI * 2.0f;
             }
-            
-            // Draw sphere points
-            currentPlanet.DrawSpherePoints(planetCenter, displayRadius, _planetRotationAngle);
-            
+
+            currentPlanet.DrawSpherePointsToTexture(_planetRenderTexture.Value, displayRadius, _planetRotationAngle);
+
+            Raylib.DrawTextureRec(
+                _planetRenderTexture.Value.Texture,
+                new Rectangle(0, 0, viewWidth, -viewHeight),
+                new Vector2(0, 0),
+                Color.WHITE);
+
             // Draw title
             Raylib.DrawText("PLANETARY ENCOUNTER", viewWidth / 2 - 150, 30, 32, Color.WHITE);
             
