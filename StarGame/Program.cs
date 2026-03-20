@@ -20,7 +20,8 @@ class Program
             game.Update();
             game.Draw();
         }
-        
+
+        game.UnloadResources();
         Raylib.CloseWindow();
     }
     
