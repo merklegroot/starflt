@@ -34,22 +34,22 @@ internal sealed class CanopyStarSystemView
         }
     }
 
-    public void Draw(Ship ship, StarMapView starMap, int viewWidth, int screenHeight, GameState currentState)
+    public void Draw(Ship ship, StarMapView starMap, int viewWidth, int screenHeight, GameState currentState, Vector2 maneuverParallaxBoost)
     {
         int shipCenterX = viewWidth / 2;
         int shipCenterY = screenHeight / 2;
 
         foreach (var system in starMap.GetAllSystems())
         {
-            Vector2 relativePos = system.Position - ship.Position;
+            Vector2 relativePos = system.Position - ship.Position + maneuverParallaxBoost;
 
             const float wobbleAmount = 1.5f;
             const float wobbleSpeed = 2.0f;
             float wobbleX = MathF.Sin(_wobbleTime * wobbleSpeed) * wobbleAmount;
             float wobbleY = MathF.Cos(_wobbleTime * wobbleSpeed * 1.3f) * wobbleAmount;
 
-            int baseScreenX = shipCenterX + (int)relativePos.X;
-            int baseScreenY = shipCenterY + (int)relativePos.Y;
+            int baseScreenX = shipCenterX + (int)MathF.Round(relativePos.X);
+            int baseScreenY = shipCenterY + (int)MathF.Round(relativePos.Y);
             int screenX = baseScreenX + (int)wobbleX;
             int screenY = baseScreenY + (int)wobbleY;
 

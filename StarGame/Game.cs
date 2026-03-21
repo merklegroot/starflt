@@ -9,6 +9,7 @@ public class Game
     private const float ManeuverThrustAcceleration = 35f;
     private const float ManeuverReverseThrustMultiplier = 0.5f;
     private const float ManeuverDragPerSecond = 1.2f;
+    private const float ManeuverParallaxMatchMultiplier = 20f;
 
     private readonly int _screenWidth;
     private readonly int _screenHeight;
@@ -25,6 +26,7 @@ public class Game
 
     private bool _justSwitchedState = false;
     private Vector2 _displayedCoordinates = Vector2.Zero;
+    private Vector2 _maneuverParallaxBoost = Vector2.Zero;
 
     public bool ShouldExit { get; private set; } = false;
 
@@ -84,6 +86,7 @@ public class Game
 
     private void UpdateCanopyView(float deltaTime)
     {
+        _maneuverParallaxBoost = Vector2.Zero;
         _parallax.UpdateTwinkling(deltaTime);
         _canopySystems.Update(deltaTime, _starMap);
     }
@@ -96,6 +99,7 @@ public class Game
             _ship.Velocity = Vector2.Zero;
             _ship.ManeuverThrustForward = false;
             _ship.ManeuverThrustReverse = false;
+            _maneuverParallaxBoost = Vector2.Zero;
             _canopySystems.Update(deltaTime, _starMap);
             return;
         }
@@ -156,12 +160,10 @@ public class Game
 
         Vector2 movement = _ship.Velocity * deltaTime;
 
-        if (movement.LengthSquared() > 1e-8f)
-        {
-            _ship.Position += movement;
-            _parallax.ApplyMovement(-movement, _screenWidth, _screenHeight, deltaTime);
-            _currentSystem = _starMap.GetSystemAtPosition(_ship.Position);
-        }
+        _ship.Position += movement;
+        _parallax.ApplyMovement(-movement, _screenWidth, _screenHeight, deltaTime);
+        _maneuverParallaxBoost += -movement * (ManeuverParallaxMatchMultiplier - 1f);
+        _currentSystem = _starMap.GetSystemAtPosition(_ship.Position);
     }
 
     private void UpdateStarMap()
@@ -351,7 +353,8 @@ public class Game
         int viewWidth = _screenWidth - LayoutConstants.RightPanelWidth;
 
         _parallax.Draw(_screenWidth, _screenHeight);
-        _canopySystems.Draw(_ship, _starMap, viewWidth, _screenHeight, _currentState);
+        Vector2 maneuverParallaxBoost = _currentState == GameState.Maneuver ? _maneuverParallaxBoost : Vector2.Zero;
+        _canopySystems.Draw(_ship, _starMap, viewWidth, _screenHeight, _currentState, maneuverParallaxBoost);
 
         const int frameThickness = 20;
         Color frameColor = new Color(40, 40, 45, 255);
