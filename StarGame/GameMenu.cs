@@ -108,11 +108,13 @@ public sealed class GameMenu
         _selectedMenuIndex = Math.Clamp(_selectedMenuIndex, 0, currentMenuItems.Length - 1);
     }
 
-    public void Draw(int panelX, ref int yPos, int panelWidth, int panelPadding, int menuFontSize, int lineSpacing, GameState currentState)
+    public int Draw(int panelX, int yPos, int panelWidth, int panelPadding, int menuFontSize, int lineSpacing, GameState currentState)
     {
+        int y = yPos;
+
         string menuTitle = _menuLevel == 0 ? "MENU" : "NAVIGATOR";
-        Raylib.DrawText(menuTitle, panelX + panelPadding, yPos, menuFontSize, Color.WHITE);
-        yPos += menuFontSize + 15;
+        Raylib.DrawText(menuTitle, panelX + panelPadding, y, menuFontSize, Color.WHITE);
+        y += menuFontSize + 15;
 
         string[] currentMenuItems = _menuLevel == 0 ? _topMenuItems : _navigatorSubMenuItems;
 
@@ -128,7 +130,7 @@ public sealed class GameMenu
             Color itemColor = isFocused ? Color.YELLOW : Color.LIGHTGRAY;
 
             int indicatorX = panelX + panelPadding;
-            int indicatorY = yPos;
+            int indicatorY = y;
             int textX = indicatorX + indicatorSize + indicatorSpacing;
 
             if (isFocused)
@@ -161,19 +163,21 @@ public sealed class GameMenu
                 Raylib.DrawRectangleLines(innerBoxX, innerBoxY, innerBoxSize, innerBoxSize, innerBoxOutline);
             }
 
-            Raylib.DrawText(currentMenuItems[i], textX, yPos, menuFontSize, itemColor);
-            yPos += lineSpacing;
+            Raylib.DrawText(currentMenuItems[i], textX, y, menuFontSize, itemColor);
+            y += lineSpacing;
         }
 
-        yPos += 10;
+        y += 10;
         if (_menuLevel > 0)
         {
-            Raylib.DrawText("ESC: Back", panelX + panelPadding, yPos, menuFontSize - 4, Color.DARKGRAY);
+            Raylib.DrawText("ESC: Back", panelX + panelPadding, y, menuFontSize - 4, Color.DARKGRAY);
         }
         else
         {
-            Raylib.DrawText("SPACE/ENTER: Select", panelX + panelPadding, yPos, menuFontSize - 4, Color.DARKGRAY);
+            Raylib.DrawText("SPACE/ENTER: Select", panelX + panelPadding, y, menuFontSize - 4, Color.DARKGRAY);
         }
+
+        return y;
     }
 
     private static bool IsMenuItemActive(int level, int index, GameState currentState)

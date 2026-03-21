@@ -34,13 +34,13 @@ public sealed class RightPanel
 
         int yPos = panelPadding;
 
-        _gameMenu.Draw(panelX, ref yPos, panelWidth, panelPadding, menuFontSize, lineSpacing, currentState);
+        yPos = _gameMenu.Draw(panelX, yPos, panelWidth, panelPadding, menuFontSize, lineSpacing, currentState);
 
         yPos += 10;
         Raylib.DrawLine(panelX + panelPadding, yPos, panelX + panelWidth - panelPadding, yPos, Color.DARKGRAY);
 
         yPos += 20;
 
-        _statusPanel.Draw(panelX, ref yPos, panelPadding, textFontSize, lineSpacing, ship, currentState);
+        yPos = _statusPanel.Draw(panelX, yPos, panelPadding, textFontSize, lineSpacing, ship, currentState);
     }
 }
