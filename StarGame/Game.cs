@@ -8,7 +8,8 @@ public class Game
     private const float ManeuverTurnSpeed = 3.0f;
     private const float ManeuverThrustAcceleration = 35f;
     private const float ManeuverReverseThrustMultiplier = 0.5f;
-    private const float ManeuverDragPerSecond = 1.2f;
+    private const float ManeuverDragPerSecond = 2.2f;
+    private const float ManeuverVelocityStopEpsilonSq = 0.01f;
     private const float ManeuverParallaxMatchMultiplier = 20f;
 
     private readonly int _screenWidth;
@@ -151,6 +152,9 @@ public class Game
         {
             float dragFactor = MathF.Exp(-ManeuverDragPerSecond * deltaTime);
             _ship.Velocity *= dragFactor;
+
+            if (_ship.Velocity.LengthSquared() < ManeuverVelocityStopEpsilonSq)
+                _ship.Velocity = Vector2.Zero;
         }
 
         float maxSpeed = _ship.Speed;
@@ -395,9 +399,8 @@ public class Game
 
         if (_currentState == GameState.Maneuver)
         {
-            const float coastEpsilonSq = 0.01f;
             bool thrusting = _ship.ManeuverThrustForward || _ship.ManeuverThrustReverse;
-            bool coasting = !thrusting && _ship.Velocity.LengthSquared() > coastEpsilonSq;
+            bool coasting = !thrusting && _ship.Velocity.LengthSquared() > ManeuverVelocityStopEpsilonSq;
 
             if (thrusting)
             {

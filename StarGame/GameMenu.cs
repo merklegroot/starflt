@@ -143,8 +143,9 @@ public sealed class GameMenu
         Raylib.DrawText($"{ship.Minerals}", panelX + panelPadding + 90, yPos, textFontSize, Color.LIGHTGRAY);
         yPos += lineSpacing;
 
+        float actualSpeed = currentState == GameState.Maneuver ? ship.Velocity.Length() : 0f;
         Raylib.DrawText("Speed:", panelX + panelPadding, yPos, textFontSize, Color.WHITE);
-        Raylib.DrawText($"{ship.Speed:F1}", panelX + panelPadding + 70, yPos, textFontSize, Color.SKYBLUE);
+        Raylib.DrawText($"{actualSpeed:F1}", panelX + panelPadding + 70, yPos, textFontSize, Color.SKYBLUE);
         yPos += lineSpacing;
 
         yPos += 10;
