@@ -6,11 +6,15 @@ namespace StarflightGame;
 public class Ship
 {
     public Vector2 Position { get; set; } = Vector2.Zero;
+    public Vector2 Velocity { get; set; } = Vector2.Zero;
     public float Fuel { get; set; } = 100.0f;
     public int Credits { get; set; } = 1000;
     public int Minerals { get; set; } = 0;
-    public float Speed { get; set; } = 0.25f;
+    public float Speed { get; set; } = 14.0f;
     public float Rotation { get; set; } = -MathF.PI / 2.0f; // Default: pointing up (0 degrees = right, -90 = up)
+
+    public bool ManeuverThrustForward { get; set; }
+    public bool ManeuverThrustReverse { get; set; }
     
     private const float FuelConsumptionRate = 0.05f;
     private const float MaxFuel = 100.0f;

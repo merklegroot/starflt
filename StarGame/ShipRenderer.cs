@@ -5,7 +5,7 @@ namespace StarflightGame;
 
 public static class ShipRenderer
 {
-    public static void Draw(int centerX, int centerY, float rotation)
+    public static void Draw(int centerX, int centerY, float rotation, bool forwardThrust = false, bool reverseThrust = false)
     {
         Vector2 center = new Vector2(centerX, centerY);
 
@@ -50,7 +50,25 @@ public static class ShipRenderer
         foreach (var enginePos in enginePositions)
         {
             Vector2 rotatedPos = RotatePoint(enginePos, center, rotation);
-            Raylib.DrawRectangle((int)rotatedPos.X - 4, (int)rotatedPos.Y - 6, 8, 12, Color.DARKGRAY);
+            Color engineBody = forwardThrust ? new Color(70, 70, 85, 255) : Color.DARKGRAY;
+            Raylib.DrawRectangle((int)rotatedPos.X - 4, (int)rotatedPos.Y - 6, 8, 12, engineBody);
+        }
+
+        if (forwardThrust)
+        {
+            Vector2 aft = RotatePoint(new Vector2(centerX, centerY + 28), center, rotation);
+            Vector2 backward = new Vector2(-MathF.Cos(rotation), -MathF.Sin(rotation));
+            Vector2 flameTip = aft + backward * 18f;
+            Raylib.DrawLine((int)aft.X, (int)aft.Y, (int)flameTip.X, (int)flameTip.Y, new Color(255, 180, 80, 220));
+            Raylib.DrawLine((int)(aft.X - 3), (int)aft.Y, (int)(flameTip.X - 2), (int)(flameTip.Y + 2), new Color(255, 220, 120, 180));
+            Raylib.DrawLine((int)(aft.X + 3), (int)aft.Y, (int)(flameTip.X + 2), (int)(flameTip.Y + 2), new Color(255, 220, 120, 180));
+        }
+        else if (reverseThrust)
+        {
+            Vector2 aft = RotatePoint(new Vector2(centerX, centerY + 28), center, rotation);
+            Vector2 forwardDir = new Vector2(MathF.Cos(rotation), MathF.Sin(rotation));
+            Vector2 puff = aft + forwardDir * 10f;
+            Raylib.DrawLine((int)aft.X, (int)aft.Y, (int)puff.X, (int)puff.Y, new Color(150, 200, 255, 160));
         }
 
         Vector2 lineStart = RotatePoint(new Vector2(centerX - 15, centerY + 5), center, rotation);

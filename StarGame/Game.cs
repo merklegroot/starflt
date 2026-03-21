@@ -5,6 +5,11 @@ namespace StarflightGame;
 
 public class Game
 {
+    private const float ManeuverTurnSpeed = 3.0f;
+    private const float ManeuverThrustAcceleration = 35f;
+    private const float ManeuverReverseThrustMultiplier = 0.5f;
+    private const float ManeuverDragPerSecond = 1.2f;
+
     private readonly int _screenWidth;
     private readonly int _screenHeight;
     private GameState _currentState = GameState.CanopyView;
@@ -88,6 +93,9 @@ public class Game
         if (_justSwitchedState)
         {
             _justSwitchedState = false;
+            _ship.Velocity = Vector2.Zero;
+            _ship.ManeuverThrustForward = false;
+            _ship.ManeuverThrustReverse = false;
             _canopySystems.Update(deltaTime, _starMap);
             return;
         }
@@ -101,29 +109,57 @@ public class Game
         _parallax.UpdateTwinkling(deltaTime);
         _canopySystems.Update(deltaTime, _starMap);
 
-        if (!_ship.CanMove()) return;
+        _ship.ManeuverThrustForward = false;
+        _ship.ManeuverThrustReverse = false;
 
-        Vector2 movement = Vector2.Zero;
-        float speed = _ship.Speed;
-
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_W) || Raylib.IsKeyDown(KeyboardKey.KEY_UP))
-            movement.Y -= speed;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_S) || Raylib.IsKeyDown(KeyboardKey.KEY_DOWN))
-            movement.Y += speed;
+        float turnInput = 0.0f;
         if (Raylib.IsKeyDown(KeyboardKey.KEY_A) || Raylib.IsKeyDown(KeyboardKey.KEY_LEFT))
-            movement.X -= speed;
+            turnInput -= 1.0f;
         if (Raylib.IsKeyDown(KeyboardKey.KEY_D) || Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
-            movement.X += speed;
+            turnInput += 1.0f;
 
-        if (movement != Vector2.Zero)
+        _ship.Rotation += turnInput * ManeuverTurnSpeed * deltaTime;
+
+        bool wantForward = Raylib.IsKeyDown(KeyboardKey.KEY_W) || Raylib.IsKeyDown(KeyboardKey.KEY_UP);
+        bool wantReverse = Raylib.IsKeyDown(KeyboardKey.KEY_S) || Raylib.IsKeyDown(KeyboardKey.KEY_DOWN);
+
+        float thrustSign = 0.0f;
+        if (wantForward && !wantReverse)
+            thrustSign = 1.0f;
+        else if (wantReverse && !wantForward)
+            thrustSign = -1.0f;
+
+        Vector2 forward = new Vector2(MathF.Cos(_ship.Rotation), MathF.Sin(_ship.Rotation));
+
+        if (_ship.CanMove() && thrustSign != 0.0f)
         {
-            _ship.Rotation = MathF.Atan2(movement.Y, movement.X) + MathF.PI / 2.0f;
+            float accelMag = ManeuverThrustAcceleration * (thrustSign > 0.0f ? 1.0f : ManeuverReverseThrustMultiplier);
+            _ship.Velocity += forward * (accelMag * thrustSign * deltaTime);
 
-            _ship.Position += movement;
+            if (thrustSign > 0.0f)
+                _ship.ManeuverThrustForward = true;
+            else
+                _ship.ManeuverThrustReverse = true;
+
             _ship.ConsumeFuelForMovement();
+        }
+        else
+        {
+            float dragFactor = MathF.Exp(-ManeuverDragPerSecond * deltaTime);
+            _ship.Velocity *= dragFactor;
+        }
 
+        float maxSpeed = _ship.Speed;
+        float speedSq = _ship.Velocity.LengthSquared();
+        if (speedSq > maxSpeed * maxSpeed)
+            _ship.Velocity = Vector2.Normalize(_ship.Velocity) * maxSpeed;
+
+        Vector2 movement = _ship.Velocity * deltaTime;
+
+        if (movement.LengthSquared() > 1e-8f)
+        {
+            _ship.Position += movement;
             _parallax.ApplyMovement(-movement, _screenWidth, _screenHeight, deltaTime);
-
             _currentSystem = _starMap.GetSystemAtPosition(_ship.Position);
         }
     }
@@ -356,8 +392,24 @@ public class Game
 
         if (_currentState == GameState.Maneuver)
         {
-            Raylib.DrawText("Engines: ON", 30, 90, 18, Color.GREEN);
-            Raylib.DrawText("WASD/Arrow Keys: Move | ESC: Disengage", 30, _screenHeight - 50, 16, Color.YELLOW);
+            const float coastEpsilonSq = 0.01f;
+            bool thrusting = _ship.ManeuverThrustForward || _ship.ManeuverThrustReverse;
+            bool coasting = !thrusting && _ship.Velocity.LengthSquared() > coastEpsilonSq;
+
+            if (thrusting)
+            {
+                Raylib.DrawText("Engines: thrust", 30, 90, 18, Color.GREEN);
+            }
+            else if (coasting)
+            {
+                Raylib.DrawText("Engines: coast", 30, 90, 18, new Color(230, 180, 80, 255));
+            }
+            else
+            {
+                Raylib.DrawText("Engines: idle", 30, 90, 18, new Color(120, 120, 130, 255));
+            }
+
+            Raylib.DrawText("A/D or arrows: turn | W/S or up/down: thrust / reverse | ESC: Disengage", 30, _screenHeight - 50, 16, Color.YELLOW);
         }
         else
         {

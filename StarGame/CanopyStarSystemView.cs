@@ -106,7 +106,9 @@ internal sealed class CanopyStarSystemView
         }
 
         float rotation = currentState == GameState.Maneuver ? ship.Rotation : -MathF.PI / 2.0f;
-        ShipRenderer.Draw(shipCenterX, shipCenterY, rotation);
+        bool forwardThrust = currentState == GameState.Maneuver && ship.ManeuverThrustForward;
+        bool reverseThrust = currentState == GameState.Maneuver && ship.ManeuverThrustReverse;
+        ShipRenderer.Draw(shipCenterX, shipCenterY, rotation, forwardThrust, reverseThrust);
     }
 
     private static List<StarParticle> CreateParticlesForSystem(StarSystem system)
