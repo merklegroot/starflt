@@ -4,7 +4,6 @@ namespace StarflightGame;
 
 public sealed class GameMenu
 {
-    private readonly StatusPanel _statusPanel = new StatusPanel();
     private readonly string[] _topMenuItems = { "Planet", "Captain", "Navigator" };
     private readonly string[] _navigatorSubMenuItems = { "Manuever", "Starmap" };
 
@@ -109,32 +108,7 @@ public sealed class GameMenu
         _selectedMenuIndex = Math.Clamp(_selectedMenuIndex, 0, currentMenuItems.Length - 1);
     }
 
-    public void DrawRightPanel(int screenWidth, int screenHeight, Ship ship, GameState currentState)
-    {
-        int panelWidth = LayoutConstants.RightPanelWidth;
-        int panelX = screenWidth - panelWidth;
-        const int panelPadding = 15;
-        const int textFontSize = 18;
-        const int menuFontSize = 20;
-        const int lineSpacing = 25;
-
-        Raylib.DrawRectangle(panelX, 0, panelWidth, screenHeight, new Color(30, 30, 35, 255));
-
-        Raylib.DrawLine(panelX, 0, panelX, screenHeight, Color.DARKGRAY);
-
-        int yPos = panelPadding;
-
-        DrawMenu(panelX, ref yPos, panelWidth, panelPadding, menuFontSize, lineSpacing, currentState);
-
-        yPos += 10;
-        Raylib.DrawLine(panelX + panelPadding, yPos, panelX + panelWidth - panelPadding, yPos, Color.DARKGRAY);
-
-        yPos += 20;
-
-        _statusPanel.Draw(panelX, ref yPos, panelPadding, textFontSize, lineSpacing, ship, currentState);
-    }
-
-    private void DrawMenu(int panelX, ref int yPos, int panelWidth, int panelPadding, int menuFontSize, int lineSpacing, GameState currentState)
+    public void Draw(int panelX, ref int yPos, int panelWidth, int panelPadding, int menuFontSize, int lineSpacing, GameState currentState)
     {
         string menuTitle = _menuLevel == 0 ? "MENU" : "NAVIGATOR";
         Raylib.DrawText(menuTitle, panelX + panelPadding, yPos, menuFontSize, Color.WHITE);

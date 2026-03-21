@@ -23,7 +23,7 @@ public class Game
     private readonly ParallaxStarfield _parallax = new ParallaxStarfield();
     private readonly CanopyStarSystemView _canopySystems = new CanopyStarSystemView();
     private readonly PlanetViewRenderer _planetRenderer = new PlanetViewRenderer();
-    private readonly GameMenu _menu = new GameMenu();
+    private readonly RightPanel _rightPanel = new RightPanel();
 
     private bool _justSwitchedState = false;
     private Vector2 _displayedCoordinates = Vector2.Zero;
@@ -60,7 +60,7 @@ public class Game
 
         float deltaTime = Raylib.GetFrameTime();
 
-        _menu.UpdateNavigation(ref _currentState, ref _justSwitchedState);
+        _rightPanel.UpdateNavigation(ref _currentState, ref _justSwitchedState);
 
         switch (_currentState)
         {
@@ -185,7 +185,7 @@ public class Game
             _currentState = GameState.CanopyView;
         }
 
-        if (_menu.MenuLevel == 0 && Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER) && _currentSystem != null)
+        if (_rightPanel.MenuLevel == 0 && Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER) && _currentSystem != null)
         {
             _currentState = GameState.PlanetaryExploration;
         }
@@ -201,7 +201,7 @@ public class Game
 
     private void UpdatePlanetaryExploration()
     {
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _menu.MenuLevel == 0)
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _rightPanel.MenuLevel == 0)
         {
             _currentState = GameState.StarMap;
         }
@@ -215,7 +215,7 @@ public class Game
 
     private void UpdatePlanetaryEncounter()
     {
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _menu.MenuLevel == 0)
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _rightPanel.MenuLevel == 0)
         {
             _currentState = GameState.CanopyView;
         }
@@ -244,25 +244,25 @@ public class Game
         {
             case GameState.CanopyView:
                 DrawCanopyView();
-                _menu.DrawRightPanel(_screenWidth, _screenHeight, _ship, _currentState);
+                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
                 break;
             case GameState.Maneuver:
                 DrawCanopyView();
-                _menu.DrawRightPanel(_screenWidth, _screenHeight, _ship, _currentState);
+                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
                 break;
             case GameState.StarMap:
                 _starMap.Draw(_screenWidth - LayoutConstants.RightPanelWidth, _screenHeight, _ship);
                 DrawStarMapHud();
-                _menu.DrawRightPanel(_screenWidth, _screenHeight, _ship, _currentState);
+                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
                 break;
             case GameState.PlanetaryExploration:
                 DrawPlanetaryExploration();
                 DrawPlanetaryUi();
-                _menu.DrawRightPanel(_screenWidth, _screenHeight, _ship, _currentState);
+                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
                 break;
             case GameState.PlanetaryEncounter:
                 DrawPlanetaryEncounter();
-                _menu.DrawRightPanel(_screenWidth, _screenHeight, _ship, _currentState);
+                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
                 break;
             case GameState.ShipStatus:
                 DrawShipStatus();
