@@ -3,7 +3,15 @@ using System.Numerics;
 
 namespace StarflightGame;
 
-public class Game
+public interface IGame
+{
+    void Update();
+    void Draw();
+    void UnloadResources();
+    bool ShouldExit { get; }
+}
+
+public class Game : IGame
 {
     private const float ManeuverTurnSpeed = 3.0f;
     private const float ManeuverThrustAcceleration = 35f;
@@ -31,10 +39,10 @@ public class Game
 
     public bool ShouldExit { get; private set; } = false;
 
-    public Game(int width, int height)
+    public Game()
     {
-        _screenWidth = width;
-        _screenHeight = height;
+        _screenWidth = GameConstants.ScreenWidth;
+        _screenHeight = GameConstants.ScreenHeight;
 
         _currentSystem = _starMap.GetSystem(0);
         if (_currentSystem != null)
