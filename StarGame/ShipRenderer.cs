@@ -57,7 +57,7 @@ public static class ShipRenderer
         if (forwardThrust)
         {
             Vector2 aft = RotatePoint(new Vector2(centerX, centerY + 28), center, rotation);
-            Vector2 backward = new Vector2(-MathF.Cos(rotation), -MathF.Sin(rotation));
+            Vector2 backward = new Vector2(-MathF.Sin(rotation), MathF.Cos(rotation));
             Vector2 flameTip = aft + backward * 18f;
             Raylib.DrawLine((int)aft.X, (int)aft.Y, (int)flameTip.X, (int)flameTip.Y, new Color(255, 180, 80, 220));
             Raylib.DrawLine((int)(aft.X - 3), (int)aft.Y, (int)(flameTip.X - 2), (int)(flameTip.Y + 2), new Color(255, 220, 120, 180));
@@ -66,7 +66,7 @@ public static class ShipRenderer
         else if (reverseThrust)
         {
             Vector2 aft = RotatePoint(new Vector2(centerX, centerY + 28), center, rotation);
-            Vector2 forwardDir = new Vector2(MathF.Cos(rotation), MathF.Sin(rotation));
+            Vector2 forwardDir = new Vector2(MathF.Sin(rotation), -MathF.Cos(rotation));
             Vector2 puff = aft + forwardDir * 10f;
             Raylib.DrawLine((int)aft.X, (int)aft.Y, (int)puff.X, (int)puff.Y, new Color(150, 200, 255, 160));
         }

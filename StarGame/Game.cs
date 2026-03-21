@@ -129,7 +129,7 @@ public class Game
         else if (wantReverse && !wantForward)
             thrustSign = -1.0f;
 
-        Vector2 forward = new Vector2(MathF.Cos(_ship.Rotation), MathF.Sin(_ship.Rotation));
+        Vector2 forward = new Vector2(MathF.Sin(_ship.Rotation), -MathF.Cos(_ship.Rotation));
 
         if (_ship.CanMove() && thrustSign != 0.0f)
         {
