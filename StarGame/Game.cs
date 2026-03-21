@@ -5,6 +5,7 @@ namespace StarflightGame;
 
 public interface IGame
 {
+    void Run();
     void Update();
     void Draw();
     void UnloadResources();
@@ -51,6 +52,21 @@ public class Game : IGame
         }
 
         _parallax.Generate(_screenWidth, _screenHeight);
+    }
+
+    public void Run()
+    {
+        Raylib.InitWindow(GameConstants.ScreenWidth, GameConstants.ScreenHeight, "Starflight");
+        Raylib.SetTargetFPS(60);
+
+        while (!ShouldExit && !WindowShouldClose())
+        {
+            Update();
+            Draw();
+        }
+
+        UnloadResources();
+        Raylib.CloseWindow();
     }
 
     public void UnloadResources()
@@ -430,5 +446,17 @@ public class Game : IGame
             Raylib.DrawText("Engines: OFF", 30, 90, 18, Color.RED);
             Raylib.DrawText("Use Navigator menu to access Starmap", 30, _screenHeight - 50, 16, Color.YELLOW);
         }
+    }
+
+    private static bool WindowShouldClose()
+    {
+        bool closeRequested = Raylib.WindowShouldClose();
+
+        if (closeRequested && Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        {
+            return false;
+        }
+
+        return closeRequested;
     }
 }
