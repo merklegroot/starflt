@@ -1,5 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Raylib_cs;
-using System.Numerics;
 
 namespace StarflightGame;
 
@@ -13,7 +14,10 @@ class Program
         Raylib.InitWindow(screenWidth, screenHeight, "Starflight");
         Raylib.SetTargetFPS(60);
 
-        var game = new Game(screenWidth, screenHeight);
+        var builder = Host.CreateApplicationBuilder(args);
+        builder.Services.AddSingleton<Game>(_ => new Game(screenWidth, screenHeight));
+        using var host = builder.Build();
+        var game = host.Services.GetRequiredService<Game>();
         
         while (!game.ShouldExit && !WindowShouldClose())
         {
