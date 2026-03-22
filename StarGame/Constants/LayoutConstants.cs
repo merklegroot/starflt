@@ -4,4 +4,7 @@ namespace StarflightGame.Constants;
 public static class LayoutConstants
 {
     public const int RightPanelWidth = 250;
+    public const int RightPanelPadding = 15;
+    public const int RightPanelLineSpacing = 25;
+    public const int StatusPanelFontSize = 18;
 }

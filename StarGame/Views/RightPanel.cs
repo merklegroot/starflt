@@ -24,24 +24,21 @@ public sealed class RightPanel
     {
         int panelWidth = LayoutConstants.RightPanelWidth;
         int panelX = screenWidth - panelWidth;
-        const int panelPadding = 15;
-        const int textFontSize = 18;
         const int menuFontSize = 20;
-        const int lineSpacing = 25;
 
         Raylib.DrawRectangle(panelX, 0, panelWidth, screenHeight, new Color(30, 30, 35, 255));
 
         Raylib.DrawLine(panelX, 0, panelX, screenHeight, Color.DARKGRAY);
 
-        int yPos = panelPadding;
+        int yPos = LayoutConstants.RightPanelPadding;
 
-        yPos = _gameMenu.Draw(panelX, yPos, panelWidth, panelPadding, menuFontSize, lineSpacing, currentState);
+        yPos = _gameMenu.Draw(panelX, yPos, panelWidth, LayoutConstants.RightPanelPadding, menuFontSize, LayoutConstants.RightPanelLineSpacing, currentState);
 
         yPos += 10;
-        Raylib.DrawLine(panelX + panelPadding, yPos, panelX + panelWidth - panelPadding, yPos, Color.DARKGRAY);
+        Raylib.DrawLine(panelX + LayoutConstants.RightPanelPadding, yPos, panelX + panelWidth - LayoutConstants.RightPanelPadding, yPos, Color.DARKGRAY);
 
         yPos += 20;
 
-        yPos = _statusPanel.Draw(panelX, yPos, panelPadding, textFontSize, lineSpacing, ship, currentState);
+        yPos = _statusPanel.Draw(panelX, yPos, ship, currentState);
     }
 }
