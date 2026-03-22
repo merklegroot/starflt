@@ -1,4 +1,4 @@
-namespace StarflightGame;
+namespace StarflightGame.Constants;
 
 public static class GameConstants
 {

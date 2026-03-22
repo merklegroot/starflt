@@ -1,4 +1,4 @@
-namespace StarflightGame;
+namespace StarflightGame.Constants;
 
 /// <summary>Shared layout measurements for the main window (right-hand panel, etc.).</summary>
 public static class LayoutConstants
