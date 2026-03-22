@@ -9,30 +9,45 @@ public sealed class StatusPanel
     {
         int y = yPos;
 
-        Raylib.DrawText("Fuel:", panelX + LayoutConstants.RightPanelPadding, y, LayoutConstants.StatusPanelFontSize, Color.WHITE);
+        void AddLabeledLine(ref int rowY, int valueOffset, string label, string value, Color valueColor)
+        {
+            Raylib.DrawText(label, panelX + LayoutConstants.RightPanelPadding, rowY, LayoutConstants.StatusPanelFontSize, Color.WHITE);
+            Raylib.DrawText(value, panelX + LayoutConstants.RightPanelPadding + valueOffset, rowY, LayoutConstants.StatusPanelFontSize, valueColor);
+            rowY += LayoutConstants.RightPanelLineSpacing;
+        }
+
+        void AddVerticalSpacer(ref int rowY, int pixels)
+        {
+            rowY += pixels;
+        }
+
+        void AddLabelLine(ref int rowY, string label)
+        {
+            Raylib.DrawText(label, panelX + LayoutConstants.RightPanelPadding, rowY, LayoutConstants.StatusPanelFontSize, Color.WHITE);
+            rowY += LayoutConstants.RightPanelLineSpacing;
+        }
+
+        void AddIndentedLine(ref int rowY, string text, Color color, int advanceAfter)
+        {
+            int detailFontSize = LayoutConstants.StatusPanelFontSize - 2;
+            Raylib.DrawText(text, panelX + LayoutConstants.RightPanelPadding + 10, rowY, detailFontSize, color);
+            rowY += advanceAfter;
+        }
+
         Color fuelColor = ship.Fuel > 50 ? Color.GREEN : ship.Fuel > 25 ? Color.YELLOW : Color.RED;
-        Raylib.DrawText($"{ship.Fuel:F1}%", panelX + LayoutConstants.RightPanelPadding + 70, y, LayoutConstants.StatusPanelFontSize, fuelColor);
-        y += LayoutConstants.RightPanelLineSpacing;
+        AddLabeledLine(ref y, 70, "Fuel:", $"{ship.Fuel:F1}%", fuelColor);
 
-        Raylib.DrawText("Credits:", panelX + LayoutConstants.RightPanelPadding, y, LayoutConstants.StatusPanelFontSize, Color.WHITE);
-        Raylib.DrawText($"{ship.Credits:N0}", panelX + LayoutConstants.RightPanelPadding + 80, y, LayoutConstants.StatusPanelFontSize, Color.GOLD);
-        y += LayoutConstants.RightPanelLineSpacing;
+        AddLabeledLine(ref y, 80, "Credits:", $"{ship.Credits:N0}", Color.GOLD);
 
-        Raylib.DrawText("Minerals:", panelX + LayoutConstants.RightPanelPadding, y, LayoutConstants.StatusPanelFontSize, Color.WHITE);
-        Raylib.DrawText($"{ship.Minerals}", panelX + LayoutConstants.RightPanelPadding + 90, y, LayoutConstants.StatusPanelFontSize, Color.LIGHTGRAY);
-        y += LayoutConstants.RightPanelLineSpacing;
+        AddLabeledLine(ref y, 90, "Minerals:", $"{ship.Minerals}", Color.LIGHTGRAY);
 
         float actualSpeed = currentState == GameState.Maneuver ? ship.Velocity.Length() : 0f;
-        Raylib.DrawText("Speed:", panelX + LayoutConstants.RightPanelPadding, y, LayoutConstants.StatusPanelFontSize, Color.WHITE);
-        Raylib.DrawText($"{actualSpeed:F1}", panelX + LayoutConstants.RightPanelPadding + 70, y, LayoutConstants.StatusPanelFontSize, Color.SKYBLUE);
-        y += LayoutConstants.RightPanelLineSpacing;
+        AddLabeledLine(ref y, 70, "Speed:", $"{actualSpeed:F1}", Color.SKYBLUE);
 
-        y += 10;
-        Raylib.DrawText("Position:", panelX + LayoutConstants.RightPanelPadding, y, LayoutConstants.StatusPanelFontSize, Color.WHITE);
-        y += LayoutConstants.RightPanelLineSpacing;
-        Raylib.DrawText($"X: {ship.Position.X:F1}", panelX + LayoutConstants.RightPanelPadding + 10, y, LayoutConstants.StatusPanelFontSize - 2, Color.LIGHTGRAY);
-        y += LayoutConstants.RightPanelLineSpacing - 5;
-        Raylib.DrawText($"Y: {ship.Position.Y:F1}", panelX + LayoutConstants.RightPanelPadding + 10, y, LayoutConstants.StatusPanelFontSize - 2, Color.LIGHTGRAY);
+        AddVerticalSpacer(ref y, 10);
+        AddLabelLine(ref y, "Position:");
+        AddIndentedLine(ref y, $"X: {ship.Position.X:F1}", Color.LIGHTGRAY, LayoutConstants.RightPanelLineSpacing - 5);
+        AddIndentedLine(ref y, $"Y: {ship.Position.Y:F1}", Color.LIGHTGRAY, 0);
 
         return y;
     }
