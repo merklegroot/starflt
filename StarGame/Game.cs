@@ -33,7 +33,7 @@ public class Game : IGame
     private readonly StarMapView _starMap = new StarMapView();
     private readonly ParallaxStarfield _parallax = new ParallaxStarfield();
     private readonly CanopyStarSystemView _canopySystems = new CanopyStarSystemView();
-    private readonly PlanetViewRenderer _planetRenderer = new PlanetViewRenderer();
+    private readonly PlanetView _planetView = new PlanetView();
     private readonly RightPanel _rightPanel = new RightPanel();
 
     private bool _justSwitchedState = false;
@@ -74,7 +74,7 @@ public class Game : IGame
 
     public void UnloadResources()
     {
-        _planetRenderer.Unload();
+        _planetView.Unload();
     }
 
     public void Update()
@@ -236,7 +236,7 @@ public class Game : IGame
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_R))
         {
             _currentPlanet = null;
-            _planetRenderer.ResetRotation();
+            _planetView.ResetRotation();
         }
     }
 
@@ -250,7 +250,7 @@ public class Game : IGame
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_R))
         {
             _currentPlanet = null;
-            _planetRenderer.ResetRotation();
+            _planetView.ResetRotation();
         }
     }
 
@@ -310,7 +310,7 @@ public class Game : IGame
     {
         if (_currentPlanet == null && _currentSystem != null)
         {
-            string planetName = _planetRenderer.CreateUniquePlanetName(_currentSystem.Name);
+            string planetName = _planetView.CreateUniquePlanetName(_currentSystem.Name);
             _currentPlanet = new Planet(planetName, Vector2.Zero, 50.0f, Color.GREEN);
         }
 
@@ -321,7 +321,7 @@ public class Game : IGame
             const int panelWidth = 400;
             const int panelHeight = 400;
 
-            _planetRenderer.DrawExplorationPanel(_currentPlanet, panelX, panelY, panelWidth, panelHeight);
+            _planetView.DrawExplorationPanel(_currentPlanet, panelX, panelY, panelWidth, panelHeight);
         }
     }
 
@@ -341,13 +341,13 @@ public class Game : IGame
 
         if (_currentPlanet == null && _currentSystem != null)
         {
-            string planetName = _planetRenderer.CreateUniquePlanetName(_currentSystem.Name);
+            string planetName = _planetView.CreateUniquePlanetName(_currentSystem.Name);
             _currentPlanet = new Planet(planetName, Vector2.Zero, 50.0f, Color.BLUE);
         }
 
         if (_currentPlanet != null)
         {
-            _planetRenderer.DrawEncounterFullBleed(_currentPlanet, viewWidth, viewHeight);
+            _planetView.DrawEncounterFullBleed(_currentPlanet, viewWidth, viewHeight);
 
             Raylib.DrawText("PLANETARY ENCOUNTER", viewWidth / 2 - 150, 30, 32, Color.WHITE);
 
