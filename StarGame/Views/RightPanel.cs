@@ -3,6 +3,9 @@ using StarflightGame.Constants;
 
 namespace StarflightGame.Views;
 
+/// <summary>
+/// Right-hand chrome: dark sidebar with <see cref="GameMenu"/> navigation and <see cref="StatusPanel"/> ship readouts.
+/// </summary>
 public sealed class RightPanel
 {
     private readonly StatusPanel _statusPanel = new StatusPanel();

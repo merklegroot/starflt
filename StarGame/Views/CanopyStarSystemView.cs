@@ -2,9 +2,14 @@ using Raylib_cs;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using StarflightGame.Views.StarMap;
 
 namespace StarflightGame.Views;
 
+/// <summary>
+/// Main cockpit view: star systems from <see cref="StarMapView"/> drawn around the screen center with parallax,
+/// glow, orbiting particles, and labels when close; draws the ship sprite at the center via <see cref="ShipRenderer"/>.
+/// </summary>
 internal sealed class CanopyStarSystemView
 {
     private readonly Dictionary<StarSystem, List<StarParticle>> _particles = new Dictionary<StarSystem, List<StarParticle>>();

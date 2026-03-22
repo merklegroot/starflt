@@ -5,16 +5,17 @@ using System.IO;
 using System.Text.Json;
 using System.Reflection;
 
-namespace StarflightGame.Views;
+namespace StarflightGame.Views.StarMap;
 
+/// <summary>
+/// Star map data and presentation: loads systems from embedded JSON, pan/zoom camera, warp-to-nearest (Tab),
+/// and 2D map drawing including the ship. Used by the canopy view for world positions and by map mode for interaction.
+/// </summary>
 public class StarMapView
 {
     private List<StarSystem> _systems = LoadStarSystems();
 
-    private Vector2 _cameraOffset = Vector2.Zero;
-    private float _zoom = 1.0f;
-    private const float MinZoom = 0.5f;
-    private const float MaxZoom = 3.0f;
+    private StarMapViewState _state = new StarMapViewState();
 
     private static List<StarSystem> LoadStarSystems()
     {
@@ -107,7 +108,7 @@ public class StarMapView
     {
         // Camera movement
         Vector2 movement = Vector2.Zero;
-        float speed = 5.0f / _zoom;
+        float speed = 5.0f / _state.Zoom;
 
         if (Raylib.IsKeyDown(KeyboardKey.KEY_W) || Raylib.IsKeyDown(KeyboardKey.KEY_UP))
             movement.Y -= speed;
@@ -118,13 +119,19 @@ public class StarMapView
         if (Raylib.IsKeyDown(KeyboardKey.KEY_D) || Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
             movement.X += speed;
 
-        _cameraOffset += movement;
+        _state = _state with { CameraOffset = _state.CameraOffset + movement };
 
         // Zoom
         float wheelMove = Raylib.GetMouseWheelMove();
         if (wheelMove != 0)
         {
-            _zoom = Math.Clamp(_zoom + wheelMove * 0.1f, MinZoom, MaxZoom);
+            _state = _state with
+            {
+                Zoom = Math.Clamp(
+                    _state.Zoom + wheelMove * 0.1f,
+                    StarMapViewState.MinZoom,
+                    StarMapViewState.MaxZoom)
+            };
         }
 
         // Ship movement in star map (warp travel)
@@ -165,24 +172,24 @@ public class StarMapView
         // Draw star systems
         foreach (var system in _systems)
         {
-            Vector2 screenPos = center + (system.Position - _cameraOffset) * _zoom;
+            Vector2 screenPos = center + (system.Position - _state.CameraOffset) * _state.Zoom;
 
             // Draw star
-            Raylib.DrawCircleV(screenPos, 8 * _zoom, system.StarColor);
+            Raylib.DrawCircleV(screenPos, 8 * _state.Zoom, system.StarColor);
 
             // Draw system name
-            if (_zoom > 0.7f)
+            if (_state.Zoom > 0.7f)
             {
                 Raylib.DrawText(system.Name, (int)(screenPos.X + 15), (int)(screenPos.Y - 10),
-                    (int)(16 * _zoom), Color.WHITE);
+                    (int)(16 * _state.Zoom), Color.WHITE);
             }
 
         }
 
         // Draw ship
-        Vector2 shipScreenPos = center + (ship.Position - _cameraOffset) * _zoom;
-        Raylib.DrawCircleV(shipScreenPos, 6 * _zoom, Color.WHITE);
-        Raylib.DrawCircleV(shipScreenPos, 4 * _zoom, Color.BLUE);
+        Vector2 shipScreenPos = center + (ship.Position - _state.CameraOffset) * _state.Zoom;
+        Raylib.DrawCircleV(shipScreenPos, 6 * _state.Zoom, Color.WHITE);
+        Raylib.DrawCircleV(shipScreenPos, 4 * _state.Zoom, Color.BLUE);
 
         // Draw instructions
         Raylib.DrawText("WASD: Move | Mouse Wheel: Zoom | TAB: Warp to nearest system",

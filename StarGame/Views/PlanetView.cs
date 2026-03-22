@@ -3,6 +3,10 @@ using System.Numerics;
 
 namespace StarflightGame.Views;
 
+/// <summary>
+/// Draws a rotating planet preview into a render texture for the exploration panel or full-screen encounter.
+/// Manages texture lifetime, sphere rendering via <see cref="Planet"/>, and unique generated planet names.
+/// </summary>
 public sealed class PlanetView
 {
     private readonly Random _regenRandom = new Random();

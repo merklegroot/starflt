@@ -2,6 +2,7 @@ using Raylib_cs;
 using System.Numerics;
 using StarflightGame.Constants;
 using StarflightGame.Views;
+using StarflightGame.Views.StarMap;
 
 namespace StarflightGame;
 
