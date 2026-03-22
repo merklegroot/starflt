@@ -5,7 +5,7 @@ using System.IO;
 using System.Text.Json;
 using System.Reflection;
 
-namespace StarflightGame;
+namespace StarflightGame.Views;
 
 public class StarMapView
 {
@@ -103,7 +103,7 @@ public class StarMapView
         return null;
     }
 
-    public void Update(Ship ship)
+    public void Update(IShip ship)
     {
         // Camera movement
         Vector2 movement = Vector2.Zero;
@@ -158,7 +158,7 @@ public class StarMapView
         return nearest;
     }
 
-    public void Draw(int screenWidth, int screenHeight, Ship ship)
+    public void Draw(int screenWidth, int screenHeight, IShip ship)
     {
         Vector2 center = new Vector2(screenWidth / 2, screenHeight / 2);
 
@@ -166,14 +166,14 @@ public class StarMapView
         foreach (var system in _systems)
         {
             Vector2 screenPos = center + (system.Position - _cameraOffset) * _zoom;
-            
+
             // Draw star
             Raylib.DrawCircleV(screenPos, 8 * _zoom, system.StarColor);
-            
+
             // Draw system name
             if (_zoom > 0.7f)
             {
-                Raylib.DrawText(system.Name, (int)(screenPos.X + 15), (int)(screenPos.Y - 10), 
+                Raylib.DrawText(system.Name, (int)(screenPos.X + 15), (int)(screenPos.Y - 10),
                     (int)(16 * _zoom), Color.WHITE);
             }
 
@@ -185,7 +185,7 @@ public class StarMapView
         Raylib.DrawCircleV(shipScreenPos, 4 * _zoom, Color.BLUE);
 
         // Draw instructions
-        Raylib.DrawText("WASD: Move | Mouse Wheel: Zoom | TAB: Warp to nearest system", 
+        Raylib.DrawText("WASD: Move | Mouse Wheel: Zoom | TAB: Warp to nearest system",
             10, screenHeight - 50, 16, Color.YELLOW);
     }
 }

@@ -4,12 +4,13 @@ using StarflightGame.Registry;
 
 namespace StarflightGame;
 
-class Program
+static class Program
 {
     static void Main(string[] args)
     {
         var builder = Host.CreateApplicationBuilder(args);
         builder.Services.RegisterGame();
+        
         using var host = builder.Build();
         
         var game = host.Services.GetRequiredService<IGame>();

@@ -2,7 +2,7 @@ using Raylib_cs;
 using System;
 using System.Numerics;
 
-namespace StarflightGame;
+namespace StarflightGame.Views;
 
 /// <summary>Manages render texture, rotation, and drawing for the procedural planet views.</summary>
 public sealed class PlanetViewRenderer

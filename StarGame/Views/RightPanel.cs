@@ -1,6 +1,6 @@
 using Raylib_cs;
 
-namespace StarflightGame;
+namespace StarflightGame.Views;
 
 public sealed class RightPanel
 {
@@ -19,7 +19,7 @@ public sealed class RightPanel
         _gameMenu.UpdateNavigation(ref currentState, ref justSwitchedState);
     }
 
-    public void Draw(int screenWidth, int screenHeight, Ship ship, GameState currentState)
+    public void Draw(int screenWidth, int screenHeight, IShip ship, GameState currentState)
     {
         int panelWidth = LayoutConstants.RightPanelWidth;
         int panelX = screenWidth - panelWidth;

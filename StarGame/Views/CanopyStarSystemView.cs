@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace StarflightGame;
+namespace StarflightGame.Views;
 
 internal sealed class CanopyStarSystemView
 {
@@ -34,7 +34,7 @@ internal sealed class CanopyStarSystemView
         }
     }
 
-    public void Draw(Ship ship, StarMapView starMap, int viewWidth, int screenHeight, GameState currentState, Vector2 maneuverParallaxBoost)
+    public void Draw(IShip ship, StarMapView starMap, int viewWidth, int screenHeight, GameState currentState, Vector2 maneuverParallaxBoost)
     {
         int shipCenterX = viewWidth / 2;
         int shipCenterY = screenHeight / 2;

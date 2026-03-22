@@ -1,5 +1,6 @@
 using Raylib_cs;
 using System.Numerics;
+using StarflightGame.Views;
 
 namespace StarflightGame;
 
@@ -27,7 +28,7 @@ public class Game : IGame
 
     private StarSystem? _currentSystem;
     private Planet? _currentPlanet;
-    private readonly Ship _ship = new Ship();
+    private readonly IShip _ship;
     private readonly StarMapView _starMap = new StarMapView();
     private readonly ParallaxStarfield _parallax = new ParallaxStarfield();
     private readonly CanopyStarSystemView _canopySystems = new CanopyStarSystemView();
@@ -40,8 +41,9 @@ public class Game : IGame
 
     public bool ShouldExit { get; private set; } = false;
 
-    public Game()
+    public Game(IShip ship)
     {
+        _ship = ship;
         _screenWidth = GameConstants.ScreenWidth;
         _screenHeight = GameConstants.ScreenHeight;
 

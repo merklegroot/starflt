@@ -1,18 +1,36 @@
-using Raylib_cs;
 using System.Numerics;
 
 namespace StarflightGame;
 
-public class Ship
+public interface IShip
+{
+    Vector2 Position { get; set; }
+    float Fuel { get; set; }
+    int Credits { get; set; }
+    int Minerals { get; set; }
+    float Speed { get; set; }
+    float Rotation { get; set; }
+    Vector2 Velocity { get; set; }
+    bool ManeuverThrustForward { get; set; }
+    bool ManeuverThrustReverse { get; set; }
+
+    void ConsumeFuel(float amount);
+    void ConsumeFuelForMovement();
+    void Refuel(float amount);
+    void AddCredits(int amount);
+    void AddMinerals(int amount);
+    bool CanMove();
+}
+
+public class Ship : IShip
 {
     public Vector2 Position { get; set; } = Vector2.Zero;
-    public Vector2 Velocity { get; set; } = Vector2.Zero;
     public float Fuel { get; set; } = 100.0f;
     public int Credits { get; set; } = 1000;
     public int Minerals { get; set; } = 0;
-    public float Speed { get; set; } = 14.0f;
-    public float Rotation { get; set; } = -MathF.PI / 2.0f; // Matches ShipRenderer: 0 = nose up; thrust uses (sin θ, -cos θ)
-
+    public float Speed { get; set; } = 0.25f;
+    public float Rotation { get; set; } = -MathF.PI / 2.0f; // Default: pointing up (0 degrees = right, -90 = up)
+    public Vector2 Velocity { get; set; } = Vector2.Zero;
     public bool ManeuverThrustForward { get; set; }
     public bool ManeuverThrustReverse { get; set; }
     

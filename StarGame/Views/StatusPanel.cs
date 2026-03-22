@@ -1,10 +1,10 @@
 using Raylib_cs;
 
-namespace StarflightGame;
+namespace StarflightGame.Views;
 
 public sealed class StatusPanel
 {
-    public int Draw(int panelX, int yPos, int panelPadding, int textFontSize, int lineSpacing, Ship ship, GameState currentState)
+    public int Draw(int panelX, int yPos, int panelPadding, int textFontSize, int lineSpacing, IShip ship, GameState currentState)
     {
         int y = yPos;
 
