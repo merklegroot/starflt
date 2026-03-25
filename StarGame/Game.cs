@@ -20,7 +20,7 @@ public class Game : IGame
     private const float ManeuverTurnSpeed = 3.0f;
     private const float ManeuverThrustAcceleration = 35f;
     private const float ManeuverReverseThrustMultiplier = 0.5f;
-    private const float ManeuverDragPerSecond = 2.2f;
+    private const float ManeuverDragPerSecond = 0.45f;
     private const float ManeuverVelocityStopEpsilonSq = 0.01f;
     private const float ManeuverParallaxMatchMultiplier = 20f;
 
