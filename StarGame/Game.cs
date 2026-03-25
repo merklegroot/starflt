@@ -115,7 +115,6 @@ public class Game : IGame
 
     private void UpdateCanopyView(float deltaTime)
     {
-        _maneuverParallaxBoost = Vector2.Zero;
         _parallax.UpdateTwinkling(deltaTime);
         _canopySystems.Update(deltaTime, _starMap);
     }
@@ -128,7 +127,6 @@ public class Game : IGame
             _ship.Velocity = Vector2.Zero;
             _ship.ManeuverThrustForward = false;
             _ship.ManeuverThrustReverse = false;
-            _maneuverParallaxBoost = Vector2.Zero;
             _canopySystems.Update(deltaTime, _starMap);
             return;
         }
@@ -385,8 +383,7 @@ public class Game : IGame
         int viewWidth = _screenWidth - LayoutConstants.RightPanelWidth;
 
         _parallax.Draw(_screenWidth, _screenHeight);
-        Vector2 maneuverParallaxBoost = _currentState == GameState.Maneuver ? _maneuverParallaxBoost : Vector2.Zero;
-        _canopySystems.Draw(_ship, _starMap, viewWidth, _screenHeight, _currentState, maneuverParallaxBoost);
+        _canopySystems.Draw(_ship, _starMap, viewWidth, _screenHeight, _currentState, _maneuverParallaxBoost);
 
         const int frameThickness = 20;
         Color frameColor = new Color(40, 40, 45, 255);

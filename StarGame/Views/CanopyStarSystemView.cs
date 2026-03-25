@@ -110,7 +110,7 @@ internal sealed class CanopyStarSystemView
             }
         }
 
-        float rotation = currentState == GameState.Maneuver ? ship.Rotation : -MathF.PI / 2.0f;
+        float rotation = ship.Rotation;
         bool forwardThrust = currentState == GameState.Maneuver && ship.ManeuverThrustForward;
         bool reverseThrust = currentState == GameState.Maneuver && ship.ManeuverThrustReverse;
         ShipRenderer.Draw(shipCenterX, shipCenterY, rotation, forwardThrust, reverseThrust);
