@@ -31,10 +31,10 @@ public class Game : IGame
     private StarSystem? _currentSystem;
     private Planet? _currentPlanet;
     private readonly IShip _ship;
-    private readonly StarMapView _starMap = new StarMapView();
-    private readonly ParallaxStarfield _parallax = new ParallaxStarfield();
-    private readonly CanopyStarSystemView _canopySystems = new CanopyStarSystemView();
-    private readonly PlanetView _planetView = new PlanetView();
+    private readonly IStarMapView _starMap;
+    private readonly IParallaxStarfield _parallax;
+    private readonly ICanopyStarSystemView _canopySystems;
+    private readonly IPlanetView _planetView;
     private readonly IRightPanel _rightPanel;
 
     private bool _justSwitchedState = false;
@@ -43,10 +43,20 @@ public class Game : IGame
 
     public bool ShouldExit { get; private set; } = false;
 
-    public Game(IShip ship, IRightPanel rightPanel)
+    public Game(
+        IShip ship,
+        IRightPanel rightPanel,
+        IStarMapView starMap,
+        IParallaxStarfield parallax,
+        ICanopyStarSystemView canopySystems,
+        IPlanetView planetView)
     {
         _ship = ship;
         _rightPanel = rightPanel;
+        _starMap = starMap;
+        _parallax = parallax;
+        _canopySystems = canopySystems;
+        _planetView = planetView;
         _screenWidth = GameConstants.ScreenWidth;
         _screenHeight = GameConstants.ScreenHeight;
 

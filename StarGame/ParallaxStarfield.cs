@@ -6,7 +6,19 @@ using StarflightGame.Constants;
 
 namespace StarflightGame;
 
-internal sealed class ParallaxStarfield
+public interface IParallaxStarfield
+{
+    void Generate(int screenWidth, int screenHeight);
+
+    void UpdateTwinkling(float deltaTime);
+
+    void ApplyMovement(Vector2 movement, int screenWidth, int screenHeight, float deltaTime);
+
+    void Draw(int screenWidth, int screenHeight);
+}
+
+
+public sealed class ParallaxStarfield : IParallaxStarfield
 {
     private readonly List<StarLayer> _layers = new List<StarLayer>();
     private readonly Random _random = new Random();

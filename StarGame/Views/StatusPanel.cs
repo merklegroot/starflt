@@ -3,11 +3,17 @@ using StarflightGame.Constants;
 
 namespace StarflightGame.Views;
 
+public interface IStatusPanel
+{
+    int Draw(int panelX, int yPos, IShip ship, GameState currentState);
+}
+
+
 /// <summary>
 /// Renders the ship status block in the right panel: fuel, credits, minerals, speed, and position.
 /// Does not own layout of the full panel—callers pass the panel origin and current Y.
 /// </summary>
-public sealed class StatusPanel
+public sealed class StatusPanel : IStatusPanel
 {
     public int Draw(int panelX, int yPos, IShip ship, GameState currentState)
     {

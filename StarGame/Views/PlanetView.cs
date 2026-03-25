@@ -3,11 +3,25 @@ using System.Numerics;
 
 namespace StarflightGame.Views;
 
+public interface IPlanetView
+{
+    void ResetRotation();
+
+    void Unload();
+
+    string CreateUniquePlanetName(string systemName);
+
+    void DrawExplorationPanel(Planet planet, int panelX, int panelY, int panelWidth, int panelHeight);
+
+    void DrawEncounterFullBleed(Planet planet, int viewWidth, int viewHeight);
+}
+
+
 /// <summary>
 /// Draws a rotating planet preview into a render texture for the exploration panel or full-screen encounter.
 /// Manages texture lifetime, sphere rendering via <see cref="Planet"/>, and unique generated planet names.
 /// </summary>
-public sealed class PlanetView
+public sealed class PlanetView : IPlanetView
 {
     private readonly Random _regenRandom = new Random();
     private RenderTexture2D? _renderTexture = null;

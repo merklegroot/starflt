@@ -7,11 +7,25 @@ using System.Reflection;
 
 namespace StarflightGame.Views.StarMap;
 
+public interface IStarMapView
+{
+    StarSystem? GetSystem(int index);
+
+    List<StarSystem> GetAllSystems();
+
+    StarSystem? GetSystemAtPosition(Vector2 position);
+
+    void Update(IShip ship);
+
+    void Draw(int screenWidth, int screenHeight, IShip ship);
+}
+
+
 /// <summary>
 /// Star map data and presentation: loads systems from embedded JSON, pan/zoom camera, warp-to-nearest (Tab),
 /// and 2D map drawing including the ship. Used by the canopy view for world positions and by map mode for interaction.
 /// </summary>
-public class StarMapView
+public class StarMapView : IStarMapView
 {
     private List<StarSystem> _systems = LoadStarSystems();
 

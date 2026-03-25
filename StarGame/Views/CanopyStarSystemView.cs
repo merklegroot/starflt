@@ -6,16 +6,24 @@ using StarflightGame.Views.StarMap;
 
 namespace StarflightGame.Views;
 
+public interface ICanopyStarSystemView
+{
+    void Update(float deltaTime, IStarMapView starMap);
+
+    void Draw(IShip ship, IStarMapView starMap, int viewWidth, int screenHeight, GameState currentState, Vector2 maneuverParallaxBoost);
+}
+
+
 /// <summary>
 /// Main cockpit view: star systems from <see cref="StarMapView"/> drawn around the screen center with parallax,
 /// glow, orbiting particles, and labels when close; draws the ship sprite at the center via <see cref="ShipRenderer"/>.
 /// </summary>
-internal sealed class CanopyStarSystemView
+public sealed class CanopyStarSystemView : ICanopyStarSystemView
 {
     private readonly Dictionary<StarSystem, List<StarParticle>> _particles = new Dictionary<StarSystem, List<StarParticle>>();
     private float _wobbleTime = 0.0f;
 
-    public void Update(float deltaTime, StarMapView starMap)
+    public void Update(float deltaTime, IStarMapView starMap)
     {
         _wobbleTime += deltaTime;
 
@@ -39,7 +47,7 @@ internal sealed class CanopyStarSystemView
         }
     }
 
-    public void Draw(IShip ship, StarMapView starMap, int viewWidth, int screenHeight, GameState currentState, Vector2 maneuverParallaxBoost)
+    public void Draw(IShip ship, IStarMapView starMap, int viewWidth, int screenHeight, GameState currentState, Vector2 maneuverParallaxBoost)
     {
         int shipCenterX = viewWidth / 2;
         int shipCenterY = screenHeight / 2;

@@ -14,13 +14,19 @@ public interface IRightPanel
     void Draw(int screenWidth, int screenHeight, IShip ship, GameState currentState);
 }
 
+
 /// <summary>
 /// Right-hand chrome: dark sidebar with <see cref="GameMenu"/> navigation and <see cref="StatusPanel"/> ship readouts.
 /// </summary>
 public sealed class RightPanel : IRightPanel
 {
-    private readonly StatusPanel _statusPanel = new StatusPanel();
+    private readonly IStatusPanel _statusPanel;
     private readonly GameMenu _gameMenu = new GameMenu();
+
+    public RightPanel(IStatusPanel statusPanel)
+    {
+        _statusPanel = statusPanel;
+    }
 
     public int MenuLevel => _gameMenu.MenuLevel;
 
