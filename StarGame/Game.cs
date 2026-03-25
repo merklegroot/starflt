@@ -35,7 +35,7 @@ public class Game : IGame
     private readonly ParallaxStarfield _parallax = new ParallaxStarfield();
     private readonly CanopyStarSystemView _canopySystems = new CanopyStarSystemView();
     private readonly PlanetView _planetView = new PlanetView();
-    private readonly RightPanel _rightPanel = new RightPanel();
+    private readonly IRightPanel _rightPanel;
 
     private bool _justSwitchedState = false;
     private Vector2 _displayedCoordinates = Vector2.Zero;
@@ -43,9 +43,10 @@ public class Game : IGame
 
     public bool ShouldExit { get; private set; } = false;
 
-    public Game(IShip ship)
+    public Game(IShip ship, IRightPanel rightPanel)
     {
         _ship = ship;
+        _rightPanel = rightPanel;
         _screenWidth = GameConstants.ScreenWidth;
         _screenHeight = GameConstants.ScreenHeight;
 

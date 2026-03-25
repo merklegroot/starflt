@@ -3,10 +3,21 @@ using StarflightGame.Constants;
 
 namespace StarflightGame.Views;
 
+public interface IRightPanel
+{
+    int MenuLevel { get; }
+
+    void ResetSubmenuToTop();
+
+    void UpdateNavigation(ref GameState currentState, ref bool justSwitchedState);
+
+    void Draw(int screenWidth, int screenHeight, IShip ship, GameState currentState);
+}
+
 /// <summary>
 /// Right-hand chrome: dark sidebar with <see cref="GameMenu"/> navigation and <see cref="StatusPanel"/> ship readouts.
 /// </summary>
-public sealed class RightPanel
+public sealed class RightPanel : IRightPanel
 {
     private readonly StatusPanel _statusPanel = new StatusPanel();
     private readonly GameMenu _gameMenu = new GameMenu();
