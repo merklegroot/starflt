@@ -2,7 +2,19 @@ using Raylib_cs;
 
 namespace StarflightGame;
 
-public sealed class GameMenu
+public interface IGameMenu
+{
+    int MenuLevel { get; }
+
+    void ResetSubmenuToTop();
+
+    void UpdateNavigation(ref GameState currentState, ref bool justSwitchedState);
+
+    int Draw(int panelX, int yPos, int panelWidth, int panelPadding, int menuFontSize, int lineSpacing, GameState currentState);
+}
+
+
+public sealed class GameMenu : IGameMenu
 {
     private readonly string[] _topMenuItems = { "Planet", "Captain", "Navigator" };
     private readonly string[] _navigatorSubMenuItems = { "Manuever", "Starmap" };

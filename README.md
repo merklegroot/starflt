@@ -1,56 +1,77 @@
 # Starflight - A Space Exploration Game
 
-A C# game built with Raylib inspired by the classic Starflight game mechanics.
+A game inspired by classic Starflight space exploration game.
 
-## Features
+## Game sections
 
-- **Star System Navigation**: Explore multiple star systems in a galaxy map
-- **Planetary Exploration**: Land on planets and explore their surfaces
-- **Resource Mining**: Discover and mine valuable minerals on planets
-- **Fuel Management**: Manage your ship's fuel as you travel between systems
-- **Dynamic Economy**: Collect minerals and earn credits
+The window is split into a **main view** (left) and a **right panel** (menu + ship readouts). **Ship status** is the only mode that uses the full window.
 
-## Controls
+![Main View](img/main-view.png.png)
 
-### Star Map View
-- **WASD / Arrow Keys**: Move camera around the star map
-- **Mouse Wheel**: Zoom in/out
-- **TAB**: Warp to nearest star system (consumes fuel)
-- **ENTER**: Enter planetary exploration mode
-- **S**: View ship status
+### Right panel
 
-### Planetary Exploration
-- **WASD / Arrow Keys**: Move your ship on the planet surface
-- **SPACE**: Mine minerals when near them
-- **ESC**: Return to star map
+The sidebar shows the **MENU** (top-level) or **NAVIGATOR** (submenu), then a horizontal rule, then **ship status**: fuel, credits, minerals, speed, and position.
 
-### Ship Status Screen
-- **ESC / S**: Return to star map
+- **Planet** — Opens **planetary encounter** (full-screen planet view).
+- **Captain** — No actions yet.
+- **Navigator** — Opens the submenu:
+  - **Maneuver** — Flight mode in the canopy (engines on).
+  - **Starmap** — Tactical star map.
 
-## Building and Running
+Use **↑/↓** to move the highlight, **1 / 2 / 3** for the top-level items, **SPACE** or **ENTER** to confirm. If the highlighted item already matches the current mode, the same key returns to **canopy view**. **ESC** steps back out of the Navigator submenu (where applicable).
+
+### Canopy view
+
+The default **bridge** view: parallax starfield, nearby star systems in the canopy, and a framed viewport. Engines are off; the hint at the bottom points you to the Navigator menu for the starmap.
+
+### Maneuver
+
+Same visuals as canopy view, but the ship **flies**: turn with **A/D** or **←/→**, forward and reverse thrust with **W/S** or **↑/↓**. Thrust uses **fuel**. **ESC** leaves maneuver and returns to canopy view.
+
+### Starmap
+
+A zoomable **2D map** of star systems with your ship marked. Pan the camera with **WASD** or arrow keys, zoom with the **mouse wheel**, and **TAB** to warp to the **nearest** system (uses fuel when the warp succeeds). **ESC** returns to canopy view. **ENTER** opens **planetary exploration** when the ship is at a star system’s position. **I** opens **ship status**. **X** quits.
+
+### Planetary encounter
+
+Opened from the menu’s **Planet** item. Full-bleed rotating planet render, system name, and encounter title. **ESC** returns to canopy view. **R** regenerates the planet name/preview. **X** quits.
+
+### Planetary exploration
+
+Opened from the **starmap** with **ENTER** while your ship is at a star system. Shows a rotating planet in a **framed panel** (exploration preview). **ESC** returns to the starmap. **R** regenerates the planet. **X** quits.
+
+### Ship status
+
+Full-screen summary: fuel, credits, minerals, and position. Open from the starmap with **I**. **ESC** returns to the starmap. **X** quits.
+
+## Controls (quick reference)
+
+| Context | Keys |
+|--------|------|
+| Menu / Navigator | ↑↓, 1–3, SPACE/ENTER, ESC |
+| Maneuver | A/D or ←/→ turn, W/S or ↑/↓ thrust, ESC to canopy |
+| Starmap | WASD or arrows pan, wheel zoom, TAB warp to nearest, ENTER explore planet, I ship status, ESC canopy |
+| Planetary encounter / exploration | ESC back, R regenerate planet, X quit |
+| Ship status | ESC to starmap, X quit |
+| Global | **X** quit (where shown) |
+
+## Building and running
 
 ### Prerequisites
+
 - .NET 8.0 SDK or later
 - Linux, Windows, or macOS
 
-### Build and Run
+### Build and run
+
 ```bash
 dotnet restore
 dotnet build
 dotnet run
 ```
 
-## Game Mechanics
+## Game mechanics
 
-- **Fuel**: Your ship consumes fuel when moving. Warp travel between systems consumes more fuel.
-- **Mining**: Approach minerals on planets and press SPACE to mine them. Each mineral has a value in credits.
-- **Exploration**: Each planet has procedurally generated mineral deposits. Explore to find valuable resources!
-
-## Future Enhancements
-
-Potential additions inspired by Starflight:
-- Alien encounters and diplomacy
-- Ship upgrades and crew management
-- More complex planetary terrain
-- Trading between systems
-- Artifact discovery and quests
+- **Fuel** — Maneuver thrust consumes fuel; starmap **TAB** warp consumes a fixed chunk of fuel when it succeeds.
+- **Systems** — Star data is loaded from embedded JSON; the starmap camera is independent of the ship until you warp or move in maneuver mode.
+- **Planets** — Exploration and encounter views show a procedural-style rotating sphere; **R** picks a new generated name and refreshes the view.

@@ -16,16 +16,17 @@ public interface IRightPanel
 
 
 /// <summary>
-/// Right-hand chrome: dark sidebar with <see cref="GameMenu"/> navigation and <see cref="StatusPanel"/> ship readouts.
+/// Right-hand chrome: dark sidebar with <see cref="IGameMenu"/> navigation and <see cref="StatusPanel"/> ship readouts.
 /// </summary>
 public sealed class RightPanel : IRightPanel
 {
     private readonly IStatusPanel _statusPanel;
-    private readonly GameMenu _gameMenu = new GameMenu();
+    private readonly IGameMenu _gameMenu;
 
-    public RightPanel(IStatusPanel statusPanel)
+    public RightPanel(IStatusPanel statusPanel, IGameMenu gameMenu)
     {
         _statusPanel = statusPanel;
+        _gameMenu = gameMenu;
     }
 
     public int MenuLevel => _gameMenu.MenuLevel;
