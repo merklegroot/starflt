@@ -106,14 +106,21 @@ public sealed class CanopyStarSystemView : ICanopyStarSystemView
                     Raylib.DrawCircle((int)particleX, (int)particleY, (int)particle.Size, particleColor);
                 }
 
-                float distance = Vector2.Distance(ship.Position, system.Position);
-                if (distance < 300)
+                const int nameFontSize = 16;
+                const int nameGap = 8;
+                int textWidth = Raylib.MeasureText(system.Name, nameFontSize);
+                int textX = screenX - textWidth / 2;
+                int labelAboveY = screenY - starRadius - 25;
+                int labelBelowY = screenY + starRadius + nameGap;
+
+                // Prefer above the star; if that would clip off the top, place below instead.
+                if (labelAboveY >= nameFontSize)
                 {
-                    int nameY = screenY - starRadius - 25;
-                    if (nameY > 100)
-                    {
-                        Raylib.DrawText(system.Name, screenX - Raylib.MeasureText(system.Name, 16) / 2, nameY, 16, Color.WHITE);
-                    }
+                    Raylib.DrawText(system.Name, textX, labelAboveY, nameFontSize, Color.WHITE);
+                }
+                else
+                {
+                    Raylib.DrawText(system.Name, textX, labelBelowY, nameFontSize, Color.WHITE);
                 }
             }
         }

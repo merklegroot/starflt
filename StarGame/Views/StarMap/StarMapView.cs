@@ -191,12 +191,10 @@ public class StarMapView : IStarMapView
             // Draw star
             Raylib.DrawCircleV(screenPos, 8 * _state.Zoom, system.StarColor);
 
-            // Draw system name
-            if (_state.Zoom > 0.7f)
-            {
-                Raylib.DrawText(system.Name, (int)(screenPos.X + 15), (int)(screenPos.Y - 10),
-                    (int)(16 * _state.Zoom), Color.WHITE);
-            }
+            // Draw system name (visible at all zoom levels; floor font size for readability when zoomed out)
+            int nameFontSize = Math.Max(10, (int)(16 * _state.Zoom));
+            Raylib.DrawText(system.Name, (int)(screenPos.X + 15), (int)(screenPos.Y - 10),
+                nameFontSize, Color.WHITE);
 
         }
 
