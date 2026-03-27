@@ -30,9 +30,13 @@ Same visuals as canopy view, but the ship **flies**: turn with **A/D** or **←/
 
 ### Starmap
 
+![Starmap](img/starmap.png.png)
+
 A zoomable **2D map** of star systems with your ship marked. Pan the camera with **WASD** or arrow keys, zoom with the **mouse wheel**, and **TAB** to warp to the **nearest** system (uses fuel when the warp succeeds). **ESC** returns to canopy view. **ENTER** opens **planetary exploration** when the ship is at a star system’s position. **I** opens **ship status**. **X** quits.
 
 ### Planetary encounter
+
+![Planetary Encounter](img/planetary-encounter.png.png)
 
 Opened from the menu’s **Planet** item. Full-bleed rotating planet render, system name, and encounter title. **ESC** returns to canopy view. **R** regenerates the planet name/preview. **X** quits.
 
