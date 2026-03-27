@@ -17,7 +17,7 @@ public interface IGameMenu
 public sealed class GameMenu : IGameMenu
 {
     private readonly string[] _topMenuItems = { "Planet", "Captain", "Navigator" };
-    private readonly string[] _navigatorSubMenuItems = { "Manuever", "Starmap" };
+    private readonly string[] _navigatorSubMenuItems = { "Manuever", "Starmap", "Star system" };
 
     private int _selectedMenuIndex = 0;
     private int _menuLevel = 0;
@@ -35,7 +35,7 @@ public sealed class GameMenu : IGameMenu
         if (currentState == GameState.ShipStatus)
             return;
 
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && currentState != GameState.StarMap && currentState != GameState.Maneuver && currentState != GameState.PlanetaryEncounter)
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && currentState != GameState.StarMap && currentState != GameState.Maneuver && currentState != GameState.PlanetaryEncounter && currentState != GameState.StarSystemView)
         {
             if (_menuLevel > 0)
             {
@@ -47,7 +47,7 @@ public sealed class GameMenu : IGameMenu
 
         string[] currentMenuItems = _menuLevel == 0 ? _topMenuItems : _navigatorSubMenuItems;
 
-        if (currentState != GameState.StarMap && currentState != GameState.Maneuver)
+        if (currentState != GameState.StarMap && currentState != GameState.Maneuver && currentState != GameState.StarSystemView)
         {
             if (Raylib.IsKeyPressed(KeyboardKey.KEY_UP))
             {
@@ -112,6 +112,11 @@ public sealed class GameMenu : IGameMenu
                 else if (_selectedMenuIndex == 1)
                 {
                     currentState = GameState.StarMap;
+                    justSwitchedState = true;
+                }
+                else if (_selectedMenuIndex == 2)
+                {
+                    currentState = GameState.StarSystemView;
                     justSwitchedState = true;
                 }
             }
@@ -210,6 +215,10 @@ public sealed class GameMenu : IGameMenu
             if (index == 1)
             {
                 return currentState == GameState.StarMap;
+            }
+            if (index == 2)
+            {
+                return currentState == GameState.StarSystemView;
             }
         }
 

@@ -34,6 +34,7 @@ public class Game : IGame
     private readonly IStarMapView _starMap;
     private readonly IParallaxStarfield _parallax;
     private readonly ICanopyStarSystemView _canopySystems;
+    private readonly IStarSystemInteriorView _starSystemInteriorView;
     private readonly IPlanetView _planetView;
     private readonly IRightPanel _rightPanel;
 
@@ -49,6 +50,7 @@ public class Game : IGame
         IStarMapView starMap,
         IParallaxStarfield parallax,
         ICanopyStarSystemView canopySystems,
+        IStarSystemInteriorView starSystemInteriorView,
         IPlanetView planetView)
     {
         _ship = ship;
@@ -56,6 +58,7 @@ public class Game : IGame
         _starMap = starMap;
         _parallax = parallax;
         _canopySystems = canopySystems;
+        _starSystemInteriorView = starSystemInteriorView;
         _planetView = planetView;
         _screenWidth = GameConstants.ScreenWidth;
         _screenHeight = GameConstants.ScreenHeight;
@@ -111,6 +114,9 @@ public class Game : IGame
                 break;
             case GameState.StarMap:
                 UpdateStarMap();
+                break;
+            case GameState.StarSystemView:
+                UpdateStarSystemView(deltaTime);
                 break;
             case GameState.PlanetaryExploration:
                 UpdatePlanetaryExploration();
@@ -236,6 +242,23 @@ public class Game : IGame
         _currentSystem = _starMap.GetSystemAtPosition(_ship.Position);
     }
 
+    private void UpdateStarSystemView(float deltaTime)
+    {
+        if (_justSwitchedState)
+        {
+            _justSwitchedState = false;
+            _currentSystem = _starMap.GetSystemAtPosition(_ship.Position);
+            return;
+        }
+
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _rightPanel.MenuLevel == 0)
+        {
+            _currentState = GameState.CanopyView;
+        }
+
+        _starSystemInteriorView.Update(deltaTime);
+    }
+
     private void UpdatePlanetaryExploration()
     {
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _rightPanel.MenuLevel == 0)
@@ -292,6 +315,10 @@ public class Game : IGame
                 DrawStarMapHud();
                 _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
                 break;
+            case GameState.StarSystemView:
+                DrawStarSystemView();
+                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
+                break;
             case GameState.PlanetaryExploration:
                 DrawPlanetaryExploration();
                 DrawPlanetaryUi();
@@ -307,6 +334,12 @@ public class Game : IGame
         }
 
         Raylib.EndDrawing();
+    }
+
+    private void DrawStarSystemView()
+    {
+        int viewWidth = _screenWidth - LayoutConstants.RightPanelWidth;
+        _starSystemInteriorView.Draw(_currentSystem, viewWidth, _screenHeight);
     }
 
     private void DrawStarMapHud()

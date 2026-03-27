@@ -15,6 +15,7 @@ public static class GameRegistry
             .AddSingleton<IParallaxStarfield, ParallaxStarfield>()
             .AddSingleton<IPlanetView, PlanetView>()
             .AddSingleton<ICanopyStarSystemView, CanopyStarSystemView>()
+            .AddSingleton<IStarSystemInteriorView, StarSystemInteriorView>()
             .AddSingleton<IRightPanel, RightPanel>()
             .AddSingleton<IGame, Game>();
 }
