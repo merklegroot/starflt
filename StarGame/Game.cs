@@ -25,7 +25,7 @@ public class Game : IGame
     private const float ManeuverParallaxMatchMultiplier = 20f;
 
     private const float StarSystemThrustAcceleration = 170f;
-    private const float StarSystemSpeedMultiplier = 5.6f;
+    private const float StarSystemSpeedMultiplier = 30.0f;
     private readonly int _screenWidth;
     private readonly int _screenHeight;
     private GameState _currentState = GameState.CanopyView;
