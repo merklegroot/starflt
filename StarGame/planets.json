@@ -1,36 +1,56 @@
 {
   "sol": [
     {
-      "name": "Veridian",
-      "surfaceColor": "#50C878"
+      "name": "Mercury",
+      "surfaceColor": "#B5B5B5"
     },
     {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46"
+      "name": "Venus",
+      "surfaceColor": "#E6CE8A"
     },
     {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC"
+      "name": "Earth",
+      "surfaceColor": "#6B93D6"
     },
     {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0"
+      "name": "Mars",
+      "surfaceColor": "#C86432"
     },
     {
-      "name": "Keth",
-      "surfaceColor": "#C8A050"
+      "name": "Ceres",
+      "surfaceColor": "#8A8680"
     },
     {
-      "name": "Mire",
-      "surfaceColor": "#648C6E"
+      "name": "Jupiter",
+      "surfaceColor": "#D4A574"
     },
     {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0"
+      "name": "Saturn",
+      "surfaceColor": "#E8D4A8"
     },
     {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0"
+      "name": "Uranus",
+      "surfaceColor": "#4FD0E7"
+    },
+    {
+      "name": "Neptune",
+      "surfaceColor": "#3457D5"
+    },
+    {
+      "name": "Pluto",
+      "surfaceColor": "#C9B8A0"
+    },
+    {
+      "name": "Haumea",
+      "surfaceColor": "#9A9A90"
+    },
+    {
+      "name": "Makemake",
+      "surfaceColor": "#C87860"
+    },
+    {
+      "name": "Eris",
+      "surfaceColor": "#D8D0C8"
     }
   ],
   "alpha_centauri": [
