@@ -109,6 +109,11 @@ public class Game : IGame
 
         _rightPanel.UpdateNavigation(ref _currentState, ref _justSwitchedState);
 
+        if (_currentState == GameState.StarSystemView && _previousState != GameState.StarSystemView)
+        {
+            _starSystemInteriorView.NotifyStarSystemViewEntered(_currentSystem);
+        }
+
         switch (_currentState)
         {
             case GameState.CanopyView:

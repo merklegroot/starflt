@@ -10,6 +10,11 @@ namespace StarflightGame.Views;
 
 public interface IStarSystemInteriorView
 {
+    /// <summary>
+    /// Call when the player enters star system interior view so each planet can pick a new random orbital position.
+    /// </summary>
+    void NotifyStarSystemViewEntered(StarSystem? system);
+
     void Draw(StarSystem? system, int viewWidth, int screenHeight, Vector2 shipSystemPosition, IShip ship);
 }
 
@@ -23,6 +28,14 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
     private const int OrbitLineSegments = 96;
 
     private static readonly Dictionary<string, LoadedPlanet[]> _planetsByStarSystemId = LoadPlanetsByStarSystem();
+
+    private string? _orbitPhasesSystemId;
+    private float[] _orbitTrueAnomalyRad = Array.Empty<float>();
+
+    public void NotifyStarSystemViewEntered(StarSystem? system)
+    {
+        ResampleOrbitPhases(system);
+    }
 
     public void Draw(StarSystem? system, int viewWidth, int screenHeight, Vector2 shipSystemPosition, IShip ship)
     {
@@ -60,6 +73,8 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         int n = planets.Length;
         if (n > 0)
         {
+            EnsureOrbitPhasesMatch(system, n);
+
             float minAu = planets[0].SemiMajorAxisAu;
             float maxAu = planets[0].SemiMajorAxisAu;
             for (int j = 1; j < n; j++)
@@ -86,7 +101,7 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
 
                 DrawEllipticalOrbit(starSx, starSy, aPx, e, omega, dim);
 
-                float nu = i * (MathF.Tau / n) + 0.23f;
+                float nu = _orbitTrueAnomalyRad[i];
                 EllipseRadiusAndWorldOffset(aPx, e, omega, nu, out float worldPx, out float worldPy);
 
                 float psx = starSx + worldPx;
@@ -185,6 +200,35 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
             prevX = sx;
             prevY = sy;
             hasPrev = true;
+        }
+    }
+
+    private void EnsureOrbitPhasesMatch(StarSystem? system, int planetCount)
+    {
+        string? id = system?.Id;
+        if (_orbitTrueAnomalyRad.Length == planetCount && id == _orbitPhasesSystemId)
+        {
+            return;
+        }
+
+        ResampleOrbitPhases(system);
+    }
+
+    private void ResampleOrbitPhases(StarSystem? system)
+    {
+        LoadedPlanet[] planets = ResolvePlanets(system);
+        int n = planets.Length;
+        _orbitPhasesSystemId = system?.Id;
+        if (n == 0)
+        {
+            _orbitTrueAnomalyRad = Array.Empty<float>();
+            return;
+        }
+
+        _orbitTrueAnomalyRad = new float[n];
+        for (int i = 0; i < n; i++)
+        {
+            _orbitTrueAnomalyRad[i] = (float)(Random.Shared.NextDouble() * MathF.Tau);
         }
     }
 
