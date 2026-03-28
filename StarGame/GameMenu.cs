@@ -75,7 +75,7 @@ public sealed class GameMenu : IGameMenu
             }
         }
 
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_SPACE) || Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER))
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER))
         {
             bool isCurrentlyActive = IsMenuItemActive(_menuLevel, _selectedMenuIndex, currentState);
             if (isCurrentlyActive)
@@ -191,7 +191,7 @@ public sealed class GameMenu : IGameMenu
         }
         else
         {
-            Raylib.DrawText("SPACE/ENTER: Select", panelX + panelPadding, y, menuFontSize - 4, Color.DARKGRAY);
+            Raylib.DrawText("ENTER: Select", panelX + panelPadding, y, menuFontSize - 4, Color.DARKGRAY);
         }
 
         return y;
