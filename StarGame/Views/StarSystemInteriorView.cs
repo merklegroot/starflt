@@ -27,10 +27,18 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
 {
     private const int OrbitLineSegments = 96;
 
+    /// <summary>
+    /// Real-time seconds that correspond to one Earth orbital period at 1 AU (Kepler: T ∝ a^(3/2) years).
+    /// Smaller = faster apparent motion.
+    /// </summary>
+    private const float SimulatedSecondsPerEarthYear = 250f;
+
     private static readonly Dictionary<string, LoadedPlanet[]> _planetsByStarSystemId = LoadPlanetsByStarSystem();
 
     private string? _orbitPhasesSystemId;
-    private float[] _orbitTrueAnomalyRad = Array.Empty<float>();
+    private float[] _meanAnomalyAtEpochRad = Array.Empty<float>();
+    private float[] _meanMotionRadPerSec = Array.Empty<float>();
+    private float _orbitElapsedSeconds;
 
     public void NotifyStarSystemViewEntered(StarSystem? system)
     {
@@ -74,6 +82,7 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         if (n > 0)
         {
             EnsureOrbitPhasesMatch(system, n);
+            _orbitElapsedSeconds += Raylib.GetFrameTime();
 
             float minAu = planets[0].SemiMajorAxisAu;
             float maxAu = planets[0].SemiMajorAxisAu;
@@ -101,7 +110,9 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
 
                 DrawEllipticalOrbit(starSx, starSy, aPx, e, omega, dim);
 
-                float nu = _orbitTrueAnomalyRad[i];
+                float meanAnomalyRad = WrapAngle0ToTau(
+                    _meanAnomalyAtEpochRad[i] + _meanMotionRadPerSec[i] * _orbitElapsedSeconds);
+                float nu = MeanAnomalyToTrueAnomaly(meanAnomalyRad, e);
                 EllipseRadiusAndWorldOffset(aPx, e, omega, nu, out float worldPx, out float worldPy);
 
                 float psx = starSx + worldPx;
@@ -206,7 +217,9 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
     private void EnsureOrbitPhasesMatch(StarSystem? system, int planetCount)
     {
         string? id = system?.Id;
-        if (_orbitTrueAnomalyRad.Length == planetCount && id == _orbitPhasesSystemId)
+        if (_meanAnomalyAtEpochRad.Length == planetCount
+            && _meanMotionRadPerSec.Length == planetCount
+            && id == _orbitPhasesSystemId)
         {
             return;
         }
@@ -219,17 +232,114 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         LoadedPlanet[] planets = ResolvePlanets(system);
         int n = planets.Length;
         _orbitPhasesSystemId = system?.Id;
+        _orbitElapsedSeconds = 0f;
         if (n == 0)
         {
-            _orbitTrueAnomalyRad = Array.Empty<float>();
+            _meanAnomalyAtEpochRad = Array.Empty<float>();
+            _meanMotionRadPerSec = Array.Empty<float>();
             return;
         }
 
-        _orbitTrueAnomalyRad = new float[n];
+        _meanAnomalyAtEpochRad = new float[n];
+        _meanMotionRadPerSec = new float[n];
         for (int i = 0; i < n; i++)
         {
-            _orbitTrueAnomalyRad[i] = (float)(Random.Shared.NextDouble() * MathF.Tau);
+            float e = Math.Clamp(planets[i].Eccentricity, 0f, 0.95f);
+            float nu0 = (float)(Random.Shared.NextDouble() * MathF.Tau);
+            _meanAnomalyAtEpochRad[i] = TrueAnomalyToMeanAnomaly(nu0, e);
+
+            float aAu = planets[i].SemiMajorAxisAu;
+            float orbitalPeriodYears = MathF.Pow(aAu, 1.5f);
+            float orbitalPeriodSeconds = orbitalPeriodYears * SimulatedSecondsPerEarthYear;
+            if (orbitalPeriodSeconds < 1e-4f)
+            {
+                orbitalPeriodSeconds = 1e-4f;
+            }
+
+            _meanMotionRadPerSec[i] = MathF.Tau / orbitalPeriodSeconds;
         }
+    }
+
+    private static float WrapAngle0ToTau(float rad)
+    {
+        rad %= MathF.Tau;
+        if (rad < 0f)
+        {
+            rad += MathF.Tau;
+        }
+
+        return rad;
+    }
+
+    /// <summary>
+    /// Converts mean anomaly M to true anomaly ν (eccentric orbit, radians).
+    /// </summary>
+    private static float MeanAnomalyToTrueAnomaly(float meanAnomalyRad, float eccentricity)
+    {
+        float e = eccentricity;
+        float E = MeanAnomalyToEccentricAnomaly(meanAnomalyRad, e);
+        return EccentricAnomalyToTrueAnomaly(E, e);
+    }
+
+    private static float MeanAnomalyToEccentricAnomaly(float meanAnomalyRad, float eccentricity)
+    {
+        float e = eccentricity;
+        float M = WrapAngle0ToTau(meanAnomalyRad);
+        if (e < 1e-6f)
+        {
+            return M;
+        }
+
+        float E = M;
+        for (int k = 0; k < 16; k++)
+        {
+            float next = M + e * MathF.Sin(E);
+            if (MathF.Abs(next - E) < 1e-7f)
+            {
+                return next;
+            }
+
+            E = next;
+        }
+
+        return E;
+    }
+
+    private static float EccentricAnomalyToTrueAnomaly(float eccentricAnomalyRad, float eccentricity)
+    {
+        float e = eccentricity;
+        float E = eccentricAnomalyRad;
+        float cosE = MathF.Cos(E);
+        float sinE = MathF.Sin(E);
+        float denom = 1f - e * cosE;
+        if (MathF.Abs(denom) < 1e-7f)
+        {
+            denom = denom >= 0f ? 1e-7f : -1e-7f;
+        }
+
+        float cosNu = (cosE - e) / denom;
+        float sinNu = MathF.Sqrt(1f - e * e) * sinE / denom;
+        return MathF.Atan2(sinNu, cosNu);
+    }
+
+    /// <summary>
+    /// Converts true anomaly ν to mean anomaly M (eccentric orbit, radians).
+    /// </summary>
+    private static float TrueAnomalyToMeanAnomaly(float trueAnomalyRad, float eccentricity)
+    {
+        float e = eccentricity;
+        float cosNu = MathF.Cos(trueAnomalyRad);
+        float sinNu = MathF.Sin(trueAnomalyRad);
+        float denom = 1f + e * cosNu;
+        if (MathF.Abs(denom) < 1e-7f)
+        {
+            denom = denom >= 0f ? 1e-7f : -1e-7f;
+        }
+
+        float cosE = (e + cosNu) / denom;
+        float sinE = MathF.Sqrt(1f - e * e) * sinNu / denom;
+        float E = MathF.Atan2(sinE, cosE);
+        return E - e * MathF.Sin(E);
     }
 
     private static LoadedPlanet[] ResolvePlanets(StarSystem? system)
