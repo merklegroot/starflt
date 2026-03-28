@@ -264,7 +264,7 @@ public class Game : IGame
             _ship.Velocity = Vector2.Zero;
             _ship.ManeuverThrustForward = false;
             _ship.ManeuverThrustReverse = false;
-            _starSystemShipPosition = new Vector2(320f, 0f);
+            _starSystemShipPosition = Vector2.Zero;
             return;
         }
 
