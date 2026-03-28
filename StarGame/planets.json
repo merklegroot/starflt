@@ -2,1555 +2,715 @@
   "sol": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "alpha_centauri": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "barnards_star": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "luhman_16": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "wise_0855_0714": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "wolf_359": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "lalande_21185": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "sirius": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "luyten_726_8": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "ross_154": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "ross_248": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "epsilon_eridani": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "lacaille_9352": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "ross_128": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "procyon": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "61_cygni": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "struve_2398": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "groombridge_34": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "epsilon_indi": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "tau_ceti": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ],
   "gliese_1061": [
     {
       "name": "Veridian",
-      "surfaceColor": {
-        "r": 80,
-        "g": 200,
-        "b": 120,
-        "a": 255
-      }
+      "surfaceColor": "#50C878"
     },
     {
       "name": "Crimson Reach",
-      "surfaceColor": {
-        "r": 200,
-        "g": 90,
-        "b": 70,
-        "a": 255
-      }
+      "surfaceColor": "#C85A46"
     },
     {
       "name": "Echo",
-      "surfaceColor": {
-        "r": 180,
-        "g": 180,
-        "b": 220,
-        "a": 255
-      }
+      "surfaceColor": "#B4B4DC"
     },
     {
       "name": "Glass",
-      "surfaceColor": {
-        "r": 140,
-        "g": 200,
-        "b": 240,
-        "a": 255
-      }
+      "surfaceColor": "#8CC8F0"
     },
     {
       "name": "Keth",
-      "surfaceColor": {
-        "r": 200,
-        "g": 160,
-        "b": 80,
-        "a": 255
-      }
+      "surfaceColor": "#C8A050"
     },
     {
       "name": "Mire",
-      "surfaceColor": {
-        "r": 100,
-        "g": 140,
-        "b": 110,
-        "a": 255
-      }
+      "surfaceColor": "#648C6E"
     },
     {
       "name": "Nadir",
-      "surfaceColor": {
-        "r": 120,
-        "g": 100,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#7864A0"
     },
     {
       "name": "Solstice",
-      "surfaceColor": {
-        "r": 230,
-        "g": 210,
-        "b": 160,
-        "a": 255
-      }
+      "surfaceColor": "#E6D2A0"
     }
   ]
 }

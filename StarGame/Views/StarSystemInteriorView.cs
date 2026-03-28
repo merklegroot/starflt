@@ -141,11 +141,10 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
             for (int i = 0; i < list.Count; i++)
             {
                 InteriorPlanetDto d = list[i];
-                ColorData c = d.SurfaceColor;
                 converted[i] = new LoadedPlanet
                 {
                     Name = d.Name,
-                    SurfaceColor = new Color(c.R, c.G, c.B, c.A)
+                    SurfaceColor = HexColor.ToRaylibColor(d.SurfaceColor)
                 };
             }
 
@@ -164,15 +163,7 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
     private sealed class InteriorPlanetDto
     {
         public string Name { get; set; } = "";
-        public required ColorData SurfaceColor { get; set; }
-    }
-
-    private sealed class ColorData
-    {
-        public byte R { get; set; }
-        public byte G { get; set; }
-        public byte B { get; set; }
-        public byte A { get; set; }
+        public required string SurfaceColor { get; set; }
     }
 
     private static int Mod(int x, int m)

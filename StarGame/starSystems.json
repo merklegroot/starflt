@@ -2,127 +2,190 @@
   {
     "id": "sol",
     "name": "Sol",
-    "position": { "x": 0.0, "y": 0.0 },
-    "starColor": { "r": 255, "g": 255, "b": 230, "a": 255 }
+    "position": {
+      "x": 0.0,
+      "y": 0.0
+    },
+    "starColor": "#FFFFE6"
   },
   {
     "id": "alpha_centauri",
     "name": "Alpha Centauri",
-    "position": { "x": -105.0, "y": -273.0 },
-    "starColor": { "r": 255, "g": 248, "b": 220, "a": 255 }
+    "position": {
+      "x": -105.0,
+      "y": -273.0
+    },
+    "starColor": "#FFF8DC"
   },
   {
     "id": "barnards_star",
     "name": "Barnard's Star",
-    "position": { "x": 217.0, "y": 336.0 },
-    "starColor": { "r": 255, "g": 150, "b": 80, "a": 255 }
+    "position": {
+      "x": 217.0,
+      "y": 336.0
+    },
+    "starColor": "#FF9650"
   },
   {
     "id": "luhman_16",
     "name": "Luhman 16",
-    "position": { "x": -140.0, "y": -385.0 },
-    "starColor": { "r": 220, "g": 100, "b": 40, "a": 255 }
+    "position": {
+      "x": -140.0,
+      "y": -385.0
+    },
+    "starColor": "#DC6428"
   },
   {
     "id": "wise_0855_0714",
     "name": "WISE 0855-0714",
-    "position": { "x": -70.0, "y": -420.0 },
-    "starColor": { "r": 180, "g": 60, "b": 20, "a": 255 }
+    "position": {
+      "x": -70.0,
+      "y": -420.0
+    },
+    "starColor": "#B43C14"
   },
   {
     "id": "wolf_359",
     "name": "Wolf 359",
-    "position": { "x": -266.0, "y": 420.0 },
-    "starColor": { "r": 255, "g": 120, "b": 60, "a": 255 }
+    "position": {
+      "x": -266.0,
+      "y": 420.0
+    },
+    "starColor": "#FF783C"
   },
   {
     "id": "lalande_21185",
     "name": "Lalande 21185",
-    "position": { "x": -84.0, "y": 490.0 },
-    "starColor": { "r": 255, "g": 160, "b": 90, "a": 255 }
+    "position": {
+      "x": -84.0,
+      "y": 490.0
+    },
+    "starColor": "#FFA05A"
   },
   {
     "id": "sirius",
     "name": "Sirius",
-    "position": { "x": 70.0, "y": -574.0 },
-    "starColor": { "r": 200, "g": 220, "b": 255, "a": 255 }
+    "position": {
+      "x": 70.0,
+      "y": -574.0
+    },
+    "starColor": "#C8DCFF"
   },
   {
     "id": "luyten_726_8",
     "name": "Luyten 726-8",
-    "position": { "x": -315.0, "y": 525.0 },
-    "starColor": { "r": 255, "g": 140, "b": 70, "a": 255 }
+    "position": {
+      "x": -315.0,
+      "y": 525.0
+    },
+    "starColor": "#FF8C46"
   },
   {
     "id": "ross_154",
     "name": "Ross 154",
-    "position": { "x": -364.0, "y": 406.0 },
-    "starColor": { "r": 255, "g": 130, "b": 65, "a": 255 }
+    "position": {
+      "x": -364.0,
+      "y": 406.0
+    },
+    "starColor": "#FF8241"
   },
   {
     "id": "ross_248",
     "name": "Ross 248",
-    "position": { "x": 455.0, "y": -280.0 },
-    "starColor": { "r": 255, "g": 170, "b": 100, "a": 255 }
+    "position": {
+      "x": 455.0,
+      "y": -280.0
+    },
+    "starColor": "#FFAA64"
   },
   {
     "id": "epsilon_eridani",
     "name": "Epsilon Eridani",
-    "position": { "x": 245.0, "y": -665.0 },
-    "starColor": { "r": 255, "g": 220, "b": 180, "a": 255 }
+    "position": {
+      "x": 245.0,
+      "y": -665.0
+    },
+    "starColor": "#FFDCB4"
   },
   {
     "id": "lacaille_9352",
     "name": "Lacaille 9352",
-    "position": { "x": -560.0, "y": 245.0 },
-    "starColor": { "r": 255, "g": 180, "b": 110, "a": 255 }
+    "position": {
+      "x": -560.0,
+      "y": 245.0
+    },
+    "starColor": "#FFB46E"
   },
   {
     "id": "ross_128",
     "name": "Ross 128",
-    "position": { "x": -175.0, "y": 700.0 },
-    "starColor": { "r": 255, "g": 145, "b": 75, "a": 255 }
+    "position": {
+      "x": -175.0,
+      "y": 700.0
+    },
+    "starColor": "#FF914B"
   },
   {
     "id": "procyon",
     "name": "Procyon",
-    "position": { "x": 315.0, "y": -735.0 },
-    "starColor": { "r": 255, "g": 245, "b": 220, "a": 255 }
+    "position": {
+      "x": 315.0,
+      "y": -735.0
+    },
+    "starColor": "#FFF5DC"
   },
   {
     "id": "61_cygni",
     "name": "61 Cygni",
-    "position": { "x": 560.0, "y": 350.0 },
-    "starColor": { "r": 255, "g": 210, "b": 160, "a": 255 }
+    "position": {
+      "x": 560.0,
+      "y": 350.0
+    },
+    "starColor": "#FFD2A0"
   },
   {
     "id": "struve_2398",
     "name": "Struve 2398",
-    "position": { "x": -525.0, "y": 455.0 },
-    "starColor": { "r": 255, "g": 150, "b": 80, "a": 255 }
+    "position": {
+      "x": -525.0,
+      "y": 455.0
+    },
+    "starColor": "#FF9650"
   },
   {
     "id": "groombridge_34",
     "name": "Groombridge 34",
-    "position": { "x": 490.0, "y": -490.0 },
-    "starColor": { "r": 255, "g": 160, "b": 90, "a": 255 }
+    "position": {
+      "x": 490.0,
+      "y": -490.0
+    },
+    "starColor": "#FFA05A"
   },
   {
     "id": "epsilon_indi",
     "name": "Epsilon Indi",
-    "position": { "x": -630.0, "y": -175.0 },
-    "starColor": { "r": 255, "g": 200, "b": 140, "a": 255 }
+    "position": {
+      "x": -630.0,
+      "y": -175.0
+    },
+    "starColor": "#FFC88C"
   },
   {
     "id": "tau_ceti",
     "name": "Tau Ceti",
-    "position": { "x": 280.0, "y": -805.0 },
-    "starColor": { "r": 255, "g": 250, "b": 230, "a": 255 }
+    "position": {
+      "x": 280.0,
+      "y": -805.0
+    },
+    "starColor": "#FFFAE6"
   },
   {
     "id": "gliese_1061",
     "name": "Gliese 1061",
-    "position": { "x": -210.0, "y": -770.0 },
-    "starColor": { "r": 255, "g": 140, "b": 70, "a": 255 }
+    "position": {
+      "x": -210.0,
+      "y": -770.0
+    },
+    "starColor": "#FF8C46"
   }
 ]

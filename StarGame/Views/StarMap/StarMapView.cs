@@ -60,7 +60,7 @@ public class StarMapView : IStarMapView
         foreach (var data in starSystemData)
         {
             var position = new Vector2(data.Position.X, data.Position.Y);
-            var color = new Color(data.StarColor.R, data.StarColor.G, data.StarColor.B, data.StarColor.A);
+            var color = HexColor.ToRaylibColor(data.StarColor);
             systems.Add(new StarSystem(data.Id, data.Name, position, color));
         }
 
@@ -72,21 +72,13 @@ public class StarMapView : IStarMapView
         public string Id { get; set; } = "";
         public string Name { get; set; } = "";
         public Vector2Data Position { get; set; }
-        public ColorData StarColor { get; set; }
+        public string StarColor { get; set; } = "";
     }
 
     private class Vector2Data
     {
         public float X { get; set; }
         public float Y { get; set; }
-    }
-
-    private class ColorData
-    {
-        public byte R { get; set; }
-        public byte G { get; set; }
-        public byte B { get; set; }
-        public byte A { get; set; }
     }
 
     public StarMapView()
