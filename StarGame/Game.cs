@@ -281,6 +281,8 @@ public class Game : IGame
             return;
         }
 
+        TryCycleStarSystemInteriorView();
+
         _starSystemInteriorView.UpdateStarSystemUiInput();
 
         _ship.ManeuverThrustForward = false;
@@ -433,6 +435,70 @@ public class Game : IGame
         Raylib.DrawRectangle(0, _screenHeight - frameThickness, viewWidth, frameThickness, frameColor);
         Raylib.DrawRectangle(0, 0, frameThickness, _screenHeight, frameColor);
         Raylib.DrawRectangle(viewWidth - frameThickness, 0, frameThickness, _screenHeight, frameColor);
+
+        Raylib.DrawText(
+            "[ ] or , .  previous / next system   |   P planet list   |   WASD / arrows   |   ESC canopy",
+            24,
+            _screenHeight - frameThickness + 4,
+            14,
+            new Color(220, 210, 140, 255));
+    }
+
+    private void TryCycleStarSystemInteriorView()
+    {
+        int delta = 0;
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_LEFT_BRACKET)
+            || Raylib.IsKeyPressed(KeyboardKey.KEY_COMMA))
+        {
+            delta = -1;
+        }
+        else if (Raylib.IsKeyPressed(KeyboardKey.KEY_RIGHT_BRACKET)
+            || Raylib.IsKeyPressed(KeyboardKey.KEY_PERIOD))
+        {
+            delta = 1;
+        }
+
+        if (delta == 0)
+        {
+            return;
+        }
+
+        List<StarSystem> systems = _starMap.GetAllSystems();
+        if (systems.Count == 0)
+        {
+            return;
+        }
+
+        int index = FindStarSystemIndex(systems, _currentSystem);
+        index = (index + delta + systems.Count) % systems.Count;
+        ApplyStarSystemInteriorSelection(systems[index]);
+    }
+
+    private static int FindStarSystemIndex(List<StarSystem> systems, StarSystem? current)
+    {
+        if (current == null)
+        {
+            return 0;
+        }
+
+        for (int i = 0; i < systems.Count; i++)
+        {
+            if (systems[i].Id == current.Id)
+            {
+                return i;
+            }
+        }
+
+        return 0;
+    }
+
+    private void ApplyStarSystemInteriorSelection(StarSystem system)
+    {
+        _currentSystem = system;
+        _starSystemShipPosition = Vector2.Zero;
+        _starSystemVelocity = Vector2.Zero;
+        _ship.Velocity = Vector2.Zero;
+        _starSystemInteriorView.NotifyStarSystemViewEntered(_currentSystem);
     }
 
     private void DrawStarMapHud()

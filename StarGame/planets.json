@@ -94,60 +94,92 @@
   ],
   "alpha_centauri": [
     {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 355
+      "name": "Proxima d",
+      "comment": "Real candidate: sub-Earth, very close orbit around Proxima Centauri (~0.029 AU). Game uses one orbit scale for the whole triple.",
+      "surfaceColor": "#9A9690",
+      "semiMajorAxisAu": 0.029,
+      "eccentricity": 0.08,
+      "argumentOfPeriapsisDeg": 12
     },
     {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 42
+      "name": "Proxima b",
+      "comment": "Real planet: Earth-mass world in Proxima's habitable zone (~0.05 AU). Tidally locked; habitability debated.",
+      "surfaceColor": "#3A7CA5",
+      "semiMajorAxisAu": 0.049,
+      "eccentricity": 0.11,
+      "argumentOfPeriapsisDeg": 48
     },
     {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 89
+      "name": "Toliman Ember",
+      "comment": "Fiction: hot inner rock inspired by the disputed Alpha Centauri Bb detection (since refuted). Toliman is a traditional name for Alpha Cen B.",
+      "surfaceColor": "#D45C3C",
+      "semiMajorAxisAu": 0.064,
+      "eccentricity": 0.02,
+      "argumentOfPeriapsisDeg": 103
     },
     {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 136
+      "name": "Averaan",
+      "comment": "Fiction: inner rocky world filling the gap before temperate orbits. Name is invented.",
+      "surfaceColor": "#C4A35A",
+      "semiMajorAxisAu": 0.38,
+      "eccentricity": 0.045,
+      "argumentOfPeriapsisDeg": 158
     },
     {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 183
+      "name": "Rigil Haven",
+      "comment": "Fiction: temperate world in the habitable-zone ballpark for Alpha Cen A. Rigil Kentaurus is the traditional name for Alpha Cen A.",
+      "surfaceColor": "#5B8C6E",
+      "semiMajorAxisAu": 1.08,
+      "eccentricity": 0.019,
+      "argumentOfPeriapsisDeg": 201
     },
     {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 230
+      "name": "Proxima c",
+      "comment": "Real candidate: more distant super-Earth or mini-Neptune around Proxima (~1.3–1.5 AU class). Orbit and nature still debated.",
+      "surfaceColor": "#8E8CB8",
+      "semiMajorAxisAu": 1.4,
+      "eccentricity": 0.06,
+      "argumentOfPeriapsisDeg": 244
     },
     {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 277
+      "name": "Toliman Major",
+      "comment": "Fiction: gas giant; no confirmed giant planets in the Alpha Cen system. Plausible outer companion for narrative scale.",
+      "surfaceColor": "#D4A574",
+      "semiMajorAxisAu": 2.85,
+      "eccentricity": 0.052,
+      "argumentOfPeriapsisDeg": 287
     },
     {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 324
+      "name": "Kent Gate",
+      "comment": "Fiction: gas giant. Name nods to Rigil Kentaurus (the Centaur) and gate imagery.",
+      "surfaceColor": "#7AB8D4",
+      "semiMajorAxisAu": 5.4,
+      "eccentricity": 0.11,
+      "argumentOfPeriapsisDeg": 330
+    },
+    {
+      "name": "Centauri Bight",
+      "comment": "Fiction: ice giant in the outer system (bight = broad bay; purely flavor).",
+      "surfaceColor": "#A89078",
+      "semiMajorAxisAu": 9.2,
+      "eccentricity": 0.075,
+      "argumentOfPeriapsisDeg": 19
+    },
+    {
+      "name": "Bary Ledge",
+      "comment": "Fiction: distant ice giant. Name references the system barycenter of the binary (not Beta Centauri / Hadar).",
+      "surfaceColor": "#5C6E8C",
+      "semiMajorAxisAu": 16.5,
+      "eccentricity": 0.14,
+      "argumentOfPeriapsisDeg": 72
+    },
+    {
+      "name": "Proxima Fringe",
+      "comment": "Fiction: very distant icy body (Kuiper-belt / scattered-disk analog). Proxima orbits far from A/B in reality; this is a loose thematic label.",
+      "surfaceColor": "#B8B0A0",
+      "semiMajorAxisAu": 28.0,
+      "eccentricity": 0.22,
+      "argumentOfPeriapsisDeg": 125
     }
   ],
   "barnards_star": [

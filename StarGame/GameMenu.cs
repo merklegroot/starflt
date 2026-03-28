@@ -108,16 +108,22 @@ public sealed class GameMenu : IGameMenu
                 {
                     currentState = GameState.Maneuver;
                     justSwitchedState = true;
+                    _menuLevel = 0;
+                    _selectedMenuIndex = 0;
                 }
                 else if (_selectedMenuIndex == 1)
                 {
                     currentState = GameState.StarMap;
                     justSwitchedState = true;
+                    _menuLevel = 0;
+                    _selectedMenuIndex = 0;
                 }
                 else if (_selectedMenuIndex == 2)
                 {
                     currentState = GameState.StarSystemView;
                     justSwitchedState = true;
+                    _menuLevel = 0;
+                    _selectedMenuIndex = 0;
                 }
             }
         }
