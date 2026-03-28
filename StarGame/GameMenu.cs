@@ -136,7 +136,7 @@ public sealed class GameMenu : IGameMenu
         int y = yPos;
 
         string menuTitle = _menuLevel == 0 ? "MENU" : "NAVIGATOR";
-        Raylib.DrawText(menuTitle, panelX + panelPadding, y, menuFontSize, Color.WHITE);
+        UiText.DrawText(menuTitle, panelX + panelPadding, y, menuFontSize, Color.WHITE);
         y += menuFontSize + 15;
 
         string[] currentMenuItems = _menuLevel == 0 ? _topMenuItems : _navigatorSubMenuItems;
@@ -186,18 +186,18 @@ public sealed class GameMenu : IGameMenu
                 Raylib.DrawRectangleLines(innerBoxX, innerBoxY, innerBoxSize, innerBoxSize, innerBoxOutline);
             }
 
-            Raylib.DrawText(currentMenuItems[i], textX, y, menuFontSize, itemColor);
+            UiText.DrawText(currentMenuItems[i], textX, y, menuFontSize, itemColor);
             y += lineSpacing;
         }
 
         y += 10;
         if (_menuLevel > 0)
         {
-            Raylib.DrawText("ESC: Back", panelX + panelPadding, y, menuFontSize - 4, Color.DARKGRAY);
+            UiText.DrawText("ESC: Back", panelX + panelPadding, y, menuFontSize - 4, Color.DARKGRAY);
         }
         else
         {
-            Raylib.DrawText("ENTER: Select", panelX + panelPadding, y, menuFontSize - 4, Color.DARKGRAY);
+            UiText.DrawText("ENTER: Select", panelX + panelPadding, y, menuFontSize - 4, Color.DARKGRAY);
         }
 
         return y;

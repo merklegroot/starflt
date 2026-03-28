@@ -17,4 +17,9 @@
     <EmbeddedResource Include="planets.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Fonts\OpenSans.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Fonts\OpenSans-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

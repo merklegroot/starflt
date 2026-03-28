@@ -1,4 +1,5 @@
 using Raylib_cs;
+using StarflightGame;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -100,8 +101,8 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         Raylib.DrawCircle((int)starSx, (int)starSy, starRadius / 2, new Color((byte)255, (byte)255, (byte)255, (byte)200));
 
         string systemTitle = system != null ? system.Name : "Unknown system";
-        int titleW = Raylib.MeasureText(systemTitle, 28);
-        Raylib.DrawText(systemTitle, cx - titleW / 2, 24, 28, Color.WHITE);
+        int titleW = UiText.MeasureText(systemTitle, 28);
+        UiText.DrawText(systemTitle, cx - titleW / 2, 24, 28, Color.WHITE);
 
         LoadedPlanet[] planets = ResolvePlanets(system);
 
@@ -152,8 +153,8 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
 
                 string label = p.Name;
                 int fs = 16;
-                int lw = Raylib.MeasureText(label, fs);
-                Raylib.DrawText(label, (int)psx - lw / 2, (int)psy - pr - 20, fs, Color.LIGHTGRAY);
+                int lw = UiText.MeasureText(label, fs);
+                UiText.DrawText(label, (int)psx - lw / 2, (int)psy - pr - 20, fs, Color.LIGHTGRAY);
             }
         }
 
@@ -203,7 +204,7 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
 
         int textX = listLeft + padX;
         int y = listTop + padY;
-        Raylib.DrawText("Planets", textX, y, titleFontSize, new Color(180, 190, 220, 255));
+        UiText.DrawText("Planets", textX, y, titleFontSize, new Color(180, 190, 220, 255));
         y += titleBlock;
 
         for (int i = 0; i < nameRows; i++)
@@ -213,14 +214,14 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
             int rowCy = y + rowHeight / 2;
             Raylib.DrawCircle(dotCx, rowCy, dotRadius + 1, new Color(p.SurfaceColor.R, p.SurfaceColor.G, p.SurfaceColor.B, (byte)120));
             Raylib.DrawCircle(dotCx, rowCy, dotRadius, p.SurfaceColor);
-            Raylib.DrawText(p.Name, textX + dotRadius * 2 + 8, y + 2, rowFontSize, Color.LIGHTGRAY);
+            UiText.DrawText(p.Name, textX + dotRadius * 2 + 8, y + 2, rowFontSize, Color.LIGHTGRAY);
             y += rowHeight;
         }
 
         if (truncated)
         {
             int more = planets.Length - nameRows;
-            Raylib.DrawText($"+{more} more", textX, y + 2, rowFontSize, new Color(130, 140, 170, 255));
+            UiText.DrawText($"+{more} more", textX, y + 2, rowFontSize, new Color(130, 140, 170, 255));
         }
     }
 
@@ -243,7 +244,7 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         int n = planets.Length;
         if (n == 0)
         {
-            Raylib.DrawText("No chart data", panelX + 10, topY + height / 2 - 7, 16, Color.GRAY);
+            UiText.DrawText("No chart data", panelX + 10, topY + height / 2 - 7, 16, Color.GRAY);
             return;
         }
 
@@ -337,7 +338,7 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         Raylib.DrawCircle((int)shipScreenX, (int)shipScreenY, 3, new Color(0, 230, 255, 255));
 
         const int labelSize = 12;
-        Raylib.DrawText("Overview", panelX + 8, topY + 4, labelSize, new Color(160, 175, 210, 255));
+        UiText.DrawText("Overview", panelX + 8, topY + 4, labelSize, new Color(160, 175, 210, 255));
     }
 
     private static void DrawEllipticalOrbitScaled(
@@ -387,8 +388,8 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         int helpY = screenHeight - bottomFrameThickness - hudGapAboveFrame - helpFontSize;
         int titleY = helpY - lineGap - titleFontSize;
 
-        Raylib.DrawText("STAR SYSTEM", 20, titleY, titleFontSize, Color.SKYBLUE);
-        Raylib.DrawText(
+        UiText.DrawText("STAR SYSTEM", 20, titleY, titleFontSize, Color.SKYBLUE);
+        UiText.DrawText(
             "A/D or arrows: turn | W/S: thrust / reverse | P: planet list | ESC: Canopy | X: Quit",
             20,
             helpY,

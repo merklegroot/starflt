@@ -1,4 +1,5 @@
 using Raylib_cs;
+using StarflightGame;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -108,7 +109,7 @@ public sealed class CanopyStarSystemView : ICanopyStarSystemView
 
                 const int nameFontSize = 16;
                 const int nameGap = 8;
-                int textWidth = Raylib.MeasureText(system.Name, nameFontSize);
+                int textWidth = UiText.MeasureText(system.Name, nameFontSize);
                 int textX = screenX - textWidth / 2;
                 int labelAboveY = screenY - starRadius - 25;
                 int labelBelowY = screenY + starRadius + nameGap;
@@ -116,11 +117,11 @@ public sealed class CanopyStarSystemView : ICanopyStarSystemView
                 // Prefer above the star; if that would clip off the top, place below instead.
                 if (labelAboveY >= nameFontSize)
                 {
-                    Raylib.DrawText(system.Name, textX, labelAboveY, nameFontSize, Color.WHITE);
+                    UiText.DrawText(system.Name, textX, labelAboveY, nameFontSize, Color.WHITE);
                 }
                 else
                 {
-                    Raylib.DrawText(system.Name, textX, labelBelowY, nameFontSize, Color.WHITE);
+                    UiText.DrawText(system.Name, textX, labelBelowY, nameFontSize, Color.WHITE);
                 }
             }
         }

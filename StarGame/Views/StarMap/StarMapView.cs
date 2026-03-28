@@ -1,4 +1,5 @@
 using Raylib_cs;
+using StarflightGame;
 using System.Numerics;
 using System;
 using System.IO;
@@ -186,7 +187,7 @@ public class StarMapView : IStarMapView
 
             // Draw system name (visible at all zoom levels; floor font size for readability when zoomed out)
             int nameFontSize = Math.Max(10, (int)(16 * _state.Zoom));
-            Raylib.DrawText(system.Name, (int)(screenPos.X + 15), (int)(screenPos.Y - 10),
+            UiText.DrawText(system.Name, (int)(screenPos.X + 15), (int)(screenPos.Y - 10),
                 nameFontSize, Color.WHITE);
 
         }
@@ -197,7 +198,7 @@ public class StarMapView : IStarMapView
         Raylib.DrawCircleV(shipScreenPos, 4 * _state.Zoom, Color.BLUE);
 
         // Draw instructions
-        Raylib.DrawText("WASD: Move | Mouse Wheel: Zoom | TAB: Warp to nearest system",
+        UiText.DrawText("WASD: Move | Mouse Wheel: Zoom | TAB: Warp to nearest system",
             10, screenHeight - 50, 16, Color.YELLOW);
     }
 }

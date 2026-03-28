@@ -81,6 +81,7 @@ public class Game : IGame
     {
         Raylib.InitWindow(GameConstants.ScreenWidth, GameConstants.ScreenHeight, "Starflight");
         Raylib.SetTargetFPS(60);
+        UiText.Load();
 
         while (!ShouldExit && !WindowShouldClose())
         {
@@ -94,6 +95,7 @@ public class Game : IGame
 
     public void UnloadResources()
     {
+        UiText.Unload();
         _planetView.Unload();
     }
 
@@ -436,7 +438,7 @@ public class Game : IGame
         Raylib.DrawRectangle(0, 0, frameThickness, _screenHeight, frameColor);
         Raylib.DrawRectangle(viewWidth - frameThickness, 0, frameThickness, _screenHeight, frameColor);
 
-        Raylib.DrawText(
+        UiText.DrawText(
             "[ ] or , .  previous / next system   |   P planet list   |   WASD / arrows   |   ESC canopy",
             24,
             _screenHeight - frameThickness + 4,
@@ -503,9 +505,9 @@ public class Game : IGame
 
     private void DrawStarMapHud()
     {
-        Raylib.DrawText($"Fuel: {_ship.Fuel:F1}%", 10, 10, 20, Color.WHITE);
-        Raylib.DrawText($"Credits: {_ship.Credits}", 10, 35, 20, Color.WHITE);
-        Raylib.DrawText($"Press ENTER to explore planet | I for ship status | X to quit", 10, _screenHeight - 30, 16, Color.YELLOW);
+        UiText.DrawText($"Fuel: {_ship.Fuel:F1}%", 10, 10, 20, Color.WHITE);
+        UiText.DrawText($"Credits: {_ship.Credits}", 10, 35, 20, Color.WHITE);
+        UiText.DrawText($"Press ENTER to explore planet | I for ship status | X to quit", 10, _screenHeight - 30, 16, Color.YELLOW);
     }
 
     private void DrawPlanetaryExploration()
@@ -529,9 +531,9 @@ public class Game : IGame
 
     private void DrawPlanetaryUi()
     {
-        Raylib.DrawText($"Fuel: {_ship.Fuel:F1}%", 10, 10, 20, Color.WHITE);
-        Raylib.DrawText($"Minerals: {_ship.Minerals}", 10, 35, 20, Color.WHITE);
-        Raylib.DrawText($"Press ESC to return to star map | R to regenerate | X to quit", 10, _screenHeight - 30, 16, Color.YELLOW);
+        UiText.DrawText($"Fuel: {_ship.Fuel:F1}%", 10, 10, 20, Color.WHITE);
+        UiText.DrawText($"Minerals: {_ship.Minerals}", 10, 35, 20, Color.WHITE);
+        UiText.DrawText($"Press ESC to return to star map | R to regenerate | X to quit", 10, _screenHeight - 30, 16, Color.YELLOW);
     }
 
     private void DrawPlanetaryEncounter()
@@ -551,15 +553,15 @@ public class Game : IGame
         {
             _planetView.DrawEncounterFullBleed(_currentPlanet, viewWidth, viewHeight);
 
-            Raylib.DrawText("PLANETARY ENCOUNTER", viewWidth / 2 - 150, 30, 32, Color.WHITE);
+            UiText.DrawText("PLANETARY ENCOUNTER", viewWidth / 2 - 150, 30, 32, Color.WHITE);
 
             if (_currentSystem != null)
             {
-                Raylib.DrawText($"System: {_currentSystem.Name}", 40, viewHeight - 100, 18, Color.SKYBLUE);
+                UiText.DrawText($"System: {_currentSystem.Name}", 40, viewHeight - 100, 18, Color.SKYBLUE);
             }
         }
 
-        Raylib.DrawText("Press ESC to return | R to regenerate | X to quit", 40, viewHeight - 30, 18, Color.YELLOW);
+        UiText.DrawText("Press ESC to return | R to regenerate | X to quit", 40, viewHeight - 30, 18, Color.YELLOW);
     }
 
     private void DrawShipStatus()
@@ -567,18 +569,18 @@ public class Game : IGame
         int startY = 50;
         int lineHeight = 30;
 
-        Raylib.DrawText("SHIP STATUS", _screenWidth / 2 - 100, startY, 32, Color.WHITE);
+        UiText.DrawText("SHIP STATUS", _screenWidth / 2 - 100, startY, 32, Color.WHITE);
 
         startY += 60;
-        Raylib.DrawText($"Fuel: {_ship.Fuel:F1}%", 50, startY, 24, Color.WHITE);
+        UiText.DrawText($"Fuel: {_ship.Fuel:F1}%", 50, startY, 24, Color.WHITE);
         startY += lineHeight;
-        Raylib.DrawText($"Credits: {_ship.Credits}", 50, startY, 24, Color.WHITE);
+        UiText.DrawText($"Credits: {_ship.Credits}", 50, startY, 24, Color.WHITE);
         startY += lineHeight;
-        Raylib.DrawText($"Minerals: {_ship.Minerals}", 50, startY, 24, Color.WHITE);
+        UiText.DrawText($"Minerals: {_ship.Minerals}", 50, startY, 24, Color.WHITE);
         startY += lineHeight;
-        Raylib.DrawText($"Position: ({_ship.Position.X:F1}, {_ship.Position.Y:F1})", 50, startY, 24, Color.WHITE);
+        UiText.DrawText($"Position: ({_ship.Position.X:F1}, {_ship.Position.Y:F1})", 50, startY, 24, Color.WHITE);
 
-        Raylib.DrawText("Press ESC to return | X to quit", 50, _screenHeight - 50, 20, Color.YELLOW);
+        UiText.DrawText("Press ESC to return | X to quit", 50, _screenHeight - 50, 20, Color.YELLOW);
     }
 
     private void DrawCanopyView()
@@ -596,7 +598,7 @@ public class Game : IGame
         Raylib.DrawRectangle(0, 0, frameThickness, _screenHeight, frameColor);
         Raylib.DrawRectangle(viewWidth - frameThickness, 0, frameThickness, _screenHeight, frameColor);
 
-        Raylib.DrawText("CANOPY VIEW", 30, 30, 24, Color.WHITE);
+        UiText.DrawText("CANOPY VIEW", 30, 30, 24, Color.WHITE);
 
         if (_currentState == GameState.Maneuver)
         {
@@ -621,9 +623,9 @@ public class Game : IGame
         }
 
         string coordText = $"Coordinates: ({_displayedCoordinates.X:F0}, {_displayedCoordinates.Y:F0})";
-        int coordTextWidth = Raylib.MeasureText(coordText, 18);
+        int coordTextWidth = UiText.MeasureText(coordText, 18);
         int coordX = (viewWidth - coordTextWidth) / 2;
-        Raylib.DrawText(coordText, coordX, 60, 18, Color.SKYBLUE);
+        UiText.DrawText(coordText, coordX, 60, 18, Color.SKYBLUE);
 
         if (_currentState == GameState.Maneuver)
         {
@@ -632,23 +634,23 @@ public class Game : IGame
 
             if (thrusting)
             {
-                Raylib.DrawText("Engines: thrust", 30, 90, 18, Color.GREEN);
+                UiText.DrawText("Engines: thrust", 30, 90, 18, Color.GREEN);
             }
             else if (coasting)
             {
-                Raylib.DrawText("Engines: coast", 30, 90, 18, new Color(230, 180, 80, 255));
+                UiText.DrawText("Engines: coast", 30, 90, 18, new Color(230, 180, 80, 255));
             }
             else
             {
-                Raylib.DrawText("Engines: idle", 30, 90, 18, new Color(120, 120, 130, 255));
+                UiText.DrawText("Engines: idle", 30, 90, 18, new Color(120, 120, 130, 255));
             }
 
-            Raylib.DrawText("A/D or arrows: turn | W/S or up/down: thrust / reverse | ESC: Disengage", 30, _screenHeight - 50, 16, Color.YELLOW);
+            UiText.DrawText("A/D or arrows: turn | W/S or up/down: thrust / reverse | ESC: Disengage", 30, _screenHeight - 50, 16, Color.YELLOW);
         }
         else
         {
-            Raylib.DrawText("Engines: OFF", 30, 90, 18, Color.RED);
-            Raylib.DrawText("Use Navigator menu to access Starmap", 30, _screenHeight - 50, 16, Color.YELLOW);
+            UiText.DrawText("Engines: OFF", 30, 90, 18, Color.RED);
+            UiText.DrawText("Use Navigator menu to access Starmap", 30, _screenHeight - 50, 16, Color.YELLOW);
         }
     }
 

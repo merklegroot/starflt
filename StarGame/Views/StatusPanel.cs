@@ -1,4 +1,5 @@
 using Raylib_cs;
+using StarflightGame;
 using System.Numerics;
 using StarflightGame.Constants;
 
@@ -22,8 +23,8 @@ public sealed class StatusPanel : IStatusPanel
 
         void AddLabeledLine(ref int rowY, int valueOffset, string label, string value, Color valueColor)
         {
-            Raylib.DrawText(label, panelX + LayoutConstants.RightPanelPadding, rowY, LayoutConstants.StatusPanelFontSize, Color.WHITE);
-            Raylib.DrawText(value, panelX + LayoutConstants.RightPanelPadding + valueOffset, rowY, LayoutConstants.StatusPanelFontSize, valueColor);
+            UiText.DrawText(label, panelX + LayoutConstants.RightPanelPadding, rowY, LayoutConstants.StatusPanelFontSize, Color.WHITE);
+            UiText.DrawText(value, panelX + LayoutConstants.RightPanelPadding + valueOffset, rowY, LayoutConstants.StatusPanelFontSize, valueColor);
             rowY += LayoutConstants.RightPanelLineSpacing;
         }
 
@@ -34,14 +35,14 @@ public sealed class StatusPanel : IStatusPanel
 
         void AddLabelLine(ref int rowY, string label)
         {
-            Raylib.DrawText(label, panelX + LayoutConstants.RightPanelPadding, rowY, LayoutConstants.StatusPanelFontSize, Color.WHITE);
+            UiText.DrawText(label, panelX + LayoutConstants.RightPanelPadding, rowY, LayoutConstants.StatusPanelFontSize, Color.WHITE);
             rowY += LayoutConstants.RightPanelLineSpacing;
         }
 
         void AddIndentedLine(ref int rowY, string text, Color color, int advanceAfter)
         {
             int detailFontSize = LayoutConstants.StatusPanelFontSize - 2;
-            Raylib.DrawText(text, panelX + LayoutConstants.RightPanelPadding + 10, rowY, detailFontSize, color);
+            UiText.DrawText(text, panelX + LayoutConstants.RightPanelPadding + 10, rowY, detailFontSize, color);
             rowY += advanceAfter;
         }
 
