@@ -1,11 +1,12 @@
 using Raylib_cs;
+using System.Numerics;
 using StarflightGame.Constants;
 
 namespace StarflightGame.Views;
 
 public interface IStatusPanel
 {
-    int Draw(int panelX, int yPos, IShip ship, GameState currentState);
+    int Draw(int panelX, int yPos, IShip ship, GameState currentState, Vector2? starSystemLocalPosition = null);
 }
 
 
@@ -15,7 +16,7 @@ public interface IStatusPanel
 /// </summary>
 public sealed class StatusPanel : IStatusPanel
 {
-    public int Draw(int panelX, int yPos, IShip ship, GameState currentState)
+    public int Draw(int panelX, int yPos, IShip ship, GameState currentState, Vector2? starSystemLocalPosition = null)
     {
         int y = yPos;
 
@@ -51,13 +52,15 @@ public sealed class StatusPanel : IStatusPanel
 
         AddLabeledLine(ref y, 90, "Minerals:", $"{ship.Minerals}", Color.LIGHTGRAY);
 
-        float actualSpeed = currentState == GameState.Maneuver ? ship.Velocity.Length() : 0f;
+        bool useStarSystemSpeed = currentState == GameState.Maneuver || currentState == GameState.StarSystemView;
+        float actualSpeed = useStarSystemSpeed ? ship.Velocity.Length() : 0f;
         AddLabeledLine(ref y, 70, "Speed:", $"{actualSpeed:F1}", Color.SKYBLUE);
 
         AddVerticalSpacer(ref y, 10);
         AddLabelLine(ref y, "Position:");
-        AddIndentedLine(ref y, $"X: {ship.Position.X:F1}", Color.LIGHTGRAY, LayoutConstants.RightPanelLineSpacing - 5);
-        AddIndentedLine(ref y, $"Y: {ship.Position.Y:F1}", Color.LIGHTGRAY, 0);
+        Vector2 posForDisplay = starSystemLocalPosition ?? ship.Position;
+        AddIndentedLine(ref y, $"X: {posForDisplay.X:F1}", Color.LIGHTGRAY, LayoutConstants.RightPanelLineSpacing - 5);
+        AddIndentedLine(ref y, $"Y: {posForDisplay.Y:F1}", Color.LIGHTGRAY, 0);
 
         return y;
     }

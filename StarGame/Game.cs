@@ -41,6 +41,9 @@ public class Game : IGame
     private bool _justSwitchedState = false;
     private Vector2 _displayedCoordinates = Vector2.Zero;
     private Vector2 _maneuverParallaxBoost = Vector2.Zero;
+    private Vector2 _starSystemShipPosition = Vector2.Zero;
+    private Vector2 _starSystemVelocity = Vector2.Zero;
+    private GameState _previousState = GameState.CanopyView;
 
     public bool ShouldExit { get; private set; } = false;
 
@@ -128,6 +131,15 @@ public class Game : IGame
                 UpdateShipStatus();
                 break;
         }
+
+        if (_previousState == GameState.StarSystemView && _currentState != GameState.StarSystemView)
+        {
+            _ship.Velocity = Vector2.Zero;
+            _ship.ManeuverThrustForward = false;
+            _ship.ManeuverThrustReverse = false;
+        }
+
+        _previousState = _currentState;
     }
 
     private void UpdateCanopyView(float deltaTime)
@@ -248,13 +260,70 @@ public class Game : IGame
         {
             _justSwitchedState = false;
             _currentSystem = _starMap.GetSystemAtPosition(_ship.Position);
+            _starSystemVelocity = Vector2.Zero;
+            _ship.Velocity = Vector2.Zero;
+            _ship.ManeuverThrustForward = false;
+            _ship.ManeuverThrustReverse = false;
+            _starSystemShipPosition = new Vector2(320f, 0f);
             return;
         }
 
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _rightPanel.MenuLevel == 0)
         {
             _currentState = GameState.CanopyView;
+            return;
         }
+
+        _ship.ManeuverThrustForward = false;
+        _ship.ManeuverThrustReverse = false;
+
+        float turnInput = 0.0f;
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_A) || Raylib.IsKeyDown(KeyboardKey.KEY_LEFT))
+            turnInput -= 1.0f;
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_D) || Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
+            turnInput += 1.0f;
+
+        _ship.Rotation += turnInput * ManeuverTurnSpeed * deltaTime;
+
+        bool wantForward = Raylib.IsKeyDown(KeyboardKey.KEY_W) || Raylib.IsKeyDown(KeyboardKey.KEY_UP);
+        bool wantReverse = Raylib.IsKeyDown(KeyboardKey.KEY_S) || Raylib.IsKeyDown(KeyboardKey.KEY_DOWN);
+
+        float thrustSign = 0.0f;
+        if (wantForward && !wantReverse)
+            thrustSign = 1.0f;
+        else if (wantReverse && !wantForward)
+            thrustSign = -1.0f;
+
+        Vector2 forward = new Vector2(MathF.Sin(_ship.Rotation), -MathF.Cos(_ship.Rotation));
+
+        if (_ship.CanMove() && thrustSign != 0.0f)
+        {
+            float accelMag = ManeuverThrustAcceleration * (thrustSign > 0.0f ? 1.0f : ManeuverReverseThrustMultiplier);
+            _starSystemVelocity += forward * (accelMag * thrustSign * deltaTime);
+
+            if (thrustSign > 0.0f)
+                _ship.ManeuverThrustForward = true;
+            else
+                _ship.ManeuverThrustReverse = true;
+
+            _ship.ConsumeFuelForMovement();
+        }
+        else
+        {
+            float dragFactor = MathF.Exp(-ManeuverDragPerSecond * deltaTime);
+            _starSystemVelocity *= dragFactor;
+
+            if (_starSystemVelocity.LengthSquared() < ManeuverVelocityStopEpsilonSq)
+                _starSystemVelocity = Vector2.Zero;
+        }
+
+        float maxSpeed = _ship.Speed;
+        float speedSq = _starSystemVelocity.LengthSquared();
+        if (speedSq > maxSpeed * maxSpeed)
+            _starSystemVelocity = Vector2.Normalize(_starSystemVelocity) * maxSpeed;
+
+        _starSystemShipPosition += _starSystemVelocity * deltaTime;
+        _ship.Velocity = _starSystemVelocity;
     }
 
     private void UpdatePlanetaryExploration()
@@ -315,7 +384,7 @@ public class Game : IGame
                 break;
             case GameState.StarSystemView:
                 DrawStarSystemView();
-                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
+                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState, _starSystemShipPosition);
                 break;
             case GameState.PlanetaryExploration:
                 DrawPlanetaryExploration();
@@ -337,7 +406,16 @@ public class Game : IGame
     private void DrawStarSystemView()
     {
         int viewWidth = _screenWidth - LayoutConstants.RightPanelWidth;
-        _starSystemInteriorView.Draw(_currentSystem, viewWidth, _screenHeight);
+
+        _starSystemInteriorView.Draw(_currentSystem, viewWidth, _screenHeight, _starSystemShipPosition, _ship);
+
+        const int frameThickness = 20;
+        Color frameColor = new Color(40, 40, 45, 255);
+
+        Raylib.DrawRectangle(0, 0, viewWidth, frameThickness, frameColor);
+        Raylib.DrawRectangle(0, _screenHeight - frameThickness, viewWidth, frameThickness, frameColor);
+        Raylib.DrawRectangle(0, 0, frameThickness, _screenHeight, frameColor);
+        Raylib.DrawRectangle(viewWidth - frameThickness, 0, frameThickness, _screenHeight, frameColor);
     }
 
     private void DrawStarMapHud()

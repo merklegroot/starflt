@@ -1,4 +1,5 @@
 using Raylib_cs;
+using System.Numerics;
 using StarflightGame.Constants;
 
 namespace StarflightGame.Views;
@@ -11,7 +12,7 @@ public interface IRightPanel
 
     void UpdateNavigation(ref GameState currentState, ref bool justSwitchedState);
 
-    void Draw(int screenWidth, int screenHeight, IShip ship, GameState currentState);
+    void Draw(int screenWidth, int screenHeight, IShip ship, GameState currentState, Vector2? starSystemLocalPosition = null);
 }
 
 
@@ -41,7 +42,7 @@ public sealed class RightPanel : IRightPanel
         _gameMenu.UpdateNavigation(ref currentState, ref justSwitchedState);
     }
 
-    public void Draw(int screenWidth, int screenHeight, IShip ship, GameState currentState)
+    public void Draw(int screenWidth, int screenHeight, IShip ship, GameState currentState, Vector2? starSystemLocalPosition = null)
     {
         int panelWidth = LayoutConstants.RightPanelWidth;
         int panelX = screenWidth - panelWidth;
@@ -60,6 +61,6 @@ public sealed class RightPanel : IRightPanel
 
         yPos += 20;
 
-        yPos = _statusPanel.Draw(panelX, yPos, ship, currentState);
+        yPos = _statusPanel.Draw(panelX, yPos, ship, currentState, starSystemLocalPosition);
     }
 }
