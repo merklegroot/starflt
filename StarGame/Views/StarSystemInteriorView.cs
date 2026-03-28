@@ -5,14 +5,12 @@ namespace StarflightGame.Views;
 
 public interface IStarSystemInteriorView
 {
-    void Update(float deltaTime);
-
     void Draw(StarSystem? system, int viewWidth, int screenHeight);
 }
 
 
 /// <summary>
-/// Tactical view of the local star system: central star and a fixed set of named planets on animated orbits.
+/// Tactical view of the local star system: central star and a fixed set of named planets on static orbits.
 /// </summary>
 public sealed class StarSystemInteriorView : IStarSystemInteriorView
 {
@@ -42,13 +40,6 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         new Color(230, 210, 160, 255)
     };
 
-    private float _orbitTime = 0f;
-
-    public void Update(float deltaTime)
-    {
-        _orbitTime += deltaTime;
-    }
-
     public void Draw(StarSystem? system, int viewWidth, int screenHeight)
     {
         int cx = viewWidth / 2;
@@ -59,7 +50,7 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         for (int i = 0; i < 80; i++)
         {
             int sx = (i * 97) % viewWidth;
-            int sy = (i * 53 + (int)(_orbitTime * 8f)) % screenHeight;
+            int sy = (i * 53) % screenHeight;
             Raylib.DrawPixel(sx, sy, new Color(40, 45, 70, 255));
         }
 
@@ -75,12 +66,10 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         int titleW = Raylib.MeasureText(systemTitle, 28);
         Raylib.DrawText(systemTitle, cx - titleW / 2, 24, 28, Color.WHITE);
 
-        float baseSpeed = 0.35f;
         for (int i = 0; i < PlanetCount; i++)
         {
             float orbitR = 70f + i * 38f;
-            float speed = baseSpeed * (1f - i * 0.06f);
-            float angle = _orbitTime * speed + i * 0.9f;
+            float angle = i * (MathF.Tau / PlanetCount);
             float px = cx + MathF.Cos(angle) * orbitR;
             float py = cy + MathF.Sin(angle) * orbitR;
 

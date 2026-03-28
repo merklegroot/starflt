@@ -255,8 +255,6 @@ public class Game : IGame
         {
             _currentState = GameState.CanopyView;
         }
-
-        _starSystemInteriorView.Update(deltaTime);
     }
 
     private void UpdatePlanetaryExploration()
