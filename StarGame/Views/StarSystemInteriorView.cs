@@ -15,6 +15,11 @@ public interface IStarSystemInteriorView
     /// </summary>
     void NotifyStarSystemViewEntered(StarSystem? system);
 
+    /// <summary>
+    /// Input for overlays drawn in the main star system view (e.g. planet list toggle).
+    /// </summary>
+    void UpdateStarSystemUiInput();
+
     void Draw(StarSystem? system, int viewWidth, int screenHeight, Vector2 shipSystemPosition, IShip ship);
 
     /// <summary>
@@ -52,6 +57,15 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
     private float[] _meanAnomalyAtEpochRad = Array.Empty<float>();
     private float[] _meanMotionRadPerSec = Array.Empty<float>();
     private float _orbitElapsedSeconds;
+    private bool _planetListVisible = true;
+
+    public void UpdateStarSystemUiInput()
+    {
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_P))
+        {
+            _planetListVisible = !_planetListVisible;
+        }
+    }
 
     public void NotifyStarSystemViewEntered(StarSystem? system)
     {
@@ -144,6 +158,70 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         }
 
         DrawShipOnly(cx, cy, screenHeight, ship);
+        DrawPlanetList(viewWidth, screenHeight, planets);
+    }
+
+    /// <summary>
+    /// Planet names on the right side of the tactical view (inside the main view, not the HUD panel).
+    /// </summary>
+    private void DrawPlanetList(int viewWidth, int screenHeight, LoadedPlanet[] planets)
+    {
+        if (!_planetListVisible || planets.Length == 0)
+        {
+            return;
+        }
+
+        const int frameInset = 20;
+        const int gapFromFrame = 8;
+        const int listWidth = 200;
+        const int padX = 12;
+        const int padY = 10;
+        const int titleFontSize = 18;
+        const int rowFontSize = 14;
+        const int rowHeight = 20;
+        const int dotRadius = 5;
+        const int titleBlock = 28;
+        const int footerReserve = 58;
+
+        int listRight = viewWidth - frameInset - gapFromFrame;
+        int listLeft = listRight - listWidth;
+        int listTop = 52;
+        int maxBottom = screenHeight - footerReserve;
+        int innerHeight = maxBottom - listTop - padY * 2;
+        int maxRows = Math.Max(1, innerHeight / rowHeight);
+        bool truncated = planets.Length > maxRows;
+        int nameRows = truncated ? maxRows - 1 : planets.Length;
+        int listHeight = padY * 2 + titleBlock + nameRows * rowHeight + (truncated ? rowHeight : 0);
+
+        if (listTop + listHeight > maxBottom)
+        {
+            listHeight = maxBottom - listTop;
+        }
+
+        Raylib.DrawRectangle(listLeft, listTop, listWidth, listHeight, new Color(12, 14, 26, 230));
+        Raylib.DrawRectangleLines(listLeft, listTop, listWidth, listHeight, new Color(70, 80, 115, 255));
+
+        int textX = listLeft + padX;
+        int y = listTop + padY;
+        Raylib.DrawText("Planets", textX, y, titleFontSize, new Color(180, 190, 220, 255));
+        y += titleBlock;
+
+        for (int i = 0; i < nameRows; i++)
+        {
+            LoadedPlanet p = planets[i];
+            int dotCx = textX + dotRadius;
+            int rowCy = y + rowHeight / 2;
+            Raylib.DrawCircle(dotCx, rowCy, dotRadius + 1, new Color(p.SurfaceColor.R, p.SurfaceColor.G, p.SurfaceColor.B, (byte)120));
+            Raylib.DrawCircle(dotCx, rowCy, dotRadius, p.SurfaceColor);
+            Raylib.DrawText(p.Name, textX + dotRadius * 2 + 8, y + 2, rowFontSize, Color.LIGHTGRAY);
+            y += rowHeight;
+        }
+
+        if (truncated)
+        {
+            int more = planets.Length - nameRows;
+            Raylib.DrawText($"+{more} more", textX, y + 2, rowFontSize, new Color(130, 140, 170, 255));
+        }
     }
 
     private const int OverviewMapOrbitSegments = 40;
@@ -299,8 +377,23 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         bool reverseThrust = ship.ManeuverThrustReverse;
         ShipRenderer.Draw(cx, cy, ship.Rotation, forwardThrust, reverseThrust);
 
-        Raylib.DrawText("STAR SYSTEM", 20, screenHeight - 56, 22, Color.SKYBLUE);
-        Raylib.DrawText("A/D or arrows: turn | W/S: thrust / reverse | ESC: Canopy | X: Quit", 20, screenHeight - 28, 16, Color.YELLOW);
+        // Game.DrawStarSystemView draws a 20px bottom frame after this; keep text fully above it.
+        const int bottomFrameThickness = 20;
+        const int hudGapAboveFrame = 8;
+        const int helpFontSize = 16;
+        const int titleFontSize = 22;
+        const int lineGap = 6;
+
+        int helpY = screenHeight - bottomFrameThickness - hudGapAboveFrame - helpFontSize;
+        int titleY = helpY - lineGap - titleFontSize;
+
+        Raylib.DrawText("STAR SYSTEM", 20, titleY, titleFontSize, Color.SKYBLUE);
+        Raylib.DrawText(
+            "A/D or arrows: turn | W/S: thrust / reverse | P: planet list | ESC: Canopy | X: Quit",
+            20,
+            helpY,
+            helpFontSize,
+            Color.YELLOW);
     }
 
     /// <summary>

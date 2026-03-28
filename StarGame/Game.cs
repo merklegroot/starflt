@@ -281,6 +281,8 @@ public class Game : IGame
             return;
         }
 
+        _starSystemInteriorView.UpdateStarSystemUiInput();
+
         _ship.ManeuverThrustForward = false;
         _ship.ManeuverThrustReverse = false;
 
