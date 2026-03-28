@@ -1,6 +1,10 @@
 using Raylib_cs;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Numerics;
+using System.Reflection;
+using System.Text.Json;
 
 namespace StarflightGame.Views;
 
@@ -15,31 +19,7 @@ public interface IStarSystemInteriorView
 /// </summary>
 public sealed class StarSystemInteriorView : IStarSystemInteriorView
 {
-    public const int PlanetCount = 8;
-
-    private static readonly string[] PlanetNames =
-    {
-        "Veridian",
-        "Crimson Reach",
-        "Echo",
-        "Glass",
-        "Keth",
-        "Mire",
-        "Nadir",
-        "Solstice"
-    };
-
-    private static readonly Color[] PlanetColors =
-    {
-        new Color(80, 200, 120, 255),
-        new Color(200, 90, 70, 255),
-        new Color(180, 180, 220, 255),
-        new Color(140, 200, 240, 255),
-        new Color(200, 160, 80, 255),
-        new Color(100, 140, 110, 255),
-        new Color(120, 100, 160, 255),
-        new Color(230, 210, 160, 255)
-    };
+    private static readonly Dictionary<string, LoadedPlanet[]> _planetsByStarSystemId = LoadPlanetsByStarSystem();
 
     public void Draw(StarSystem? system, int viewWidth, int screenHeight, Vector2 shipSystemPosition, IShip ship)
     {
@@ -72,10 +52,13 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         int titleW = Raylib.MeasureText(systemTitle, 28);
         Raylib.DrawText(systemTitle, cx - titleW / 2, 24, 28, Color.WHITE);
 
-        for (int i = 0; i < PlanetCount; i++)
+        LoadedPlanet[] planets = ResolvePlanets(system);
+
+        int n = planets.Length;
+        for (int i = 0; i < n; i++)
         {
             float orbitR = 70f + i * 38f;
-            float angle = i * (MathF.Tau / PlanetCount);
+            float angle = i * (MathF.Tau / n);
             float worldPx = MathF.Cos(angle) * orbitR;
             float worldPy = MathF.Sin(angle) * orbitR;
 
@@ -86,11 +69,11 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
             Raylib.DrawCircleLines((int)starSx, (int)starSy, (int)orbitR, dim);
 
             int pr = 6 + (i % 3);
-            Color pc = PlanetColors[i % PlanetColors.Length];
+            Color pc = planets[i].SurfaceColor;
             Raylib.DrawCircle((int)psx, (int)psy, pr + 2, new Color(pc.R, pc.G, pc.B, (byte)100));
             Raylib.DrawCircle((int)psx, (int)psy, pr, pc);
 
-            string label = PlanetNames[i];
+            string label = planets[i].Name;
             int fs = 16;
             int lw = Raylib.MeasureText(label, fs);
             Raylib.DrawText(label, (int)psx - lw / 2, (int)psy - pr - 20, fs, Color.LIGHTGRAY);
@@ -102,6 +85,94 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
 
         Raylib.DrawText("STAR SYSTEM", 20, screenHeight - 56, 22, Color.SKYBLUE);
         Raylib.DrawText("A/D or arrows: turn | W/S: thrust / reverse | ESC: Canopy | X: Quit", 20, screenHeight - 28, 16, Color.YELLOW);
+    }
+
+    private static LoadedPlanet[] ResolvePlanets(StarSystem? system)
+    {
+        if (system == null || string.IsNullOrEmpty(system.Id))
+        {
+            return Array.Empty<LoadedPlanet>();
+        }
+
+        if (_planetsByStarSystemId.TryGetValue(system.Id, out LoadedPlanet[]? planets))
+        {
+            return planets;
+        }
+
+        return Array.Empty<LoadedPlanet>();
+    }
+
+    private static Dictionary<string, LoadedPlanet[]> LoadPlanetsByStarSystem()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        const string resourceName = "StarflightGame.planets.json";
+
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream == null)
+        {
+            throw new InvalidOperationException($"Could not find embedded resource: {resourceName}");
+        }
+
+        using var reader = new StreamReader(stream);
+        string json = reader.ReadToEnd();
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        var raw = JsonSerializer.Deserialize<Dictionary<string, List<InteriorPlanetDto>>>(json, options);
+        if (raw == null || raw.Count == 0)
+        {
+            throw new InvalidOperationException("Failed to deserialize planets data");
+        }
+
+        var result = new Dictionary<string, LoadedPlanet[]>(StringComparer.Ordinal);
+        foreach (KeyValuePair<string, List<InteriorPlanetDto>> entry in raw)
+        {
+            List<InteriorPlanetDto> list = entry.Value;
+            if (list == null || list.Count == 0)
+            {
+                result[entry.Key] = Array.Empty<LoadedPlanet>();
+                continue;
+            }
+
+            var converted = new LoadedPlanet[list.Count];
+            for (int i = 0; i < list.Count; i++)
+            {
+                InteriorPlanetDto d = list[i];
+                ColorData c = d.SurfaceColor;
+                converted[i] = new LoadedPlanet
+                {
+                    Name = d.Name,
+                    SurfaceColor = new Color(c.R, c.G, c.B, c.A)
+                };
+            }
+
+            result[entry.Key] = converted;
+        }
+
+        return result;
+    }
+
+    private struct LoadedPlanet
+    {
+        public string Name;
+        public Color SurfaceColor;
+    }
+
+    private sealed class InteriorPlanetDto
+    {
+        public string Name { get; set; } = "";
+        public required ColorData SurfaceColor { get; set; }
+    }
+
+    private sealed class ColorData
+    {
+        public byte R { get; set; }
+        public byte G { get; set; }
+        public byte B { get; set; }
+        public byte A { get; set; }
     }
 
     private static int Mod(int x, int m)

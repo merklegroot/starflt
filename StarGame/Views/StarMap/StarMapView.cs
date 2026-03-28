@@ -61,7 +61,7 @@ public class StarMapView : IStarMapView
         {
             var position = new Vector2(data.Position.X, data.Position.Y);
             var color = new Color(data.StarColor.R, data.StarColor.G, data.StarColor.B, data.StarColor.A);
-            systems.Add(new StarSystem(data.Name, position, color));
+            systems.Add(new StarSystem(data.Id, data.Name, position, color));
         }
 
         return systems;
@@ -69,6 +69,7 @@ public class StarMapView : IStarMapView
 
     private class StarSystemData
     {
+        public string Id { get; set; } = "";
         public string Name { get; set; } = "";
         public Vector2Data Position { get; set; }
         public ColorData StarColor { get; set; }

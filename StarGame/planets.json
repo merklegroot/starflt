@@ -1,0 +1,1556 @@
+{
+  "sol": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "alpha_centauri": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "barnards_star": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "luhman_16": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "wise_0855_0714": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "wolf_359": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "lalande_21185": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "sirius": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "luyten_726_8": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "ross_154": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "ross_248": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "epsilon_eridani": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "lacaille_9352": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "ross_128": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "procyon": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "61_cygni": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "struve_2398": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "groombridge_34": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "epsilon_indi": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "tau_ceti": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ],
+  "gliese_1061": [
+    {
+      "name": "Veridian",
+      "surfaceColor": {
+        "r": 80,
+        "g": 200,
+        "b": 120,
+        "a": 255
+      }
+    },
+    {
+      "name": "Crimson Reach",
+      "surfaceColor": {
+        "r": 200,
+        "g": 90,
+        "b": 70,
+        "a": 255
+      }
+    },
+    {
+      "name": "Echo",
+      "surfaceColor": {
+        "r": 180,
+        "g": 180,
+        "b": 220,
+        "a": 255
+      }
+    },
+    {
+      "name": "Glass",
+      "surfaceColor": {
+        "r": 140,
+        "g": 200,
+        "b": 240,
+        "a": 255
+      }
+    },
+    {
+      "name": "Keth",
+      "surfaceColor": {
+        "r": 200,
+        "g": 160,
+        "b": 80,
+        "a": 255
+      }
+    },
+    {
+      "name": "Mire",
+      "surfaceColor": {
+        "r": 100,
+        "g": 140,
+        "b": 110,
+        "a": 255
+      }
+    },
+    {
+      "name": "Nadir",
+      "surfaceColor": {
+        "r": 120,
+        "g": 100,
+        "b": 160,
+        "a": 255
+      }
+    },
+    {
+      "name": "Solstice",
+      "surfaceColor": {
+        "r": 230,
+        "g": 210,
+        "b": 160,
+        "a": 255
+      }
+    }
+  ]
+}
