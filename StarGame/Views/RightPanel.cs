@@ -1,5 +1,6 @@
 using Raylib_cs;
 using System.Numerics;
+using StarflightGame;
 using StarflightGame.Constants;
 
 namespace StarflightGame.Views;
@@ -12,7 +13,15 @@ public interface IRightPanel
 
     void UpdateNavigation(ref GameState currentState, ref bool justSwitchedState);
 
-    void Draw(int screenWidth, int screenHeight, IShip ship, GameState currentState, Vector2? starSystemLocalPosition = null);
+    void Draw(
+        int screenWidth,
+        int screenHeight,
+        IShip ship,
+        GameState currentState,
+        Vector2? starSystemLocalPosition = null,
+        StarSystem? starSystemForPanelMap = null,
+        int? starSystemMainViewWidth = null,
+        int? starSystemMainViewHeight = null);
 }
 
 
@@ -23,11 +32,13 @@ public sealed class RightPanel : IRightPanel
 {
     private readonly IStatusPanel _statusPanel;
     private readonly IGameMenu _gameMenu;
+    private readonly IStarSystemInteriorView _starSystemInteriorView;
 
-    public RightPanel(IStatusPanel statusPanel, IGameMenu gameMenu)
+    public RightPanel(IStatusPanel statusPanel, IGameMenu gameMenu, IStarSystemInteriorView starSystemInteriorView)
     {
         _statusPanel = statusPanel;
         _gameMenu = gameMenu;
+        _starSystemInteriorView = starSystemInteriorView;
     }
 
     public int MenuLevel => _gameMenu.MenuLevel;
@@ -42,7 +53,15 @@ public sealed class RightPanel : IRightPanel
         _gameMenu.UpdateNavigation(ref currentState, ref justSwitchedState);
     }
 
-    public void Draw(int screenWidth, int screenHeight, IShip ship, GameState currentState, Vector2? starSystemLocalPosition = null)
+    public void Draw(
+        int screenWidth,
+        int screenHeight,
+        IShip ship,
+        GameState currentState,
+        Vector2? starSystemLocalPosition = null,
+        StarSystem? starSystemForPanelMap = null,
+        int? starSystemMainViewWidth = null,
+        int? starSystemMainViewHeight = null)
     {
         int panelWidth = LayoutConstants.RightPanelWidth;
         int panelX = screenWidth - panelWidth;
@@ -60,6 +79,29 @@ public sealed class RightPanel : IRightPanel
         Raylib.DrawLine(panelX + LayoutConstants.RightPanelPadding, yPos, panelX + panelWidth - LayoutConstants.RightPanelPadding, yPos, Color.DARKGRAY);
 
         yPos += 20;
+
+        if (currentState == GameState.StarSystemView
+            && starSystemForPanelMap != null
+            && starSystemMainViewWidth.HasValue
+            && starSystemMainViewHeight.HasValue)
+        {
+            int mapHeight = LayoutConstants.StarSystemRightPanelMapHeight;
+            int mapWidth = panelWidth - 2 * LayoutConstants.RightPanelPadding;
+            Vector2 shipPos = starSystemLocalPosition ?? Vector2.Zero;
+            _starSystemInteriorView.DrawOverviewMap(
+                panelX + LayoutConstants.RightPanelPadding,
+                yPos,
+                mapWidth,
+                mapHeight,
+                starSystemForPanelMap,
+                shipPos,
+                starSystemMainViewWidth.Value,
+                starSystemMainViewHeight.Value);
+
+            yPos += mapHeight + 12;
+            Raylib.DrawLine(panelX + LayoutConstants.RightPanelPadding, yPos, panelX + panelWidth - LayoutConstants.RightPanelPadding, yPos, Color.DARKGRAY);
+            yPos += 18;
+        }
 
         yPos = _statusPanel.Draw(panelX, yPos, ship, currentState, starSystemLocalPosition);
     }

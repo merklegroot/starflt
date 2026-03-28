@@ -391,7 +391,15 @@ public class Game : IGame
                 break;
             case GameState.StarSystemView:
                 DrawStarSystemView();
-                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState, _starSystemShipPosition);
+                _rightPanel.Draw(
+                    _screenWidth,
+                    _screenHeight,
+                    _ship,
+                    _currentState,
+                    _starSystemShipPosition,
+                    _currentSystem,
+                    _screenWidth - LayoutConstants.RightPanelWidth,
+                    _screenHeight);
                 break;
             case GameState.PlanetaryExploration:
                 DrawPlanetaryExploration();

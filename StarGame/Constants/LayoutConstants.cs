@@ -7,4 +7,7 @@ public static class LayoutConstants
     public const int RightPanelPadding = 15;
     public const int RightPanelLineSpacing = 25;
     public const int StatusPanelFontSize = 18;
+
+    /// <summary>Height of the star-centered overview map in star system interior view.</summary>
+    public const int StarSystemRightPanelMapHeight = 200;
 }

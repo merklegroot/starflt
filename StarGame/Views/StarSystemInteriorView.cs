@@ -16,6 +16,19 @@ public interface IStarSystemInteriorView
     void NotifyStarSystemViewEntered(StarSystem? system);
 
     void Draw(StarSystem? system, int viewWidth, int screenHeight, Vector2 shipSystemPosition, IShip ship);
+
+    /// <summary>
+    /// Star-centered overview of orbits and bodies for the right panel (call after the main star system draw in the same frame).
+    /// </summary>
+    void DrawOverviewMap(
+        int panelX,
+        int topY,
+        int width,
+        int height,
+        StarSystem? system,
+        Vector2 shipWorldPosition,
+        int mainViewWidth,
+        int mainViewHeight);
 }
 
 
@@ -131,6 +144,153 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         }
 
         DrawShipOnly(cx, cy, screenHeight, ship);
+    }
+
+    private const int OverviewMapOrbitSegments = 40;
+
+    public void DrawOverviewMap(
+        int panelX,
+        int topY,
+        int width,
+        int height,
+        StarSystem? system,
+        Vector2 shipWorldPosition,
+        int mainViewWidth,
+        int mainViewHeight)
+    {
+        Raylib.DrawRectangle(panelX, topY, width, height, new Color(14, 16, 28, 255));
+        Raylib.DrawRectangleLines(panelX, topY, width, height, new Color(55, 65, 95, 255));
+
+        LoadedPlanet[] planets = ResolvePlanets(system);
+        int n = planets.Length;
+        if (n == 0)
+        {
+            Raylib.DrawText("No chart data", panelX + 10, topY + height / 2 - 7, 16, Color.GRAY);
+            return;
+        }
+
+        float minAu = planets[0].SemiMajorAxisAu;
+        float maxAu = planets[0].SemiMajorAxisAu;
+        for (int j = 1; j < n; j++)
+        {
+            if (planets[j].SemiMajorAxisAu < minAu)
+            {
+                minAu = planets[j].SemiMajorAxisAu;
+            }
+
+            if (planets[j].SemiMajorAxisAu > maxAu)
+            {
+                maxAu = planets[j].SemiMajorAxisAu;
+            }
+        }
+
+        float maxDist = 1f;
+        var planetWorld = new (float X, float Y)[n];
+        var semiMajorPx = new float[n];
+
+        for (int i = 0; i < n; i++)
+        {
+            LoadedPlanet p = planets[i];
+            float aPx = MapSemiMajorAxisToPixels(p.SemiMajorAxisAu, minAu, maxAu, mainViewWidth, mainViewHeight);
+            semiMajorPx[i] = aPx;
+            float e = Math.Clamp(p.Eccentricity, 0f, 0.95f);
+            float meanAnomalyRad = WrapAngle0ToTau(
+                _meanAnomalyAtEpochRad[i] + _meanMotionRadPerSec[i] * _orbitElapsedSeconds);
+            float nu = MeanAnomalyToTrueAnomaly(meanAnomalyRad, e);
+            EllipseRadiusAndWorldOffset(aPx, e, p.ArgumentOfPeriapsisRad, nu, out float wx, out float wy);
+            planetWorld[i] = (wx, wy);
+            float d = MathF.Sqrt(wx * wx + wy * wy);
+            if (d > maxDist)
+            {
+                maxDist = d;
+            }
+
+            float apo = aPx * (1f + e);
+            if (apo > maxDist)
+            {
+                maxDist = apo;
+            }
+        }
+
+        float shipLen = shipWorldPosition.Length();
+        if (shipLen > maxDist)
+        {
+            maxDist = shipLen;
+        }
+
+        float margin = 10f;
+        float fitRadius = MathF.Min(width, height) * 0.5f - margin;
+        if (fitRadius < 8f)
+        {
+            fitRadius = 8f;
+        }
+
+        float scale = fitRadius / maxDist;
+
+        float mapCx = panelX + width * 0.5f;
+        float mapCy = topY + height * 0.5f;
+
+        Color orbitDim = new Color(55, 65, 95, 140);
+
+        for (int i = 0; i < n; i++)
+        {
+            LoadedPlanet p = planets[i];
+            float e = Math.Clamp(p.Eccentricity, 0f, 0.95f);
+            DrawEllipticalOrbitScaled(mapCx, mapCy, scale, semiMajorPx[i], e, p.ArgumentOfPeriapsisRad, orbitDim);
+        }
+
+        Color starColor = system?.StarColor ?? new Color(255, 220, 160, 255);
+        Raylib.DrawCircle((int)mapCx, (int)mapCy, 6, new Color(starColor.R, starColor.G, starColor.B, (byte)90));
+        Raylib.DrawCircle((int)mapCx, (int)mapCy, 4, starColor);
+        Raylib.DrawCircle((int)mapCx, (int)mapCy, 2, new Color((byte)255, (byte)255, (byte)255, (byte)220));
+
+        for (int i = 0; i < n; i++)
+        {
+            float sx = mapCx + planetWorld[i].X * scale;
+            float sy = mapCy + planetWorld[i].Y * scale;
+            Color pc = planets[i].SurfaceColor;
+            Raylib.DrawCircle((int)sx, (int)sy, 4, new Color(pc.R, pc.G, pc.B, (byte)200));
+            Raylib.DrawCircle((int)sx, (int)sy, 2, pc);
+        }
+
+        float shipScreenX = mapCx + shipWorldPosition.X * scale;
+        float shipScreenY = mapCy + shipWorldPosition.Y * scale;
+        Raylib.DrawCircleLines((int)shipScreenX, (int)shipScreenY, 6, Color.SKYBLUE);
+        Raylib.DrawCircle((int)shipScreenX, (int)shipScreenY, 3, new Color(0, 230, 255, 255));
+
+        const int labelSize = 12;
+        Raylib.DrawText("Overview", panelX + 8, topY + 4, labelSize, new Color(160, 175, 210, 255));
+    }
+
+    private static void DrawEllipticalOrbitScaled(
+        float centerScreenX,
+        float centerScreenY,
+        float worldToMapScale,
+        float semiMajorAxisPx,
+        float eccentricity,
+        float argumentOfPeriapsisRad,
+        Color color)
+    {
+        float prevX = 0f;
+        float prevY = 0f;
+        bool hasPrev = false;
+
+        for (int s = 0; s <= OverviewMapOrbitSegments; s++)
+        {
+            float nu = s * MathF.Tau / OverviewMapOrbitSegments;
+            EllipseRadiusAndWorldOffset(semiMajorAxisPx, eccentricity, argumentOfPeriapsisRad, nu, out float wx, out float wy);
+            float sx = centerScreenX + wx * worldToMapScale;
+            float sy = centerScreenY + wy * worldToMapScale;
+
+            if (hasPrev)
+            {
+                Raylib.DrawLine((int)prevX, (int)prevY, (int)sx, (int)sy, color);
+            }
+
+            prevX = sx;
+            prevY = sy;
+            hasPrev = true;
+        }
     }
 
     private static void DrawShipOnly(int cx, int cy, int screenHeight, IShip ship)
