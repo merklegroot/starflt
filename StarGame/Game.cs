@@ -17,13 +17,15 @@ public interface IGame
 
 public class Game : IGame
 {
-    private const float ManeuverTurnSpeed = 3.0f;
+    private const float TurnSpeed = 3.0f;
     private const float ManeuverThrustAcceleration = 35f;
     private const float ManeuverReverseThrustMultiplier = 0.5f;
     private const float ManeuverDragPerSecond = 0.45f;
     private const float ManeuverVelocityStopEpsilonSq = 0.01f;
     private const float ManeuverParallaxMatchMultiplier = 20f;
 
+    private const float StarSystemThrustAcceleration = 170f;
+    private const float StarSystemSpeedMultiplier = 5.6f;
     private readonly int _screenWidth;
     private readonly int _screenHeight;
     private GameState _currentState = GameState.CanopyView;
@@ -178,7 +180,7 @@ public class Game : IGame
         if (Raylib.IsKeyDown(KeyboardKey.KEY_D) || Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
             turnInput += 1.0f;
 
-        _ship.Rotation += turnInput * ManeuverTurnSpeed * deltaTime;
+        _ship.Rotation += turnInput * TurnSpeed * deltaTime;
 
         bool wantForward = Raylib.IsKeyDown(KeyboardKey.KEY_W) || Raylib.IsKeyDown(KeyboardKey.KEY_UP);
         bool wantReverse = Raylib.IsKeyDown(KeyboardKey.KEY_S) || Raylib.IsKeyDown(KeyboardKey.KEY_DOWN);
@@ -283,7 +285,7 @@ public class Game : IGame
         if (Raylib.IsKeyDown(KeyboardKey.KEY_D) || Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
             turnInput += 1.0f;
 
-        _ship.Rotation += turnInput * ManeuverTurnSpeed * deltaTime;
+        _ship.Rotation += turnInput * TurnSpeed * deltaTime;
 
         bool wantForward = Raylib.IsKeyDown(KeyboardKey.KEY_W) || Raylib.IsKeyDown(KeyboardKey.KEY_UP);
         bool wantReverse = Raylib.IsKeyDown(KeyboardKey.KEY_S) || Raylib.IsKeyDown(KeyboardKey.KEY_DOWN);
@@ -298,7 +300,7 @@ public class Game : IGame
 
         if (_ship.CanMove() && thrustSign != 0.0f)
         {
-            float accelMag = ManeuverThrustAcceleration * (thrustSign > 0.0f ? 1.0f : ManeuverReverseThrustMultiplier);
+            float accelMag = StarSystemThrustAcceleration * (thrustSign > 0.0f ? 1.0f : ManeuverReverseThrustMultiplier);
             _starSystemVelocity += forward * (accelMag * thrustSign * deltaTime);
 
             if (thrustSign > 0.0f)
@@ -317,7 +319,7 @@ public class Game : IGame
                 _starSystemVelocity = Vector2.Zero;
         }
 
-        float maxSpeed = _ship.Speed;
+        float maxSpeed = _ship.Speed * StarSystemSpeedMultiplier;
         float speedSq = _starSystemVelocity.LengthSquared();
         if (speedSq > maxSpeed * maxSpeed)
             _starSystemVelocity = Vector2.Normalize(_starSystemVelocity) * maxSpeed;
