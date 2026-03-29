@@ -1,0 +1,2 @@
+# Tiny Spaceships pack (Disruptor Art) — large binaries via Git LFS
+StarGame/Textures/tiny-spaceships/** filter=lfs diff=lfs merge=lfs -text

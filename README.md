@@ -65,6 +65,7 @@ Full-screen summary: fuel, credits, minerals, and position. Open from the starma
 
 - .NET 8.0 SDK or later
 - Linux, Windows, or macOS
+- [Git LFS](https://git-lfs.com/) — install it and run `git lfs install` once; ship textures under `StarGame/Textures/tiny-spaceships/` are tracked with LFS (see [ASSETS.md](ASSETS.md)).
 
 ### Build and run
 
