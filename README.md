@@ -65,7 +65,17 @@ Full-screen summary: fuel, credits, minerals, and position. Open from the starma
 
 - .NET 8.0 SDK or later
 - Linux, Windows, or macOS
-- [Git LFS](https://git-lfs.com/) — install it and run `git lfs install` once; ship textures under `StarGame/Textures/tiny-spaceships/` are tracked with LFS (see [ASSETS.md](ASSETS.md)).
+- [Git LFS](https://git-lfs.com/) — **required** for clone, pull, and push: textures under `StarGame/Textures/tiny-spaceships/` use LFS (see [ASSETS.md](ASSETS.md)). After installing the `git-lfs` package, run **`git lfs install`** once per user account (sets up hooks).
+
+**Push fails with “configured for Git LFS but git-lfs was not found”** — install the CLI, then push again:
+
+```bash
+sudo apt update && sudo apt install -y git-lfs   # Ubuntu / Kubuntu / Debian
+git lfs install
+git push
+```
+
+Do **not** delete the `pre-push` hook to work around this; without `git-lfs`, LFS objects would not upload correctly to GitHub.
 
 ### Build and run
 
