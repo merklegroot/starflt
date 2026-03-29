@@ -82,6 +82,7 @@ public class Game : IGame
         Raylib.InitWindow(GameConstants.ScreenWidth, GameConstants.ScreenHeight, "Starflight");
         Raylib.SetTargetFPS(60);
         UiText.Load();
+        ShipRenderer.Load();
 
         while (!ShouldExit && !WindowShouldClose())
         {
@@ -96,6 +97,7 @@ public class Game : IGame
     public void UnloadResources()
     {
         UiText.Unload();
+        ShipRenderer.Unload();
         _planetView.Unload();
     }
 

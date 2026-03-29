@@ -1,11 +1,83 @@
+using System.IO;
 using Raylib_cs;
 using System.Numerics;
 
 namespace StarflightGame;
 
+/// <summary>
+/// Draws the player ship using the first frame of <c>tinyShip10.png</c> (horizontal sprite sheet; we only use the leftmost frame).
+/// </summary>
 public static class ShipRenderer
 {
+    private const string TextureRelativePath = "Textures/tiny-spaceships/tinyShip10.png";
+
+    /// <summary>Frame width/height from Disruptor Art readme; 1 px horizontal gap between frames.</summary>
+    private const float FrameWidth = 40f;
+
+    private const float FrameHeight = 29f;
+
+    /// <summary>Scales pixel art up for visibility on the 1024×768 view.</summary>
+    private const float DisplayScale = 2.5f;
+
+    private static Texture2D _texture;
+
+    private static bool _textureLoaded = false;
+
+    public static void Load()
+    {
+        if (_textureLoaded)
+        {
+            return;
+        }
+
+        string path = Path.Combine(AppContext.BaseDirectory, TextureRelativePath);
+        if (File.Exists(path))
+        {
+            _texture = Raylib.LoadTexture(path);
+            Raylib.SetTextureFilter(_texture, TextureFilter.TEXTURE_FILTER_POINT);
+            _textureLoaded = true;
+        }
+    }
+
+    public static void Unload()
+    {
+        if (!_textureLoaded)
+        {
+            return;
+        }
+
+        Raylib.UnloadTexture(_texture);
+        _textureLoaded = false;
+    }
+
     public static void Draw(int centerX, int centerY, float rotation, bool forwardThrust = false, bool reverseThrust = false)
+    {
+        if (_textureLoaded)
+        {
+            DrawSprite(centerX, centerY, rotation);
+        }
+        else
+        {
+            DrawProceduralFallback(centerX, centerY, rotation, forwardThrust, reverseThrust);
+        }
+    }
+
+    private static void DrawSprite(int centerX, int centerY, float rotation)
+    {
+        Rectangle source = new Rectangle(0f, 0f, FrameWidth, FrameHeight);
+
+        float dw = FrameWidth * DisplayScale;
+        float dh = FrameHeight * DisplayScale;
+        Rectangle dest = new Rectangle(centerX - dw * 0.5f, centerY - dh * 0.5f, dw, dh);
+        Vector2 origin = new Vector2(dw * 0.5f, dh * 0.5f);
+
+        // Ship rotation is radians (screen space, +Y down); Raylib uses degrees, clockwise.
+        float rotationDeg = rotation * (180.0f / MathF.PI);
+
+        Raylib.DrawTexturePro(_texture, source, dest, origin, rotationDeg, Color.WHITE);
+    }
+
+    private static void DrawProceduralFallback(int centerX, int centerY, float rotation, bool forwardThrust, bool reverseThrust)
     {
         Vector2 center = new Vector2(centerX, centerY);
 
