@@ -174,14 +174,14 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
 
         const int frameInset = 20;
         const int gapFromFrame = 8;
-        const int listWidth = 200;
-        const int padX = 12;
-        const int padY = 10;
-        const int titleFontSize = 18;
-        const int rowFontSize = 14;
-        const int rowHeight = 20;
-        const int dotRadius = 5;
-        const int titleBlock = 28;
+        const int listWidth = 280;
+        const int padX = 14;
+        const int padY = 12;
+        const int titleFontSize = 28;
+        const int rowFontSize = 24;
+        const int rowHeight = 34;
+        const int dotRadius = 8;
+        const int titleBlock = 42;
         const int footerReserve = 58;
 
         int listRight = viewWidth - frameInset - gapFromFrame;
@@ -214,14 +214,14 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
             int rowCy = y + rowHeight / 2;
             Raylib.DrawCircle(dotCx, rowCy, dotRadius + 1, new Color(p.SurfaceColor.R, p.SurfaceColor.G, p.SurfaceColor.B, (byte)120));
             Raylib.DrawCircle(dotCx, rowCy, dotRadius, p.SurfaceColor);
-            UiText.DrawText(p.Name, textX + dotRadius * 2 + 8, y + 2, rowFontSize, Color.LIGHTGRAY);
+            UiText.DrawText(p.Name, textX + dotRadius * 2 + 10, y + 5, rowFontSize, Color.LIGHTGRAY);
             y += rowHeight;
         }
 
         if (truncated)
         {
             int more = planets.Length - nameRows;
-            UiText.DrawText($"+{more} more", textX, y + 2, rowFontSize, new Color(130, 140, 170, 255));
+            UiText.DrawText($"+{more} more", textX, y + 5, rowFontSize, new Color(130, 140, 170, 255));
         }
     }
 
