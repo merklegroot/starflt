@@ -135,3 +135,7 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+
+# Third-party game assets (download locally; see ASSETS.md)
+StarGame/Textures/tiny-spaceships/
+tiny-spaceships.zip
