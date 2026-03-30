@@ -306,7 +306,15 @@ public class Game : IGame
         if (_justSwitchedState)
         {
             _justSwitchedState = false;
-            _currentSystem = _starMap.GetSystemAtPosition(_ship.Position);
+            // Must match canopy math: screen offset = system.Position - ship.Position + maneuverParallaxBoost.
+            // Raw ship.Position alone can still be near Sol while parallax centers another star — then GetSystemAtPosition returned Sol first.
+            Vector2 worldForSystemLookup = _ship.Position - _maneuverParallaxBoost;
+            StarSystem? resolved = _starMap.GetSystemAtPosition(worldForSystemLookup);
+            if (resolved != null)
+            {
+                _currentSystem = resolved;
+            }
+
             _starSystemVelocity = Vector2.Zero;
             _ship.Velocity = Vector2.Zero;
             _ship.ManeuverThrustForward = false;
