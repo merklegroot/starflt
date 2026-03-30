@@ -16,8 +16,8 @@ public static class ShipRenderer
 
     private const float FrameHeight = 29f;
 
-    /// <summary>Scales pixel art up for visibility on the 1024×768 view.</summary>
-    private const float DisplayScale = 2.5f;
+    /// <summary>Scales pixel art for visibility on the 1024×768 view.</summary>
+    private const float DisplayScale = 1.25f;
 
     private static Texture2D _texture;
 
