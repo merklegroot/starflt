@@ -26,6 +26,9 @@ public class Game : IGame
 
     private const float StarSystemThrustAcceleration = 170f;
     private const float StarSystemSpeedMultiplier = 30.0f;
+
+    /// <summary>Max distance in screen pixels from view center to a star's drawn position for SPACE / hint (matches canopy placement + star radius ~20).</summary>
+    private const float CanopyStarEnterRadiusPixels = 28f;
     private readonly int _screenWidth;
     private readonly int _screenHeight;
     private GameState _currentState = GameState.CanopyView;
@@ -113,6 +116,19 @@ public class Game : IGame
 
         _rightPanel.UpdateNavigation(ref _currentState, ref _justSwitchedState);
 
+        if ((_currentState == GameState.CanopyView || _currentState == GameState.Maneuver)
+            && _rightPanel.MenuLevel == 0
+            && Raylib.IsKeyPressed(KeyboardKey.KEY_SPACE))
+        {
+            StarSystem? nearby = GetSystemAtCanopyCrosshair();
+            if (nearby != null)
+            {
+                _currentSystem = nearby;
+                _currentState = GameState.StarSystemView;
+                _justSwitchedState = true;
+            }
+        }
+
         if (_currentState == GameState.StarSystemView && _previousState != GameState.StarSystemView)
         {
             _starSystemInteriorView.NotifyStarSystemViewEntered(_currentSystem);
@@ -153,10 +169,19 @@ public class Game : IGame
         _previousState = _currentState;
     }
 
+    /// <summary>
+    /// Uses the same screen-space offset as <see cref="Views.CanopyStarSystemView"/> (world delta + maneuver parallax), not raw world distance.
+    /// </summary>
+    private StarSystem? GetSystemAtCanopyCrosshair()
+    {
+        return _starMap.GetSystemNearCanopyCrosshair(_ship.Position, _maneuverParallaxBoost, CanopyStarEnterRadiusPixels);
+    }
+
     private void UpdateCanopyView(float deltaTime)
     {
         _parallax.UpdateTwinkling(deltaTime);
         _canopySystems.Update(deltaTime, _starMap);
+        _currentSystem = GetSystemAtCanopyCrosshair();
     }
 
     private void UpdateManeuver(float deltaTime)
@@ -233,7 +258,7 @@ public class Game : IGame
         _ship.Position += movement;
         _parallax.ApplyMovement(-movement, _screenWidth, _screenHeight, deltaTime);
         _maneuverParallaxBoost += -movement * (ManeuverParallaxMatchMultiplier - 1f);
-        _currentSystem = _starMap.GetSystemAtPosition(_ship.Position);
+        _currentSystem = GetSystemAtCanopyCrosshair();
     }
 
     private void UpdateStarMap()
@@ -653,6 +678,18 @@ public class Game : IGame
         {
             UiText.DrawText("Engines: OFF", 30, 90, 18, Color.RED);
             UiText.DrawText("Use Navigator menu to access Starmap", 30, _screenHeight - 50, 16, Color.YELLOW);
+        }
+
+        if (_rightPanel.MenuLevel == 0)
+        {
+            StarSystem? nearbyForHint = GetSystemAtCanopyCrosshair();
+            if (nearbyForHint != null)
+            {
+                string enterHint = $"Press SPACE to enter {nearbyForHint.Name}";
+                int enterHintWidth = UiText.MeasureText(enterHint, 18);
+                int enterHintX = (viewWidth - enterHintWidth) / 2;
+                UiText.DrawText(enterHint, enterHintX, _screenHeight - 78, 18, new Color(255, 230, 120, 255));
+            }
         }
     }
 
