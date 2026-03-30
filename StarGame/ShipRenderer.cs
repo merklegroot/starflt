@@ -68,7 +68,8 @@ public static class ShipRenderer
 
         float dw = FrameWidth * DisplayScale;
         float dh = FrameHeight * DisplayScale;
-        Rectangle dest = new Rectangle(centerX - dw * 0.5f, centerY - dh * 0.5f, dw, dh);
+        // DrawTexturePro: dest.x/y is the pivot in screen space; drawn top-left is dest - origin (raylib).
+        Rectangle dest = new Rectangle(centerX, centerY, dw, dh);
         Vector2 origin = new Vector2(dw * 0.5f, dh * 0.5f);
 
         // Ship rotation is radians (screen space, +Y down); Raylib uses degrees, clockwise.
