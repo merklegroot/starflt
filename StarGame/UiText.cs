@@ -49,4 +49,41 @@ public static class UiText
         Vector2 size = Raylib.MeasureTextEx(_font, text, fontSize, Spacing);
         return (int)MathF.Ceiling(size.X);
     }
+
+    /// <summary>
+    /// Exact glyph bounds from the same path as <see cref="DrawText"/>; use for centering (avoid <see cref="MeasureText"/> ceiling bias).
+    /// </summary>
+    public static Vector2 MeasureTextSize(string text, int fontSize)
+    {
+        return Raylib.MeasureTextEx(_font, text, fontSize, Spacing);
+    }
+
+    /// <summary>
+    /// Horizontally centers text on <paramref name="centerX"/> using float X from <see cref="MeasureTextSize"/> (matches DrawTextEx layout).
+    /// </summary>
+    public static void DrawTextCenteredAtX(string text, float centerX, float y, int fontSize, Color color)
+    {
+        Vector2 size = Raylib.MeasureTextEx(_font, text, fontSize, Spacing);
+        float x = centerX - size.X * 0.5f;
+        Raylib.DrawTextEx(_font, text, new Vector2(x, y), fontSize, Spacing, color);
+    }
+
+    /// <summary>
+    /// Same as <see cref="DrawTextCenteredAtX"/> but clamps so the string stays within [minX, maxX] for its drawn width.
+    /// </summary>
+    public static void DrawTextCenteredAtXClamped(string text, float centerX, float y, int fontSize, Color color, float minX, float maxX)
+    {
+        Vector2 size = Raylib.MeasureTextEx(_font, text, fontSize, Spacing);
+        float x = centerX - size.X * 0.5f;
+        if (x < minX)
+        {
+            x = minX;
+        }
+        else if (x + size.X > maxX)
+        {
+            x = maxX - size.X;
+        }
+
+        Raylib.DrawTextEx(_font, text, new Vector2(x, y), fontSize, Spacing, color);
+    }
 }

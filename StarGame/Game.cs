@@ -29,6 +29,9 @@ public class Game : IGame
 
     /// <summary>Max distance in screen pixels from view center to a star's drawn position for SPACE / hint (matches canopy placement + star radius ~20).</summary>
     private const float CanopyStarEnterRadiusPixels = 28f;
+
+    /// <summary>Exit star system interior when ship offset from the star exceeds this fraction of the smaller main-view dimension (same units as orbit layout).</summary>
+    private const float StarSystemInteriorExitBoundaryFraction = 0.42f;
     private readonly int _screenWidth;
     private readonly int _screenHeight;
     private GameState _currentState = GameState.CanopyView;
@@ -116,19 +119,6 @@ public class Game : IGame
 
         _rightPanel.UpdateNavigation(ref _currentState, ref _justSwitchedState);
 
-        if ((_currentState == GameState.CanopyView || _currentState == GameState.Maneuver)
-            && _rightPanel.MenuLevel == 0
-            && Raylib.IsKeyPressed(KeyboardKey.KEY_SPACE))
-        {
-            StarSystem? nearby = GetSystemAtCanopyCrosshair();
-            if (nearby != null)
-            {
-                _currentSystem = nearby;
-                _currentState = GameState.StarSystemView;
-                _justSwitchedState = true;
-            }
-        }
-
         if (_currentState == GameState.StarSystemView && _previousState != GameState.StarSystemView)
         {
             _starSystemInteriorView.NotifyStarSystemViewEntered(_currentSystem);
@@ -159,6 +149,20 @@ public class Game : IGame
                 break;
         }
 
+        if ((_currentState == GameState.CanopyView || _currentState == GameState.Maneuver)
+            && _rightPanel.MenuLevel == 0
+            && Raylib.IsKeyPressed(KeyboardKey.KEY_SPACE))
+        {
+            StarSystem? nearby = GetSystemNearCanopyCrosshair();
+            if (nearby != null)
+            {
+                _currentSystem = nearby;
+                _currentState = GameState.StarSystemView;
+                _justSwitchedState = true;
+                _starSystemInteriorView.NotifyStarSystemViewEntered(_currentSystem);
+            }
+        }
+
         if (_previousState == GameState.StarSystemView && _currentState != GameState.StarSystemView)
         {
             _ship.Velocity = Vector2.Zero;
@@ -170,18 +174,25 @@ public class Game : IGame
     }
 
     /// <summary>
-    /// Uses the same screen-space offset as <see cref="Views.CanopyStarSystemView"/> (world delta + maneuver parallax), not raw world distance.
+    /// Same screen position and wobble as <see cref="CanopyStarSystemView.Draw"/> (not raw world distance).
     /// </summary>
-    private StarSystem? GetSystemAtCanopyCrosshair()
+    private StarSystem? GetSystemNearCanopyCrosshair()
     {
-        return _starMap.GetSystemNearCanopyCrosshair(_ship.Position, _maneuverParallaxBoost, CanopyStarEnterRadiusPixels);
+        int viewWidth = _screenWidth - LayoutConstants.RightPanelWidth;
+        return _canopySystems.FindSystemNearCrosshair(
+            _ship,
+            _starMap,
+            viewWidth,
+            _screenHeight,
+            _maneuverParallaxBoost,
+            CanopyStarEnterRadiusPixels);
     }
 
     private void UpdateCanopyView(float deltaTime)
     {
         _parallax.UpdateTwinkling(deltaTime);
         _canopySystems.Update(deltaTime, _starMap);
-        _currentSystem = GetSystemAtCanopyCrosshair();
+        _currentSystem = GetSystemNearCanopyCrosshair();
     }
 
     private void UpdateManeuver(float deltaTime)
@@ -258,7 +269,7 @@ public class Game : IGame
         _ship.Position += movement;
         _parallax.ApplyMovement(-movement, _screenWidth, _screenHeight, deltaTime);
         _maneuverParallaxBoost += -movement * (ManeuverParallaxMatchMultiplier - 1f);
-        _currentSystem = GetSystemAtCanopyCrosshair();
+        _currentSystem = GetSystemNearCanopyCrosshair();
     }
 
     private void UpdateStarMap()
@@ -364,6 +375,18 @@ public class Game : IGame
 
         _starSystemShipPosition += _starSystemVelocity * deltaTime;
         _ship.Velocity = _starSystemVelocity;
+
+        int mainViewW = _screenWidth - LayoutConstants.RightPanelWidth;
+        float exitRadius = MathF.Min(mainViewW, _screenHeight) * StarSystemInteriorExitBoundaryFraction;
+        if (_starSystemShipPosition.LengthSquared() >= exitRadius * exitRadius)
+        {
+            _currentState = GameState.CanopyView;
+            _starSystemVelocity = Vector2.Zero;
+            _starSystemShipPosition = Vector2.Zero;
+            _ship.Velocity = Vector2.Zero;
+            _ship.ManeuverThrustForward = false;
+            _ship.ManeuverThrustReverse = false;
+        }
     }
 
     private void UpdatePlanetaryExploration()
@@ -466,7 +489,7 @@ public class Game : IGame
         Raylib.DrawRectangle(viewWidth - frameThickness, 0, frameThickness, _screenHeight, frameColor);
 
         UiText.DrawText(
-            "[ ] or , .  previous / next system   |   P planet list   |   WASD / arrows   |   ESC canopy",
+            "[ ] or , .  systems   |   P list   |   WASD   |   ESC or fly far from star (edge of map)",
             24,
             _screenHeight - frameThickness + 4,
             14,
@@ -682,13 +705,42 @@ public class Game : IGame
 
         if (_rightPanel.MenuLevel == 0)
         {
-            StarSystem? nearbyForHint = GetSystemAtCanopyCrosshair();
+            StarSystem? nearbyForHint = GetSystemNearCanopyCrosshair();
             if (nearbyForHint != null)
             {
+                const int hintFontSize = 18;
+                const int canopyStarRadius = 20;
+                _canopySystems.GetStarScreenPosition(
+                    _ship,
+                    nearbyForHint,
+                    viewWidth,
+                    _screenHeight,
+                    _maneuverParallaxBoost,
+                    out int starScreenX,
+                    out int starScreenY);
+
                 string enterHint = $"Press SPACE to enter {nearbyForHint.Name}";
-                int enterHintWidth = UiText.MeasureText(enterHint, 18);
-                int enterHintX = (viewWidth - enterHintWidth) / 2;
-                UiText.DrawText(enterHint, enterHintX, _screenHeight - 78, 18, new Color(255, 230, 120, 255));
+                int belowY = starScreenY + canopyStarRadius + 8;
+                const int bottomFrameReserve = 78;
+                float enterHintY;
+                if (belowY + hintFontSize <= _screenHeight - bottomFrameReserve)
+                {
+                    enterHintY = belowY;
+                }
+                else
+                {
+                    enterHintY = starScreenY - canopyStarRadius - hintFontSize - 8;
+                    enterHintY = Math.Max(8f, enterHintY);
+                }
+
+                UiText.DrawTextCenteredAtXClamped(
+                    enterHint,
+                    starScreenX,
+                    enterHintY,
+                    hintFontSize,
+                    new Color(255, 230, 120, 255),
+                    8f,
+                    viewWidth - 8f);
             }
         }
     }

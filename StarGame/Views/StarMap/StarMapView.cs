@@ -16,12 +16,6 @@ public interface IStarMapView
 
     StarSystem? GetSystemAtPosition(Vector2 position);
 
-    /// <summary>
-    /// Canopy / maneuver: star positions are drawn at <c>system.Position - shipPosition + parallaxBoost</c> (screen px).
-    /// Returns the system whose drawn center is within <paramref name="maxScreenDistanceFromCrosshair"/> of the view center, if any (closest wins).
-    /// </summary>
-    StarSystem? GetSystemNearCanopyCrosshair(Vector2 shipWorldPosition, Vector2 canopyParallaxBoost, float maxScreenDistanceFromCrosshair);
-
     void Update(IShip ship);
 
     void Draw(int screenWidth, int screenHeight, IShip ship);
@@ -113,31 +107,6 @@ public class StarMapView : IStarMapView
             {
                 return system;
             }
-        }
-
-        return null;
-    }
-
-    public StarSystem? GetSystemNearCanopyCrosshair(Vector2 shipWorldPosition, Vector2 canopyParallaxBoost, float maxScreenDistanceFromCrosshair)
-    {
-        StarSystem? best = null;
-        float bestDistSq = float.MaxValue;
-
-        foreach (var system in _systems)
-        {
-            Vector2 relative = system.Position - shipWorldPosition + canopyParallaxBoost;
-            float dSq = relative.LengthSquared();
-            if (dSq < bestDistSq)
-            {
-                bestDistSq = dSq;
-                best = system;
-            }
-        }
-
-        float maxSq = maxScreenDistanceFromCrosshair * maxScreenDistanceFromCrosshair;
-        if (best != null && bestDistSq <= maxSq)
-        {
-            return best;
         }
 
         return null;

@@ -12,6 +12,29 @@ public interface ICanopyStarSystemView
     void Update(float deltaTime, IStarMapView starMap);
 
     void Draw(IShip ship, IStarMapView starMap, int viewWidth, int screenHeight, GameState currentState, Vector2 maneuverParallaxBoost);
+
+    /// <summary>
+    /// Screen position of a star's center, using the same math as <see cref="Draw"/> (rounding + wobble).
+    /// </summary>
+    void GetStarScreenPosition(
+        IShip ship,
+        StarSystem system,
+        int viewWidth,
+        int screenHeight,
+        Vector2 maneuverParallaxBoost,
+        out int screenX,
+        out int screenY);
+
+    /// <summary>
+    /// The system whose drawn position is closest to the view center within <paramref name="maxDistancePixels"/> (same math as <see cref="Draw"/>).
+    /// </summary>
+    StarSystem? FindSystemNearCrosshair(
+        IShip ship,
+        IStarMapView starMap,
+        int viewWidth,
+        int screenHeight,
+        Vector2 maneuverParallaxBoost,
+        float maxDistancePixels);
 }
 
 
@@ -21,6 +44,10 @@ public interface ICanopyStarSystemView
 /// </summary>
 public sealed class CanopyStarSystemView : ICanopyStarSystemView
 {
+    private const float WobbleAmount = 1.5f;
+
+    private const float WobbleSpeed = 2.0f;
+
     private readonly Dictionary<StarSystem, List<StarParticle>> _particles = new Dictionary<StarSystem, List<StarParticle>>();
     private float _wobbleTime = 0.0f;
 
@@ -48,24 +75,91 @@ public sealed class CanopyStarSystemView : ICanopyStarSystemView
         }
     }
 
+    public void GetStarScreenPosition(
+        IShip ship,
+        StarSystem system,
+        int viewWidth,
+        int screenHeight,
+        Vector2 maneuverParallaxBoost,
+        out int screenX,
+        out int screenY)
+    {
+        GetWobbleOffsets(out float wobbleX, out float wobbleY);
+        ComputeStarScreenPosition(ship, system, viewWidth, screenHeight, maneuverParallaxBoost, wobbleX, wobbleY, out screenX, out screenY);
+    }
+
+    public StarSystem? FindSystemNearCrosshair(
+        IShip ship,
+        IStarMapView starMap,
+        int viewWidth,
+        int screenHeight,
+        Vector2 maneuverParallaxBoost,
+        float maxDistancePixels)
+    {
+        int shipCenterX = viewWidth / 2;
+        int shipCenterY = screenHeight / 2;
+        GetWobbleOffsets(out float wobbleX, out float wobbleY);
+
+        StarSystem? best = null;
+        float bestDistSq = float.MaxValue;
+
+        foreach (var system in starMap.GetAllSystems())
+        {
+            ComputeStarScreenPosition(ship, system, viewWidth, screenHeight, maneuverParallaxBoost, wobbleX, wobbleY, out int sx, out int sy);
+            float dx = sx - shipCenterX;
+            float dy = sy - shipCenterY;
+            float dSq = dx * dx + dy * dy;
+            if (dSq < bestDistSq)
+            {
+                bestDistSq = dSq;
+                best = system;
+            }
+        }
+
+        float maxSq = maxDistancePixels * maxDistancePixels;
+        if (best != null && bestDistSq <= maxSq)
+        {
+            return best;
+        }
+
+        return null;
+    }
+
+    private void GetWobbleOffsets(out float wobbleX, out float wobbleY)
+    {
+        wobbleX = MathF.Sin(_wobbleTime * WobbleSpeed) * WobbleAmount;
+        wobbleY = MathF.Cos(_wobbleTime * WobbleSpeed * 1.3f) * WobbleAmount;
+    }
+
+    private static void ComputeStarScreenPosition(
+        IShip ship,
+        StarSystem system,
+        int viewWidth,
+        int screenHeight,
+        Vector2 maneuverParallaxBoost,
+        float wobbleX,
+        float wobbleY,
+        out int screenX,
+        out int screenY)
+    {
+        int shipCenterX = viewWidth / 2;
+        int shipCenterY = screenHeight / 2;
+        Vector2 relativePos = system.Position - ship.Position + maneuverParallaxBoost;
+        int baseScreenX = shipCenterX + (int)MathF.Round(relativePos.X);
+        int baseScreenY = shipCenterY + (int)MathF.Round(relativePos.Y);
+        screenX = baseScreenX + (int)wobbleX;
+        screenY = baseScreenY + (int)wobbleY;
+    }
+
     public void Draw(IShip ship, IStarMapView starMap, int viewWidth, int screenHeight, GameState currentState, Vector2 maneuverParallaxBoost)
     {
         int shipCenterX = viewWidth / 2;
         int shipCenterY = screenHeight / 2;
+        GetWobbleOffsets(out float wobbleX, out float wobbleY);
 
         foreach (var system in starMap.GetAllSystems())
         {
-            Vector2 relativePos = system.Position - ship.Position + maneuverParallaxBoost;
-
-            const float wobbleAmount = 1.5f;
-            const float wobbleSpeed = 2.0f;
-            float wobbleX = MathF.Sin(_wobbleTime * wobbleSpeed) * wobbleAmount;
-            float wobbleY = MathF.Cos(_wobbleTime * wobbleSpeed * 1.3f) * wobbleAmount;
-
-            int baseScreenX = shipCenterX + (int)MathF.Round(relativePos.X);
-            int baseScreenY = shipCenterY + (int)MathF.Round(relativePos.Y);
-            int screenX = baseScreenX + (int)wobbleX;
-            int screenY = baseScreenY + (int)wobbleY;
+            ComputeStarScreenPosition(ship, system, viewWidth, screenHeight, maneuverParallaxBoost, wobbleX, wobbleY, out int screenX, out int screenY);
 
             var particlesList = _particles[system];
 
@@ -109,19 +203,17 @@ public sealed class CanopyStarSystemView : ICanopyStarSystemView
 
                 const int nameFontSize = 16;
                 const int nameGap = 8;
-                int textWidth = UiText.MeasureText(system.Name, nameFontSize);
-                int textX = screenX - textWidth / 2;
-                int labelAboveY = screenY - starRadius - 25;
-                int labelBelowY = screenY + starRadius + nameGap;
+                float labelAboveY = screenY - starRadius - 25;
+                float labelBelowY = screenY + starRadius + nameGap;
 
                 // Prefer above the star; if that would clip off the top, place below instead.
                 if (labelAboveY >= nameFontSize)
                 {
-                    UiText.DrawText(system.Name, textX, labelAboveY, nameFontSize, Color.WHITE);
+                    UiText.DrawTextCenteredAtX(system.Name, screenX, labelAboveY, nameFontSize, Color.WHITE);
                 }
                 else
                 {
-                    UiText.DrawText(system.Name, textX, labelBelowY, nameFontSize, Color.WHITE);
+                    UiText.DrawTextCenteredAtX(system.Name, screenX, labelBelowY, nameFontSize, Color.WHITE);
                 }
             }
         }
