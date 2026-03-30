@@ -86,4 +86,28 @@ public static class UiText
 
         Raylib.DrawTextEx(_font, text, new Vector2(x, y), fontSize, Spacing, color);
     }
+
+    /// <summary>
+    /// Centered text with a 1px outline (8 directions) for emphasis on busy backgrounds.
+    /// </summary>
+    public static void DrawTextCenteredAtXOutlined(string text, float centerX, float y, int fontSize, Color fillColor, Color outlineColor)
+    {
+        Vector2 size = Raylib.MeasureTextEx(_font, text, fontSize, Spacing);
+        float baseX = centerX - size.X * 0.5f;
+
+        for (int oy = -1; oy <= 1; oy++)
+        {
+            for (int ox = -1; ox <= 1; ox++)
+            {
+                if (ox == 0 && oy == 0)
+                {
+                    continue;
+                }
+
+                Raylib.DrawTextEx(_font, text, new Vector2(baseX + ox, y + oy), fontSize, Spacing, outlineColor);
+            }
+        }
+
+        Raylib.DrawTextEx(_font, text, new Vector2(baseX, y), fontSize, Spacing, fillColor);
+    }
 }

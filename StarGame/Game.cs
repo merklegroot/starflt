@@ -638,7 +638,7 @@ public class Game : IGame
         int viewWidth = _screenWidth - LayoutConstants.RightPanelWidth;
 
         _parallax.Draw(_screenWidth, _screenHeight);
-        _canopySystems.Draw(_ship, _starMap, viewWidth, _screenHeight, _currentState, _maneuverParallaxBoost);
+        _canopySystems.Draw(_ship, _starMap, viewWidth, _screenHeight, _currentState, _maneuverParallaxBoost, CanopyStarEnterRadiusPixels);
 
         const int frameThickness = 20;
         Color frameColor = new Color(40, 40, 45, 255);

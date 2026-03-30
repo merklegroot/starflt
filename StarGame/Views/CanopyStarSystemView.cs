@@ -11,7 +11,8 @@ public interface ICanopyStarSystemView
 {
     void Update(float deltaTime, IStarMapView starMap);
 
-    void Draw(IShip ship, IStarMapView starMap, int viewWidth, int screenHeight, GameState currentState, Vector2 maneuverParallaxBoost);
+    /// <param name="hoverHighlightRadiusPixels">If &gt; 0, the system within this distance of the crosshair (same as SPACE) gets a prominent name label.</param>
+    void Draw(IShip ship, IStarMapView starMap, int viewWidth, int screenHeight, GameState currentState, Vector2 maneuverParallaxBoost, float hoverHighlightRadiusPixels);
 
     /// <summary>
     /// Screen position of a star's center, using the same math as <see cref="Draw"/> (rounding + wobble).
@@ -151,11 +152,17 @@ public sealed class CanopyStarSystemView : ICanopyStarSystemView
         screenY = baseScreenY + (int)wobbleY;
     }
 
-    public void Draw(IShip ship, IStarMapView starMap, int viewWidth, int screenHeight, GameState currentState, Vector2 maneuverParallaxBoost)
+    public void Draw(IShip ship, IStarMapView starMap, int viewWidth, int screenHeight, GameState currentState, Vector2 maneuverParallaxBoost, float hoverHighlightRadiusPixels)
     {
         int shipCenterX = viewWidth / 2;
         int shipCenterY = screenHeight / 2;
         GetWobbleOffsets(out float wobbleX, out float wobbleY);
+
+        StarSystem? hoveredSystem = null;
+        if (hoverHighlightRadiusPixels > 0f)
+        {
+            hoveredSystem = FindSystemNearCrosshair(ship, starMap, viewWidth, screenHeight, maneuverParallaxBoost, hoverHighlightRadiusPixels);
+        }
 
         foreach (var system in starMap.GetAllSystems())
         {
@@ -201,19 +208,40 @@ public sealed class CanopyStarSystemView : ICanopyStarSystemView
                     Raylib.DrawCircle((int)particleX, (int)particleY, (int)particle.Size, particleColor);
                 }
 
-                const int nameFontSize = 16;
+                const int nameFontSizeNormal = 16;
+                const int nameFontSizeHovered = 24;
                 const int nameGap = 8;
-                float labelAboveY = screenY - starRadius - 25;
+                bool isHovered = hoveredSystem != null && system.Id == hoveredSystem.Id;
+                int nameFontSize = isHovered ? nameFontSizeHovered : nameFontSizeNormal;
+                float labelAboveY = screenY - starRadius - nameFontSize - 12;
                 float labelBelowY = screenY + starRadius + nameGap;
 
                 // Prefer above the star; if that would clip off the top, place below instead.
                 if (labelAboveY >= nameFontSize)
                 {
-                    UiText.DrawTextCenteredAtX(system.Name, screenX, labelAboveY, nameFontSize, Color.WHITE);
+                    if (isHovered)
+                    {
+                        Color fill = new Color(255, 250, 215, 255);
+                        Color outline = new Color(18, 12, 42, 255);
+                        UiText.DrawTextCenteredAtXOutlined(system.Name, screenX, labelAboveY, nameFontSize, fill, outline);
+                    }
+                    else
+                    {
+                        UiText.DrawTextCenteredAtX(system.Name, screenX, labelAboveY, nameFontSize, Color.WHITE);
+                    }
                 }
                 else
                 {
-                    UiText.DrawTextCenteredAtX(system.Name, screenX, labelBelowY, nameFontSize, Color.WHITE);
+                    if (isHovered)
+                    {
+                        Color fill = new Color(255, 250, 215, 255);
+                        Color outline = new Color(18, 12, 42, 255);
+                        UiText.DrawTextCenteredAtXOutlined(system.Name, screenX, labelBelowY, nameFontSize, fill, outline);
+                    }
+                    else
+                    {
+                        UiText.DrawTextCenteredAtX(system.Name, screenX, labelBelowY, nameFontSize, Color.WHITE);
+                    }
                 }
             }
         }
