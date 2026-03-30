@@ -44,6 +44,9 @@ public interface IStarSystemInteriorView
 /// </summary>
 public sealed class StarSystemInteriorView : IStarSystemInteriorView
 {
+    /// <summary>World-to-screen scale for the tactical view (larger = more zoomed in).</summary>
+    private const float InteriorViewZoom = 4f;
+
     private const int OrbitLineSegments = 96;
 
     /// <summary>
@@ -79,6 +82,7 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         int cy = screenHeight / 2;
         float spx = shipSystemPosition.X;
         float spy = shipSystemPosition.Y;
+        float z = InteriorViewZoom;
 
         Raylib.DrawRectangle(0, 0, viewWidth, screenHeight, new Color(8, 10, 22, 255));
 
@@ -89,16 +93,16 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
             Raylib.DrawPixel(sx, sy, new Color(40, 45, 70, 255));
         }
 
-        float starSx = cx - spx;
-        float starSy = cy - spy;
+        float starSx = cx - spx * z;
+        float starSy = cy - spy * z;
 
         Color starColor = system?.StarColor ?? new Color(255, 220, 160, 255);
-        const int starRadius = 36;
+        float starRadius = 36f * z;
 
-        Raylib.DrawCircle((int)starSx, (int)starSy, starRadius + 28, new Color(starColor.R, starColor.G, starColor.B, (byte)25));
-        Raylib.DrawCircle((int)starSx, (int)starSy, starRadius + 14, new Color(starColor.R, starColor.G, starColor.B, (byte)60));
+        Raylib.DrawCircle((int)starSx, (int)starSy, starRadius + 28f * z, new Color(starColor.R, starColor.G, starColor.B, (byte)25));
+        Raylib.DrawCircle((int)starSx, (int)starSy, starRadius + 14f * z, new Color(starColor.R, starColor.G, starColor.B, (byte)60));
         Raylib.DrawCircle((int)starSx, (int)starSy, starRadius, starColor);
-        Raylib.DrawCircle((int)starSx, (int)starSy, starRadius / 2, new Color((byte)255, (byte)255, (byte)255, (byte)200));
+        Raylib.DrawCircle((int)starSx, (int)starSy, starRadius * 0.5f, new Color((byte)255, (byte)255, (byte)255, (byte)200));
 
         string systemTitle = system != null ? system.Name : "Unknown system";
         int titleW = UiText.MeasureText(systemTitle, 28);
@@ -132,7 +136,7 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
             for (int i = 0; i < n; i++)
             {
                 LoadedPlanet p = planets[i];
-                float aPx = MapSemiMajorAxisToPixels(p.SemiMajorAxisAu, minAu, maxAu, viewWidth, screenHeight);
+                float aPx = MapSemiMajorAxisToPixels(p.SemiMajorAxisAu, minAu, maxAu, viewWidth, screenHeight) * z;
                 float e = Math.Clamp(p.Eccentricity, 0f, 0.95f);
                 float omega = p.ArgumentOfPeriapsisRad;
 
@@ -146,15 +150,15 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
                 float psx = starSx + worldPx;
                 float psy = starSy + worldPy;
 
-                int pr = 6 + (i % 3);
+                float pr = (6 + (i % 3)) * z;
                 Color pc = p.SurfaceColor;
-                Raylib.DrawCircle((int)psx, (int)psy, pr + 2, new Color(pc.R, pc.G, pc.B, (byte)100));
+                Raylib.DrawCircle((int)psx, (int)psy, pr + 2f * z, new Color(pc.R, pc.G, pc.B, (byte)100));
                 Raylib.DrawCircle((int)psx, (int)psy, pr, pc);
 
                 string label = p.Name;
                 int fs = 16;
                 int lw = UiText.MeasureText(label, fs);
-                UiText.DrawText(label, (int)psx - lw / 2, (int)psy - pr - 20, fs, Color.LIGHTGRAY);
+                UiText.DrawText(label, (int)psx - lw / 2, (int)(psy - pr - 20f * z), fs, Color.LIGHTGRAY);
             }
         }
 

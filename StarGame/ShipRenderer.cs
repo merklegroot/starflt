@@ -50,24 +50,24 @@ public static class ShipRenderer
         _textureLoaded = false;
     }
 
-    public static void Draw(int centerX, int centerY, float rotation, bool forwardThrust = false, bool reverseThrust = false)
+    public static void Draw(int centerX, int centerY, float rotation, bool forwardThrust = false, bool reverseThrust = false, float scale = 1f)
     {
         if (_textureLoaded)
         {
-            DrawSprite(centerX, centerY, rotation);
+            DrawSprite(centerX, centerY, rotation, scale);
         }
         else
         {
-            DrawProceduralFallback(centerX, centerY, rotation, forwardThrust, reverseThrust);
+            DrawProceduralFallback(centerX, centerY, rotation, forwardThrust, reverseThrust, scale);
         }
     }
 
-    private static void DrawSprite(int centerX, int centerY, float rotation)
+    private static void DrawSprite(int centerX, int centerY, float rotation, float scale)
     {
         Rectangle source = new Rectangle(0f, 0f, FrameWidth, FrameHeight);
 
-        float dw = FrameWidth * DisplayScale;
-        float dh = FrameHeight * DisplayScale;
+        float dw = FrameWidth * DisplayScale * scale;
+        float dh = FrameHeight * DisplayScale * scale;
         // DrawTexturePro: dest.x/y is the pivot in screen space; drawn top-left is dest - origin (raylib).
         Rectangle dest = new Rectangle(centerX, centerY, dw, dh);
         Vector2 origin = new Vector2(dw * 0.5f, dh * 0.5f);
@@ -78,15 +78,16 @@ public static class ShipRenderer
         Raylib.DrawTexturePro(_texture, source, dest, origin, rotationDeg, Color.WHITE);
     }
 
-    private static void DrawProceduralFallback(int centerX, int centerY, float rotation, bool forwardThrust, bool reverseThrust)
+    private static void DrawProceduralFallback(int centerX, int centerY, float rotation, bool forwardThrust, bool reverseThrust, float scale)
     {
         Vector2 center = new Vector2(centerX, centerY);
+        float s = scale;
 
         Vector2[] baseShipPoints = new Vector2[]
         {
-            new Vector2(centerX, centerY - 30),
-            new Vector2(centerX - 25, centerY + 20),
-            new Vector2(centerX + 25, centerY + 20)
+            new Vector2(centerX, centerY - 30f * s),
+            new Vector2(centerX - 25f * s, centerY + 20f * s),
+            new Vector2(centerX + 25f * s, centerY + 20f * s)
         };
 
         Vector2[] shipPoints = new Vector2[]
@@ -101,9 +102,9 @@ public static class ShipRenderer
 
         Vector2[] baseCockpitPoints = new Vector2[]
         {
-            new Vector2(centerX, centerY - 15),
-            new Vector2(centerX - 8, centerY - 5),
-            new Vector2(centerX + 8, centerY - 5)
+            new Vector2(centerX, centerY - 15f * s),
+            new Vector2(centerX - 8f * s, centerY - 5f * s),
+            new Vector2(centerX + 8f * s, centerY - 5f * s)
         };
 
         Vector2[] cockpitPoints = new Vector2[]
@@ -116,36 +117,38 @@ public static class ShipRenderer
 
         Vector2[] enginePositions = new Vector2[]
         {
-            new Vector2(centerX - 20, centerY + 20),
-            new Vector2(centerX + 12, centerY + 20)
+            new Vector2(centerX - 20f * s, centerY + 20f * s),
+            new Vector2(centerX + 12f * s, centerY + 20f * s)
         };
 
         foreach (var enginePos in enginePositions)
         {
             Vector2 rotatedPos = RotatePoint(enginePos, center, rotation);
             Color engineBody = forwardThrust ? new Color(70, 70, 85, 255) : Color.DARKGRAY;
-            Raylib.DrawRectangle((int)rotatedPos.X - 4, (int)rotatedPos.Y - 6, 8, 12, engineBody);
+            int ew = (int)MathF.Round(8f * s);
+            int eh = (int)MathF.Round(12f * s);
+            Raylib.DrawRectangle((int)rotatedPos.X - ew / 2, (int)rotatedPos.Y - eh / 2, ew, eh, engineBody);
         }
 
         if (forwardThrust)
         {
-            Vector2 aft = RotatePoint(new Vector2(centerX, centerY + 28), center, rotation);
+            Vector2 aft = RotatePoint(new Vector2(centerX, centerY + 28f * s), center, rotation);
             Vector2 backward = new Vector2(-MathF.Sin(rotation), MathF.Cos(rotation));
-            Vector2 flameTip = aft + backward * 18f;
+            Vector2 flameTip = aft + backward * (18f * s);
             Raylib.DrawLine((int)aft.X, (int)aft.Y, (int)flameTip.X, (int)flameTip.Y, new Color(255, 180, 80, 220));
             Raylib.DrawLine((int)(aft.X - 3), (int)aft.Y, (int)(flameTip.X - 2), (int)(flameTip.Y + 2), new Color(255, 220, 120, 180));
             Raylib.DrawLine((int)(aft.X + 3), (int)aft.Y, (int)(flameTip.X + 2), (int)(flameTip.Y + 2), new Color(255, 220, 120, 180));
         }
         else if (reverseThrust)
         {
-            Vector2 aft = RotatePoint(new Vector2(centerX, centerY + 28), center, rotation);
+            Vector2 aft = RotatePoint(new Vector2(centerX, centerY + 28f * s), center, rotation);
             Vector2 forwardDir = new Vector2(MathF.Sin(rotation), -MathF.Cos(rotation));
-            Vector2 puff = aft + forwardDir * 10f;
+            Vector2 puff = aft + forwardDir * (10f * s);
             Raylib.DrawLine((int)aft.X, (int)aft.Y, (int)puff.X, (int)puff.Y, new Color(150, 200, 255, 160));
         }
 
-        Vector2 lineStart = RotatePoint(new Vector2(centerX - 15, centerY + 5), center, rotation);
-        Vector2 lineEnd = RotatePoint(new Vector2(centerX + 15, centerY + 5), center, rotation);
+        Vector2 lineStart = RotatePoint(new Vector2(centerX - 15f * s, centerY + 5f * s), center, rotation);
+        Vector2 lineEnd = RotatePoint(new Vector2(centerX + 15f * s, centerY + 5f * s), center, rotation);
         Raylib.DrawLine((int)lineStart.X, (int)lineStart.Y, (int)lineEnd.X, (int)lineEnd.Y, Color.DARKGRAY);
     }
 
