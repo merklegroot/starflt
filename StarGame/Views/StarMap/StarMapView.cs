@@ -1,10 +1,6 @@
 using Raylib_cs;
 using StarflightGame;
 using System.Numerics;
-using System;
-using System.IO;
-using System.Text.Json;
-using System.Reflection;
 
 namespace StarflightGame.Views.StarMap;
 
@@ -28,62 +24,13 @@ public interface IStarMapView
 /// </summary>
 public class StarMapView : IStarMapView
 {
-    private List<StarSystem> _systems = LoadStarSystems();
+    private readonly List<StarSystem> _systems;
 
     private StarMapViewState _state = new StarMapViewState();
 
-    private static List<StarSystem> LoadStarSystems()
+    public StarMapView(IResourceLoader resourceLoader)
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        var resourceName = "StarflightGame.starSystems.json";
-
-        using var stream = assembly.GetManifestResourceStream(resourceName);
-        if (stream == null)
-        {
-            throw new InvalidOperationException($"Could not find embedded resource: {resourceName}");
-        }
-
-        using var reader = new StreamReader(stream);
-        var json = reader.ReadToEnd();
-
-        var options = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
-        var starSystemData = JsonSerializer.Deserialize<List<StarSystemData>>(json, options);
-        if (starSystemData == null)
-        {
-            throw new InvalidOperationException("Failed to deserialize star systems data");
-        }
-
-        var systems = new List<StarSystem>();
-        foreach (var data in starSystemData)
-        {
-            var position = new Vector2(data.Position.X, data.Position.Y);
-            var color = HexColor.ToRaylibColor(data.StarColor);
-            systems.Add(new StarSystem(data.Id, data.Name, position, color));
-        }
-
-        return systems;
-    }
-
-    private class StarSystemData
-    {
-        public string Id { get; set; } = "";
-        public string Name { get; set; } = "";
-        public Vector2Data Position { get; set; }
-        public string StarColor { get; set; } = "";
-    }
-
-    private class Vector2Data
-    {
-        public float X { get; set; }
-        public float Y { get; set; }
-    }
-
-    public StarMapView()
-    {
+        _systems = resourceLoader.LoadStarSystems();
     }
 
     public StarSystem? GetSystem(int index)

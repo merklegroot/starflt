@@ -10,9 +10,9 @@ static class Program
     {
         var builder = Host.CreateApplicationBuilder(args);
         builder.Services.RegisterGame();
-        
+
         using var host = builder.Build();
-        
+
         var game = host.Services.GetRequiredService<IGame>();
         game.Run();
     }

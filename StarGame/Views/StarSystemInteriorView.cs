@@ -1,11 +1,6 @@
 using Raylib_cs;
 using StarflightGame;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Numerics;
-using System.Reflection;
-using System.Text.Json;
 
 namespace StarflightGame.Views;
 
@@ -55,13 +50,18 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
     /// </summary>
     private const float SimulatedSecondsPerEarthYear = 250f;
 
-    private static readonly Dictionary<string, LoadedPlanet[]> _planetsByStarSystemId = LoadPlanetsByStarSystem();
+    private readonly IReadOnlyDictionary<string, LoadedPlanet[]> _planetsByStarSystemId;
 
     private string? _orbitPhasesSystemId;
     private float[] _meanAnomalyAtEpochRad = Array.Empty<float>();
     private float[] _meanMotionRadPerSec = Array.Empty<float>();
     private float _orbitElapsedSeconds;
     private bool _planetListVisible = true;
+
+    public StarSystemInteriorView(IResourceLoader resourceLoader)
+    {
+        _planetsByStarSystemId = resourceLoader.LoadPlanetsByStarSystem();
+    }
 
     public void UpdateStarSystemUiInput()
     {
@@ -600,95 +600,26 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
         return E - e * MathF.Sin(E);
     }
 
-    private static LoadedPlanet[] ResolvePlanets(StarSystem? system)
+    private LoadedPlanet[] ResolvePlanets(StarSystem? system)
     {
-        if (system == null || string.IsNullOrEmpty(system.Id))
+        if (system == null)
         {
             return Array.Empty<LoadedPlanet>();
         }
 
-        if (_planetsByStarSystemId.TryGetValue(system.Id, out LoadedPlanet[]? planets))
+        string? id = system.Id;
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return Array.Empty<LoadedPlanet>();
+        }
+
+        string key = id.Trim().ToLowerInvariant();
+        if (_planetsByStarSystemId.TryGetValue(key, out LoadedPlanet[]? planets))
         {
             return planets;
         }
 
         return Array.Empty<LoadedPlanet>();
-    }
-
-    private static Dictionary<string, LoadedPlanet[]> LoadPlanetsByStarSystem()
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        const string resourceName = "StarflightGame.planets.json";
-
-        using var stream = assembly.GetManifestResourceStream(resourceName);
-        if (stream == null)
-        {
-            throw new InvalidOperationException($"Could not find embedded resource: {resourceName}");
-        }
-
-        using var reader = new StreamReader(stream);
-        string json = reader.ReadToEnd();
-
-        var options = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
-        var raw = JsonSerializer.Deserialize<Dictionary<string, List<InteriorPlanetDto>>>(json, options);
-        if (raw == null || raw.Count == 0)
-        {
-            throw new InvalidOperationException("Failed to deserialize planets data");
-        }
-
-        var result = new Dictionary<string, LoadedPlanet[]>(StringComparer.Ordinal);
-        foreach (KeyValuePair<string, List<InteriorPlanetDto>> entry in raw)
-        {
-            List<InteriorPlanetDto> list = entry.Value;
-            if (list == null || list.Count == 0)
-            {
-                result[entry.Key] = Array.Empty<LoadedPlanet>();
-                continue;
-            }
-
-            var converted = new LoadedPlanet[list.Count];
-            for (int i = 0; i < list.Count; i++)
-            {
-                InteriorPlanetDto d = list[i];
-                float aAu = d.SemiMajorAxisAu > 0f ? d.SemiMajorAxisAu : 0.5f + i * 0.5f;
-                float ecc = Math.Clamp(d.Eccentricity >= 0f ? d.Eccentricity : 0.05f, 0f, 0.95f);
-                float omegaDeg = d.ArgumentOfPeriapsisDeg;
-                converted[i] = new LoadedPlanet
-                {
-                    Name = d.Name,
-                    SurfaceColor = HexColor.ToRaylibColor(d.SurfaceColor),
-                    SemiMajorAxisAu = aAu,
-                    Eccentricity = ecc,
-                    ArgumentOfPeriapsisRad = omegaDeg * (MathF.PI / 180f)
-                };
-            }
-
-            result[entry.Key] = converted;
-        }
-
-        return result;
-    }
-
-    private struct LoadedPlanet
-    {
-        public string Name;
-        public Color SurfaceColor;
-        public float SemiMajorAxisAu;
-        public float Eccentricity;
-        public float ArgumentOfPeriapsisRad;
-    }
-
-    private sealed class InteriorPlanetDto
-    {
-        public string Name { get; set; } = "";
-        public required string SurfaceColor { get; set; }
-        public float SemiMajorAxisAu { get; set; }
-        public float Eccentricity { get; set; }
-        public float ArgumentOfPeriapsisDeg { get; set; }
     }
 
     private static int Mod(int x, int m)

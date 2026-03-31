@@ -11,6 +11,7 @@ public static class GameRegistry
             .AddSingleton<IShip, Ship>()
             .AddSingleton<IGameMenu, GameMenu>()
             .AddSingleton<IStatusPanel, StatusPanel>()
+            .AddSingleton<IResourceLoader, ResourceLoader>()
             .AddSingleton<IStarMapView, StarMapView>()
             .AddSingleton<IParallaxStarfield, ParallaxStarfield>()
             .AddSingleton<IPlanetView, PlanetView>()
