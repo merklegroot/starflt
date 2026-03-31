@@ -35,7 +35,7 @@ public class Game : IGame
     private readonly int _screenWidth;
     private readonly int _screenHeight;
 
-    private int MainViewWidth => LayoutConstants.MainViewWidth(_screenWidth);
+    private int MainViewWidth => LayoutUtility.MainViewWidth(_screenWidth);
 
     private GameState _currentState = GameState.CanopyView;
 

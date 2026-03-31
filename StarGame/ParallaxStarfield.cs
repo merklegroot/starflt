@@ -1,9 +1,5 @@
 using Raylib_cs;
-using System;
-using System.Collections.Generic;
 using System.Numerics;
-using StarflightGame.Constants;
-
 namespace StarflightGame;
 
 public interface IParallaxStarfield
@@ -26,7 +22,7 @@ public sealed class ParallaxStarfield : IParallaxStarfield
     public void Generate(int screenWidth, int screenHeight)
     {
         _layers.Clear();
-        int viewWidth = LayoutConstants.MainViewWidth(screenWidth);
+        int viewWidth = LayoutUtility.MainViewWidth(screenWidth);
 
         var veryFarLayer = new StarLayer
         {
@@ -200,7 +196,7 @@ public sealed class ParallaxStarfield : IParallaxStarfield
 
     public void ApplyMovement(Vector2 movement, int screenWidth, int screenHeight, float deltaTime)
     {
-        int viewWidth = LayoutConstants.MainViewWidth(screenWidth);
+        int viewWidth = LayoutUtility.MainViewWidth(screenWidth);
 
         foreach (var layer in _layers)
         {
