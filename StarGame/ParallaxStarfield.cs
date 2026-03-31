@@ -26,7 +26,7 @@ public sealed class ParallaxStarfield : IParallaxStarfield
     public void Generate(int screenWidth, int screenHeight)
     {
         _layers.Clear();
-        int viewWidth = screenWidth - LayoutConstants.RightPanelWidth;
+        int viewWidth = LayoutConstants.MainViewWidth(screenWidth);
 
         var veryFarLayer = new StarLayer
         {
@@ -200,7 +200,7 @@ public sealed class ParallaxStarfield : IParallaxStarfield
 
     public void ApplyMovement(Vector2 movement, int screenWidth, int screenHeight, float deltaTime)
     {
-        int viewWidth = screenWidth - LayoutConstants.RightPanelWidth;
+        int viewWidth = LayoutConstants.MainViewWidth(screenWidth);
 
         foreach (var layer in _layers)
         {

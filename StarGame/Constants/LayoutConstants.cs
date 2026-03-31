@@ -4,6 +4,10 @@ namespace StarflightGame.Constants;
 public static class LayoutConstants
 {
     public const int RightPanelWidth = 250;
+
+    /// <summary>Width of the main content area (full window width minus the right-hand panel).</summary>
+    public static int MainViewWidth(int fullWindowWidth) => fullWindowWidth - RightPanelWidth;
+
     public const int RightPanelPadding = 15;
     public const int RightPanelLineSpacing = 25;
     public const int StatusPanelFontSize = 18;

@@ -34,6 +34,9 @@ public class Game : IGame
     private const float StarSystemInteriorExitBoundaryFraction = 0.42f;
     private readonly int _screenWidth;
     private readonly int _screenHeight;
+
+    private int MainViewWidth => LayoutConstants.MainViewWidth(_screenWidth);
+
     private GameState _currentState = GameState.CanopyView;
 
     private StarSystem? _currentSystem;
@@ -178,7 +181,7 @@ public class Game : IGame
     /// </summary>
     private StarSystem? GetSystemNearCanopyCrosshair()
     {
-        int viewWidth = _screenWidth - LayoutConstants.RightPanelWidth;
+        int viewWidth = MainViewWidth;
         return _canopySystems.FindSystemNearCrosshair(
             _ship,
             _starMap,
@@ -384,7 +387,7 @@ public class Game : IGame
         _starSystemShipPosition += _starSystemVelocity * deltaTime;
         _ship.Velocity = _starSystemVelocity;
 
-        int mainViewW = _screenWidth - LayoutConstants.RightPanelWidth;
+        int mainViewW = MainViewWidth;
         float exitRadius = MathF.Min(mainViewW, _screenHeight) * StarSystemInteriorExitBoundaryFraction;
         if (_starSystemShipPosition.LengthSquared() >= exitRadius * exitRadius)
         {
@@ -449,7 +452,7 @@ public class Game : IGame
                 _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
                 break;
             case GameState.StarMap:
-                _starMap.Draw(_screenWidth - LayoutConstants.RightPanelWidth, _screenHeight, _ship);
+                _starMap.Draw(MainViewWidth, _screenHeight, _ship);
                 DrawStarMapHud();
                 _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
                 break;
@@ -462,7 +465,7 @@ public class Game : IGame
                     _currentState,
                     _starSystemShipPosition,
                     _currentSystem,
-                    _screenWidth - LayoutConstants.RightPanelWidth,
+                    MainViewWidth,
                     _screenHeight);
                 break;
             case GameState.PlanetaryExploration:
@@ -484,7 +487,7 @@ public class Game : IGame
 
     private void DrawStarSystemView()
     {
-        int viewWidth = _screenWidth - LayoutConstants.RightPanelWidth;
+        int viewWidth = MainViewWidth;
 
         _starSystemInteriorView.Draw(_currentSystem, viewWidth, _screenHeight, _starSystemShipPosition, _ship);
 
@@ -596,7 +599,7 @@ public class Game : IGame
 
     private void DrawPlanetaryEncounter()
     {
-        int viewWidth = _screenWidth - LayoutConstants.RightPanelWidth;
+        int viewWidth = MainViewWidth;
         int viewHeight = _screenHeight;
 
         EncounterStarfield.Draw(viewWidth, viewHeight);
@@ -643,7 +646,7 @@ public class Game : IGame
 
     private void DrawCanopyView()
     {
-        int viewWidth = _screenWidth - LayoutConstants.RightPanelWidth;
+        int viewWidth = MainViewWidth;
 
         _parallax.Draw(_screenWidth, _screenHeight);
         _canopySystems.Draw(_ship, _starMap, viewWidth, _screenHeight, _currentState, _maneuverParallaxBoost, CanopyStarEnterRadiusPixels);
