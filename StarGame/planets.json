@@ -46,7 +46,16 @@
       "semiMajorAxisAu": 5.204,
       "eccentricity": 0.0489,
       "argumentOfPeriapsisDeg": 201,
-      "radiusKm": 139820
+      "radiusKm": 139820,
+      "rings": {
+        "innerRadiusKm": 122000,
+        "outerRadiusKm": 226000,
+        "thicknessKm": 0.5,
+        "opacity": 0.18,
+        "color": "#A09070",
+        "particleTexture": "dusty",
+        "hasGaps": false
+      }
     },
     {
       "name": "Saturn",
@@ -54,7 +63,16 @@
       "semiMajorAxisAu": 9.582,
       "eccentricity": 0.0565,
       "argumentOfPeriapsisDeg": 247,
-      "radiusKm": 120536
+      "radiusKm": 120536,
+      "rings": {
+        "innerRadiusKm": 70000,
+        "outerRadiusKm": 140000,
+        "thicknessKm": 0.1,
+        "opacity": 0.92,
+        "color": "#F0E8D8",
+        "particleTexture": "bright_ice",
+        "hasGaps": true
+      }
     },
     {
       "name": "Uranus",
@@ -62,7 +80,16 @@
       "semiMajorAxisAu": 19.2,
       "eccentricity": 0.0472,
       "argumentOfPeriapsisDeg": 289,
-      "radiusKm": 51118
+      "radiusKm": 51118,
+      "rings": {
+        "innerRadiusKm": 41800,
+        "outerRadiusKm": 98000,
+        "thicknessKm": 0.2,
+        "opacity": 0.45,
+        "color": "#555555",
+        "particleTexture": "dark_rocky",
+        "hasGaps": true
+      }
     },
     {
       "name": "Neptune",
@@ -70,7 +97,16 @@
       "semiMajorAxisAu": 30.05,
       "eccentricity": 0.0086,
       "argumentOfPeriapsisDeg": 331,
-      "radiusKm": 49528
+      "radiusKm": 49528,
+      "rings": {
+        "innerRadiusKm": 53200,
+        "outerRadiusKm": 63000,
+        "thicknessKm": 0.3,
+        "opacity": 0.35,
+        "color": "#6688AA",
+        "particleTexture": "faint_dusty",
+        "hasGaps": true
+      }
     },
     {
       "name": "Pluto",
@@ -167,7 +203,16 @@
       "semiMajorAxisAu": 2.85,
       "eccentricity": 0.052,
       "argumentOfPeriapsisDeg": 287,
-      "radiusKm": 112000
+      "radiusKm": 112000,
+      "rings": {
+        "innerRadiusKm": 135000,
+        "outerRadiusKm": 280000,
+        "thicknessKm": 0.2,
+        "opacity": 0.78,
+        "color": "#E8D8B0",
+        "particleTexture": "bright_ice",
+        "hasGaps": true
+      }
     },
     {
       "name": "Kent Gate",
@@ -176,7 +221,16 @@
       "semiMajorAxisAu": 5.4,
       "eccentricity": 0.11,
       "argumentOfPeriapsisDeg": 330,
-      "radiusKm": 128000
+      "radiusKm": 128000,
+      "rings": {
+        "innerRadiusKm": 155000,
+        "outerRadiusKm": 340000,
+        "thicknessKm": 0.15,
+        "opacity": 0.85,
+        "color": "#D0E0F0",
+        "particleTexture": "icy_bright",
+        "hasGaps": true
+      }
     },
     {
       "name": "Centauri Bight",
@@ -189,7 +243,7 @@
     },
     {
       "name": "Bary Ledge",
-      "comment": "Fiction: distant ice giant. Name references the system barycenter of the binary (not Beta Centauri / Hadar).",
+      "comment": "Fiction: distant ice giant. Name references the system barycenter of the binary.",
       "surfaceColor": "#5C6E8C",
       "semiMajorAxisAu": 16.5,
       "eccentricity": 0.14,
@@ -198,7 +252,7 @@
     },
     {
       "name": "Proxima Fringe",
-      "comment": "Fiction: very distant icy body (Kuiper-belt / scattered-disk analog). Proxima orbits far from A/B in reality; this is a loose thematic label.",
+      "comment": "Fiction: very distant icy body.",
       "surfaceColor": "#B8B0A0",
       "semiMajorAxisAu": 28.0,
       "eccentricity": 0.22,

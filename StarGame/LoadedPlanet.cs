@@ -10,4 +10,5 @@ public struct LoadedPlanet
     public float Eccentricity;
     public float ArgumentOfPeriapsisRad;
     public float RadiusKm;
+    public PlanetRingData? Rings;
 }

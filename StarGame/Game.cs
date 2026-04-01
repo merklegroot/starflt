@@ -406,7 +406,13 @@ public class Game : IGame
                 _screenHeight,
                 out LoadedPlanet loadedPlanet))
         {
-            _currentPlanet = new Planet(loadedPlanet.Name, Vector2.Zero, 50.0f, loadedPlanet.SurfaceColor, loadedPlanet.RadiusKm);
+            _currentPlanet = new Planet(
+                loadedPlanet.Name,
+                Vector2.Zero,
+                50.0f,
+                loadedPlanet.SurfaceColor,
+                loadedPlanet.RadiusKm,
+                loadedPlanet.Rings);
             _planetView.ResetRotation();
             _planetaryEncounterReturnState = GameState.StarSystemView;
             _currentState = GameState.PlanetaryEncounter;
@@ -661,17 +667,37 @@ public class Game : IGame
                 Color.WHITE,
                 new Color(0, 0, 0, 200));
 
-            int infoY = viewHeight - 100;
+            const int infoLine = 20;
+            int infoY = viewHeight - 118;
             if (_currentSystem != null)
             {
                 UiText.DrawText($"System: {_currentSystem.Name}", 40, infoY, 18, Color.SKYBLUE);
-                infoY += 24;
+                infoY += infoLine;
             }
 
             if (_currentPlanet.RadiusKm > 0f)
             {
-                string radiusText = $"Radius: {_currentPlanet.RadiusKm:N0} km";
-                UiText.DrawText(radiusText, 40, infoY, 18, new Color(180, 210, 235, 255));
+                UiText.DrawText($"Radius: {_currentPlanet.RadiusKm:N0} km", 40, infoY, 18, new Color(180, 210, 235, 255));
+                infoY += infoLine;
+            }
+
+            if (_currentPlanet.Rings.HasValue && _currentPlanet.Rings.Value.IsValid)
+            {
+                PlanetRingData r = _currentPlanet.Rings.Value;
+                UiText.DrawText(
+                    $"Rings: {r.InnerRadiusKm:N0} – {r.OuterRadiusKm:N0} km  |  thickness ~{r.ThicknessKm:F2} km",
+                    40,
+                    infoY,
+                    16,
+                    new Color(220, 200, 160, 255));
+                infoY += infoLine;
+
+                UiText.DrawText(
+                    $"Opacity: {r.Opacity:F2}  |  texture: {r.ParticleTexture}  |  gaps: {(r.HasGaps ? "yes" : "no")}",
+                    40,
+                    infoY,
+                    16,
+                    new Color(160, 175, 195, 255));
             }
         }
 

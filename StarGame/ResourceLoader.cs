@@ -114,6 +114,25 @@ public class ResourceLoader : IResourceLoader
                 float aAu = d.SemiMajorAxisAu > 0f ? d.SemiMajorAxisAu : 0.5f + i * 0.5f;
                 float ecc = Math.Clamp(d.Eccentricity >= 0f ? d.Eccentricity : 0.05f, 0f, 0.95f);
                 float omegaDeg = d.ArgumentOfPeriapsisDeg;
+                PlanetRingData? rings = null;
+                if (d.Rings != null)
+                {
+                    InteriorPlanetRingDto r = d.Rings;
+                    Color ringColor = string.IsNullOrWhiteSpace(r.Color)
+                        ? new Color(200, 190, 170, 255)
+                        : HexColor.ToRaylibColor(r.Color);
+                    rings = new PlanetRingData
+                    {
+                        InnerRadiusKm = r.InnerRadiusKm,
+                        OuterRadiusKm = r.OuterRadiusKm,
+                        ThicknessKm = r.ThicknessKm,
+                        Opacity = Math.Clamp(r.Opacity, 0f, 1f),
+                        RingColor = ringColor,
+                        ParticleTexture = r.ParticleTexture ?? "",
+                        HasGaps = r.HasGaps
+                    };
+                }
+
                 converted[i] = new LoadedPlanet
                 {
                     Name = d.Name,
@@ -121,7 +140,8 @@ public class ResourceLoader : IResourceLoader
                     SemiMajorAxisAu = aAu,
                     Eccentricity = ecc,
                     ArgumentOfPeriapsisRad = omegaDeg * (MathF.PI / 180f),
-                    RadiusKm = d.RadiusKm > 0f ? d.RadiusKm : 0f
+                    RadiusKm = d.RadiusKm > 0f ? d.RadiusKm : 0f,
+                    Rings = rings
                 };
             }
 
@@ -154,5 +174,18 @@ public class ResourceLoader : IResourceLoader
         public float Eccentricity { get; set; }
         public float ArgumentOfPeriapsisDeg { get; set; }
         public float RadiusKm { get; set; }
+
+        public InteriorPlanetRingDto? Rings { get; set; }
+    }
+
+    private sealed class InteriorPlanetRingDto
+    {
+        public float InnerRadiusKm { get; set; }
+        public float OuterRadiusKm { get; set; }
+        public float ThicknessKm { get; set; }
+        public float Opacity { get; set; }
+        public string Color { get; set; } = "";
+        public string ParticleTexture { get; set; } = "";
+        public bool HasGaps { get; set; }
     }
 }

@@ -16,6 +16,9 @@ public class Planet
     /// <summary>Equatorial radius in kilometers when known from catalog data; 0 if not specified.</summary>
     public float RadiusKm { get; set; }
 
+    /// <summary>Ring system from catalog data, if any.</summary>
+    public PlanetRingData? Rings { get; set; }
+
     private List<Vector3> _spherePoints = new();
     private List<float> _pointHeights = new();
     private List<List<int>> _ringIndices = new();
@@ -26,13 +29,14 @@ public class Planet
     private float _maxHeight = float.MinValue;
     private List<TriangleData> _triangles = new();
 
-    public Planet(string name, Vector2 position, float radius, Color surfaceColor, float radiusKm = 0f)
+    public Planet(string name, Vector2 position, float radius, Color surfaceColor, float radiusKm = 0f, PlanetRingData? rings = null)
     {
         Name = name;
         Position = position;
         Radius = radius;
         SurfaceColor = surfaceColor;
         RadiusKm = radiusKm;
+        Rings = rings;
         int seed = name.GetHashCode();
         _random = new Random(seed);
         
@@ -414,11 +418,87 @@ public class Planet
             Raylib.DrawTriangle3D(v1, v2, v3, tri.Color);
         }
 
+        if (Rings.HasValue && Rings.Value.IsValid && RadiusKm > 1e-3f)
+        {
+            DrawPlanetRingAnnulus(Rings.Value, displayRadius, RadiusKm, RotateY);
+        }
+
         // End 3D mode
         Raylib.EndMode3D();
 
         // End rendering to texture
         Raylib.EndTextureMode();
+    }
+
+    /// <summary>
+    /// Flat annulus in the equatorial plane, tilted so the camera sees an ellipse; drawn after the sphere for depth.
+    /// </summary>
+    private void DrawPlanetRingAnnulus(PlanetRingData ring, float displayRadius, float planetRadiusKm, Func<Vector3, Vector3> rotateY)
+    {
+        float kmToScene = displayRadius / planetRadiusKm;
+        float innerR = ring.InnerRadiusKm * kmToScene;
+        float outerR = ring.OuterRadiusKm * kmToScene;
+        if (innerR <= 0f || outerR <= innerR)
+        {
+            return;
+        }
+
+        const int segments = 96;
+        const float tiltDeg = 26f;
+        float tiltRad = tiltDeg * (MathF.PI / 180f);
+        float cosT = MathF.Cos(tiltRad);
+        float sinT = MathF.Sin(tiltRad);
+
+        Vector3 TiltEquatorial(Vector3 v)
+        {
+            return new Vector3(
+                v.X,
+                v.Y * cosT - v.Z * sinT,
+                v.Y * sinT + v.Z * cosT);
+        }
+
+        Vector3 TransformRingPoint(float radius, float angleRad)
+        {
+            float cx = radius * MathF.Cos(angleRad);
+            float cz = radius * MathF.Sin(angleRad);
+            Vector3 flat = new Vector3(cx, 0f, cz);
+            return rotateY(TiltEquatorial(flat));
+        }
+
+        Raylib.BeginBlendMode(BlendMode.BLEND_ALPHA);
+
+        for (int i = 0; i < segments; i++)
+        {
+            float a0 = i * MathF.Tau / segments;
+            float a1 = (i + 1) * MathF.Tau / segments;
+
+            float gapFade = 1f;
+            if (ring.HasGaps && (i & 1) == 1)
+            {
+                gapFade = 0.28f;
+            }
+
+            byte baseA = (byte)Math.Clamp((int)(ring.Opacity * 255f * gapFade), 8, 255);
+            Color c = ring.RingColor;
+            Color cTop = new Color(c.R, c.G, c.B, baseA);
+            Color cBot = new Color(
+                (byte)Math.Min(255, c.R + 18),
+                (byte)Math.Min(255, c.G + 18),
+                (byte)Math.Min(255, c.B + 18),
+                (byte)Math.Clamp(baseA * 3 / 4, 6, 255));
+
+            Vector3 o0 = TransformRingPoint(outerR, a0);
+            Vector3 o1 = TransformRingPoint(outerR, a1);
+            Vector3 i0 = TransformRingPoint(innerR, a0);
+            Vector3 i1 = TransformRingPoint(innerR, a1);
+
+            Raylib.DrawTriangle3D(i0, o0, o1, cTop);
+            Raylib.DrawTriangle3D(i0, o1, i1, cBot);
+            Raylib.DrawTriangle3D(o0, i0, o1, cTop);
+            Raylib.DrawTriangle3D(o1, i1, i0, cBot);
+        }
+
+        Raylib.EndBlendMode();
     }
 
 
