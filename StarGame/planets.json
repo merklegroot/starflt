@@ -6,7 +6,7 @@
       "semiMajorAxisAu": 0.387,
       "eccentricity": 0.2056,
       "argumentOfPeriapsisDeg": 0,
-      "radiusKm": 4879
+      "radiusKm": 2440
     },
     {
       "name": "Venus",
@@ -14,7 +14,7 @@
       "semiMajorAxisAu": 0.723,
       "eccentricity": 0.0068,
       "argumentOfPeriapsisDeg": 33,
-      "radiusKm": 12104
+      "radiusKm": 6052
     },
     {
       "name": "Earth",
@@ -22,7 +22,7 @@
       "semiMajorAxisAu": 1.0,
       "eccentricity": 0.0167,
       "argumentOfPeriapsisDeg": 71,
-      "radiusKm": 12742
+      "radiusKm": 6371
     },
     {
       "name": "Mars",
@@ -30,7 +30,7 @@
       "semiMajorAxisAu": 1.524,
       "eccentricity": 0.0934,
       "argumentOfPeriapsisDeg": 112,
-      "radiusKm": 6779
+      "radiusKm": 3390
     },
     {
       "name": "Ceres",
@@ -38,7 +38,7 @@
       "semiMajorAxisAu": 2.77,
       "eccentricity": 0.0758,
       "argumentOfPeriapsisDeg": 154,
-      "radiusKm": 946
+      "radiusKm": 473
     },
     {
       "name": "Jupiter",
@@ -46,7 +46,7 @@
       "semiMajorAxisAu": 5.204,
       "eccentricity": 0.0489,
       "argumentOfPeriapsisDeg": 201,
-      "radiusKm": 139820,
+      "radiusKm": 69911,
       "rings": {
         "innerRadiusKm": 122000,
         "outerRadiusKm": 226000,
@@ -63,7 +63,7 @@
       "semiMajorAxisAu": 9.582,
       "eccentricity": 0.0565,
       "argumentOfPeriapsisDeg": 247,
-      "radiusKm": 120536,
+      "radiusKm": 60268,
       "rings": {
         "innerRadiusKm": 70000,
         "outerRadiusKm": 140000,
@@ -80,7 +80,7 @@
       "semiMajorAxisAu": 19.2,
       "eccentricity": 0.0472,
       "argumentOfPeriapsisDeg": 289,
-      "radiusKm": 51118,
+      "radiusKm": 25559,
       "rings": {
         "innerRadiusKm": 41800,
         "outerRadiusKm": 98000,
@@ -97,7 +97,7 @@
       "semiMajorAxisAu": 30.05,
       "eccentricity": 0.0086,
       "argumentOfPeriapsisDeg": 331,
-      "radiusKm": 49528,
+      "radiusKm": 24764,
       "rings": {
         "innerRadiusKm": 53200,
         "outerRadiusKm": 63000,
@@ -114,7 +114,7 @@
       "semiMajorAxisAu": 39.48,
       "eccentricity": 0.2488,
       "argumentOfPeriapsisDeg": 19,
-      "radiusKm": 2376
+      "radiusKm": 1188
     },
     {
       "name": "Haumea",
@@ -122,7 +122,7 @@
       "semiMajorAxisAu": 43.13,
       "eccentricity": 0.1888,
       "argumentOfPeriapsisDeg": 88,
-      "radiusKm": 1632
+      "radiusKm": 816
     },
     {
       "name": "Makemake",
@@ -130,7 +130,7 @@
       "semiMajorAxisAu": 45.79,
       "eccentricity": 0.1598,
       "argumentOfPeriapsisDeg": 166,
-      "radiusKm": 1430
+      "radiusKm": 715
     },
     {
       "name": "Eris",
@@ -138,7 +138,7 @@
       "semiMajorAxisAu": 67.78,
       "eccentricity": 0.4367,
       "argumentOfPeriapsisDeg": 244,
-      "radiusKm": 2326
+      "radiusKm": 1163
     }
   ],
   "alpha_centauri": [
@@ -149,7 +149,7 @@
       "semiMajorAxisAu": 0.029,
       "eccentricity": 0.08,
       "argumentOfPeriapsisDeg": 12,
-      "radiusKm": 6200
+      "radiusKm": 3100
     },
     {
       "name": "Proxima b",
@@ -158,7 +158,7 @@
       "semiMajorAxisAu": 0.049,
       "eccentricity": 0.11,
       "argumentOfPeriapsisDeg": 48,
-      "radiusKm": 11800
+      "radiusKm": 5900
     },
     {
       "name": "Toliman Ember",
@@ -167,7 +167,7 @@
       "semiMajorAxisAu": 0.064,
       "eccentricity": 0.02,
       "argumentOfPeriapsisDeg": 103,
-      "radiusKm": 8500
+      "radiusKm": 4250
     },
     {
       "name": "Averaan",
@@ -176,7 +176,7 @@
       "semiMajorAxisAu": 0.38,
       "eccentricity": 0.045,
       "argumentOfPeriapsisDeg": 158,
-      "radiusKm": 10500
+      "radiusKm": 5250
     },
     {
       "name": "Rigil Haven",
@@ -185,7 +185,7 @@
       "semiMajorAxisAu": 1.08,
       "eccentricity": 0.019,
       "argumentOfPeriapsisDeg": 201,
-      "radiusKm": 13200
+      "radiusKm": 6600
     },
     {
       "name": "Proxima c",
@@ -194,7 +194,7 @@
       "semiMajorAxisAu": 1.4,
       "eccentricity": 0.06,
       "argumentOfPeriapsisDeg": 244,
-      "radiusKm": 18500
+      "radiusKm": 9250
     },
     {
       "name": "Toliman Major",
@@ -203,7 +203,7 @@
       "semiMajorAxisAu": 2.85,
       "eccentricity": 0.052,
       "argumentOfPeriapsisDeg": 287,
-      "radiusKm": 112000,
+      "radiusKm": 56000,
       "rings": {
         "innerRadiusKm": 135000,
         "outerRadiusKm": 280000,
@@ -221,7 +221,7 @@
       "semiMajorAxisAu": 5.4,
       "eccentricity": 0.11,
       "argumentOfPeriapsisDeg": 330,
-      "radiusKm": 128000,
+      "radiusKm": 64000,
       "rings": {
         "innerRadiusKm": 155000,
         "outerRadiusKm": 340000,
@@ -239,7 +239,7 @@
       "semiMajorAxisAu": 9.2,
       "eccentricity": 0.075,
       "argumentOfPeriapsisDeg": 19,
-      "radiusKm": 52000
+      "radiusKm": 26000
     },
     {
       "name": "Bary Ledge",
@@ -248,7 +248,7 @@
       "semiMajorAxisAu": 16.5,
       "eccentricity": 0.14,
       "argumentOfPeriapsisDeg": 72,
-      "radiusKm": 48000
+      "radiusKm": 24000
     },
     {
       "name": "Proxima Fringe",
@@ -257,7 +257,7 @@
       "semiMajorAxisAu": 28.0,
       "eccentricity": 0.22,
       "argumentOfPeriapsisDeg": 115,
-      "radiusKm": 2400
+      "radiusKm": 1200
     }
   ]
 }
