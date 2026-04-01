@@ -429,15 +429,32 @@ public class Planet
 
     /// <summary>
     /// Single flat annulus in the equatorial plane, tilted so the camera sees an ellipse; drawn after the sphere for depth.
-    /// Uses fixed size relative to <paramref name="displayRadius"/> (catalog ring data is not used for rendering).
+    /// Uses <see cref="Rings"/> when present and valid; skips drawing when the planet has no ring system.
     /// </summary>
     private void DrawPlanetRingAnnulus(float displayRadius, Func<Vector3, Vector3> rotateY)
     {
-        // One ring for every planet: inner/outer as multiples of the rendered sphere radius (ignores JSON/catalog).
-        const float innerFactor = 1.24f;
-        const float outerFactor = 1.52f;
-        float innerR = displayRadius * innerFactor;
-        float outerR = displayRadius * outerFactor;
+        if (!Rings.HasValue || !Rings.Value.IsValid)
+        {
+            return;
+        }
+
+        PlanetRingData ring = Rings.Value;
+        float innerR;
+        float outerR;
+        if (RadiusKm > 0f)
+        {
+            float kmToDisplay = displayRadius / RadiusKm;
+            innerR = ring.InnerRadiusKm * kmToDisplay;
+            outerR = ring.OuterRadiusKm * kmToDisplay;
+        }
+        else
+        {
+            // No equatorial radius in catalog: scale so outer ring radius matches display sphere radius for a sane fallback.
+            float kmToDisplay = displayRadius / MathF.Max(ring.OuterRadiusKm, 1f);
+            innerR = ring.InnerRadiusKm * kmToDisplay;
+            outerR = ring.OuterRadiusKm * kmToDisplay;
+        }
+
         if (innerR <= 0f || outerR <= innerR)
         {
             return;
@@ -445,8 +462,8 @@ public class Planet
 
         const int segments = 96;
         const float tiltDeg = 26f;
-        const float ringOpacity = 0.78f;
-        Color ringRgb = new Color(200, 190, 160, 255);
+        float ringOpacity = Math.Clamp(ring.Opacity, 0f, 1f);
+        Color ringRgb = ring.RingColor;
 
         float tiltRad = tiltDeg * (MathF.PI / 180f);
         float cosT = MathF.Cos(tiltRad);
