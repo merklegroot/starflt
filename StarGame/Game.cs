@@ -640,7 +640,26 @@ public class Game : IGame
         {
             _planetView.DrawEncounterFullBleed(_currentPlanet, viewWidth, viewHeight);
 
-            UiText.DrawText("PLANETARY ENCOUNTER", viewWidth / 2 - 150, 30, 32, Color.WHITE);
+            const int titleSize = 22;
+            const int planetNameSize = 34;
+            float titleY = 22;
+            UiText.DrawTextCenteredAtXClamped(
+                "PLANETARY ENCOUNTER",
+                viewWidth * 0.5f,
+                titleY,
+                titleSize,
+                new Color(200, 205, 220, 255),
+                12f,
+                viewWidth - 12f);
+
+            float planetLineY = titleY + titleSize + 10;
+            UiText.DrawTextCenteredAtXOutlined(
+                _currentPlanet.Name,
+                viewWidth * 0.5f,
+                planetLineY,
+                planetNameSize,
+                Color.WHITE,
+                new Color(0, 0, 0, 200));
 
             if (_currentSystem != null)
             {
