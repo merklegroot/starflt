@@ -406,7 +406,7 @@ public class Game : IGame
                 _screenHeight,
                 out LoadedPlanet loadedPlanet))
         {
-            _currentPlanet = new Planet(loadedPlanet.Name, Vector2.Zero, 50.0f, loadedPlanet.SurfaceColor);
+            _currentPlanet = new Planet(loadedPlanet.Name, Vector2.Zero, 50.0f, loadedPlanet.SurfaceColor, loadedPlanet.RadiusKm);
             _planetView.ResetRotation();
             _planetaryEncounterReturnState = GameState.StarSystemView;
             _currentState = GameState.PlanetaryEncounter;
@@ -661,9 +661,17 @@ public class Game : IGame
                 Color.WHITE,
                 new Color(0, 0, 0, 200));
 
+            int infoY = viewHeight - 100;
             if (_currentSystem != null)
             {
-                UiText.DrawText($"System: {_currentSystem.Name}", 40, viewHeight - 100, 18, Color.SKYBLUE);
+                UiText.DrawText($"System: {_currentSystem.Name}", 40, infoY, 18, Color.SKYBLUE);
+                infoY += 24;
+            }
+
+            if (_currentPlanet.RadiusKm > 0f)
+            {
+                string radiusText = $"Radius: {_currentPlanet.RadiusKm:N0} km";
+                UiText.DrawText(radiusText, 40, infoY, 18, new Color(180, 210, 235, 255));
             }
         }
 

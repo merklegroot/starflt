@@ -13,6 +13,9 @@ public class Planet
     public float Radius { get; set; }
     public Color SurfaceColor { get; set; }
 
+    /// <summary>Equatorial radius in kilometers when known from catalog data; 0 if not specified.</summary>
+    public float RadiusKm { get; set; }
+
     private List<Vector3> _spherePoints = new();
     private List<float> _pointHeights = new();
     private List<List<int>> _ringIndices = new();
@@ -23,12 +26,13 @@ public class Planet
     private float _maxHeight = float.MinValue;
     private List<TriangleData> _triangles = new();
 
-    public Planet(string name, Vector2 position, float radius, Color surfaceColor)
+    public Planet(string name, Vector2 position, float radius, Color surfaceColor, float radiusKm = 0f)
     {
         Name = name;
         Position = position;
         Radius = radius;
         SurfaceColor = surfaceColor;
+        RadiusKm = radiusKm;
         int seed = name.GetHashCode();
         _random = new Random(seed);
         

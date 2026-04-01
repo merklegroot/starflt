@@ -120,7 +120,8 @@ public class ResourceLoader : IResourceLoader
                     SurfaceColor = HexColor.ToRaylibColor(d.SurfaceColor),
                     SemiMajorAxisAu = aAu,
                     Eccentricity = ecc,
-                    ArgumentOfPeriapsisRad = omegaDeg * (MathF.PI / 180f)
+                    ArgumentOfPeriapsisRad = omegaDeg * (MathF.PI / 180f),
+                    RadiusKm = d.RadiusKm > 0f ? d.RadiusKm : 0f
                 };
             }
 
@@ -152,5 +153,6 @@ public class ResourceLoader : IResourceLoader
         public float SemiMajorAxisAu { get; set; }
         public float Eccentricity { get; set; }
         public float ArgumentOfPeriapsisDeg { get; set; }
+        public float RadiusKm { get; set; }
     }
 }

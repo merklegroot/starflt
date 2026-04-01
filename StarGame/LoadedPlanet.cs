@@ -9,4 +9,5 @@ public struct LoadedPlanet
     public float SemiMajorAxisAu;
     public float Eccentricity;
     public float ArgumentOfPeriapsisRad;
+    public float RadiusKm;
 }

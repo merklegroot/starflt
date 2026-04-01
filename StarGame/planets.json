@@ -5,91 +5,104 @@
       "surfaceColor": "#B5B5B5",
       "semiMajorAxisAu": 0.387,
       "eccentricity": 0.2056,
-      "argumentOfPeriapsisDeg": 0
+      "argumentOfPeriapsisDeg": 0,
+      "radiusKm": 4879
     },
     {
       "name": "Venus",
       "surfaceColor": "#E6CE8A",
       "semiMajorAxisAu": 0.723,
       "eccentricity": 0.0068,
-      "argumentOfPeriapsisDeg": 33
+      "argumentOfPeriapsisDeg": 33,
+      "radiusKm": 12104
     },
     {
       "name": "Earth",
       "surfaceColor": "#6B93D6",
       "semiMajorAxisAu": 1.0,
       "eccentricity": 0.0167,
-      "argumentOfPeriapsisDeg": 71
+      "argumentOfPeriapsisDeg": 71,
+      "radiusKm": 12742
     },
     {
       "name": "Mars",
       "surfaceColor": "#C86432",
       "semiMajorAxisAu": 1.524,
       "eccentricity": 0.0934,
-      "argumentOfPeriapsisDeg": 112
+      "argumentOfPeriapsisDeg": 112,
+      "radiusKm": 6779
     },
     {
       "name": "Ceres",
       "surfaceColor": "#8A8680",
       "semiMajorAxisAu": 2.77,
       "eccentricity": 0.0758,
-      "argumentOfPeriapsisDeg": 154
+      "argumentOfPeriapsisDeg": 154,
+      "radiusKm": 946
     },
     {
       "name": "Jupiter",
       "surfaceColor": "#D4A574",
       "semiMajorAxisAu": 5.204,
       "eccentricity": 0.0489,
-      "argumentOfPeriapsisDeg": 201
+      "argumentOfPeriapsisDeg": 201,
+      "radiusKm": 139820
     },
     {
       "name": "Saturn",
       "surfaceColor": "#E8D4A8",
       "semiMajorAxisAu": 9.582,
       "eccentricity": 0.0565,
-      "argumentOfPeriapsisDeg": 247
+      "argumentOfPeriapsisDeg": 247,
+      "radiusKm": 120536
     },
     {
       "name": "Uranus",
       "surfaceColor": "#4FD0E7",
       "semiMajorAxisAu": 19.2,
       "eccentricity": 0.0472,
-      "argumentOfPeriapsisDeg": 289
+      "argumentOfPeriapsisDeg": 289,
+      "radiusKm": 51118
     },
     {
       "name": "Neptune",
       "surfaceColor": "#3457D5",
       "semiMajorAxisAu": 30.05,
       "eccentricity": 0.0086,
-      "argumentOfPeriapsisDeg": 331
+      "argumentOfPeriapsisDeg": 331,
+      "radiusKm": 49528
     },
     {
       "name": "Pluto",
       "surfaceColor": "#C9B8A0",
       "semiMajorAxisAu": 39.48,
       "eccentricity": 0.2488,
-      "argumentOfPeriapsisDeg": 19
+      "argumentOfPeriapsisDeg": 19,
+      "radiusKm": 2376
     },
     {
       "name": "Haumea",
       "surfaceColor": "#9A9A90",
       "semiMajorAxisAu": 43.13,
       "eccentricity": 0.1888,
-      "argumentOfPeriapsisDeg": 88
+      "argumentOfPeriapsisDeg": 88,
+      "radiusKm": 1632
     },
     {
       "name": "Makemake",
       "surfaceColor": "#C87860",
       "semiMajorAxisAu": 45.79,
       "eccentricity": 0.1598,
-      "argumentOfPeriapsisDeg": 166
+      "argumentOfPeriapsisDeg": 166,
+      "radiusKm": 1430
     },
     {
       "name": "Eris",
       "surfaceColor": "#D8D0C8",
       "semiMajorAxisAu": 67.78,
       "eccentricity": 0.4367,
-      "argumentOfPeriapsisDeg": 244
+      "argumentOfPeriapsisDeg": 244,
+      "radiusKm": 2326
     }
   ],
   "alpha_centauri": [
@@ -99,7 +112,8 @@
       "surfaceColor": "#9A9690",
       "semiMajorAxisAu": 0.029,
       "eccentricity": 0.08,
-      "argumentOfPeriapsisDeg": 12
+      "argumentOfPeriapsisDeg": 12,
+      "radiusKm": 6200
     },
     {
       "name": "Proxima b",
@@ -107,7 +121,8 @@
       "surfaceColor": "#3A7CA5",
       "semiMajorAxisAu": 0.049,
       "eccentricity": 0.11,
-      "argumentOfPeriapsisDeg": 48
+      "argumentOfPeriapsisDeg": 48,
+      "radiusKm": 11800
     },
     {
       "name": "Toliman Ember",
@@ -115,7 +130,8 @@
       "surfaceColor": "#D45C3C",
       "semiMajorAxisAu": 0.064,
       "eccentricity": 0.02,
-      "argumentOfPeriapsisDeg": 103
+      "argumentOfPeriapsisDeg": 103,
+      "radiusKm": 8500
     },
     {
       "name": "Averaan",
@@ -123,7 +139,8 @@
       "surfaceColor": "#C4A35A",
       "semiMajorAxisAu": 0.38,
       "eccentricity": 0.045,
-      "argumentOfPeriapsisDeg": 158
+      "argumentOfPeriapsisDeg": 158,
+      "radiusKm": 10500
     },
     {
       "name": "Rigil Haven",
@@ -131,7 +148,8 @@
       "surfaceColor": "#5B8C6E",
       "semiMajorAxisAu": 1.08,
       "eccentricity": 0.019,
-      "argumentOfPeriapsisDeg": 201
+      "argumentOfPeriapsisDeg": 201,
+      "radiusKm": 13200
     },
     {
       "name": "Proxima c",
@@ -139,7 +157,8 @@
       "surfaceColor": "#8E8CB8",
       "semiMajorAxisAu": 1.4,
       "eccentricity": 0.06,
-      "argumentOfPeriapsisDeg": 244
+      "argumentOfPeriapsisDeg": 244,
+      "radiusKm": 18500
     },
     {
       "name": "Toliman Major",
@@ -147,7 +166,8 @@
       "surfaceColor": "#D4A574",
       "semiMajorAxisAu": 2.85,
       "eccentricity": 0.052,
-      "argumentOfPeriapsisDeg": 287
+      "argumentOfPeriapsisDeg": 287,
+      "radiusKm": 112000
     },
     {
       "name": "Kent Gate",
@@ -155,7 +175,8 @@
       "surfaceColor": "#7AB8D4",
       "semiMajorAxisAu": 5.4,
       "eccentricity": 0.11,
-      "argumentOfPeriapsisDeg": 330
+      "argumentOfPeriapsisDeg": 330,
+      "radiusKm": 128000
     },
     {
       "name": "Centauri Bight",
@@ -163,7 +184,8 @@
       "surfaceColor": "#A89078",
       "semiMajorAxisAu": 9.2,
       "eccentricity": 0.075,
-      "argumentOfPeriapsisDeg": 19
+      "argumentOfPeriapsisDeg": 19,
+      "radiusKm": 52000
     },
     {
       "name": "Bary Ledge",
@@ -171,7 +193,8 @@
       "surfaceColor": "#5C6E8C",
       "semiMajorAxisAu": 16.5,
       "eccentricity": 0.14,
-      "argumentOfPeriapsisDeg": 72
+      "argumentOfPeriapsisDeg": 72,
+      "radiusKm": 48000
     },
     {
       "name": "Proxima Fringe",
@@ -179,1109 +202,8 @@
       "surfaceColor": "#B8B0A0",
       "semiMajorAxisAu": 28.0,
       "eccentricity": 0.22,
-      "argumentOfPeriapsisDeg": 125
-    }
-  ],
-  "barnards_star": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 135
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 182
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 229
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 276
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 323
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 10
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 57
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 104
-    }
-  ],
-  "luhman_16": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 128
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 175
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 222
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 269
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 316
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 3
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 50
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 97
-    }
-  ],
-  "wise_0855_0714": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 205
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 252
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 299
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 346
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 33
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 80
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 127
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 174
-    }
-  ],
-  "wolf_359": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 0
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 47
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 94
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 141
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 188
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 235
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 282
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 329
-    }
-  ],
-  "lalande_21185": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 187
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 234
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 281
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 328
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 15
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 62
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 109
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 156
-    }
-  ],
-  "sirius": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 340
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 27
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 74
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 121
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 168
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 215
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 262
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 309
-    }
-  ],
-  "luyten_726_8": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 205
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 252
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 299
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 346
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 33
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 80
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 127
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 174
-    }
-  ],
-  "ross_154": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 329
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 16
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 63
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 110
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 157
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 204
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 251
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 298
-    }
-  ],
-  "ross_248": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 274
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 321
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 8
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 55
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 102
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 149
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 196
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 243
-    }
-  ],
-  "epsilon_eridani": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 340
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 27
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 74
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 121
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 168
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 215
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 262
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 309
-    }
-  ],
-  "lacaille_9352": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 62
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 109
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 156
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 203
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 250
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 297
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 344
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 31
-    }
-  ],
-  "ross_128": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 132
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 179
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 226
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 273
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 320
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 7
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 54
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 101
-    }
-  ],
-  "procyon": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 271
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 318
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 5
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 52
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 99
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 146
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 193
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 240
-    }
-  ],
-  "61_cygni": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 192
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 239
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 286
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 333
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 20
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 67
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 114
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 161
-    }
-  ],
-  "struve_2398": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 281
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 328
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 15
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 62
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 109
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 156
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 203
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 250
-    }
-  ],
-  "groombridge_34": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 316
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 3
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 50
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 97
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 144
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 191
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 238
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 285
-    }
-  ],
-  "epsilon_indi": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 59
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 106
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 153
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 200
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 247
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 294
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 341
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 28
-    }
-  ],
-  "tau_ceti": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 113
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 160
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 207
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 254
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 301
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 348
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 35
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 82
-    }
-  ],
-  "gliese_1061": [
-    {
-      "name": "Veridian",
-      "surfaceColor": "#50C878",
-      "semiMajorAxisAu": 0.35,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 37
-    },
-    {
-      "name": "Crimson Reach",
-      "surfaceColor": "#C85A46",
-      "semiMajorAxisAu": 1.01429,
-      "eccentricity": 0.048,
-      "argumentOfPeriapsisDeg": 84
-    },
-    {
-      "name": "Echo",
-      "surfaceColor": "#B4B4DC",
-      "semiMajorAxisAu": 1.67857,
-      "eccentricity": 0.066,
-      "argumentOfPeriapsisDeg": 131
-    },
-    {
-      "name": "Glass",
-      "surfaceColor": "#8CC8F0",
-      "semiMajorAxisAu": 2.34286,
-      "eccentricity": 0.084,
-      "argumentOfPeriapsisDeg": 178
-    },
-    {
-      "name": "Keth",
-      "surfaceColor": "#C8A050",
-      "semiMajorAxisAu": 3.00714,
-      "eccentricity": 0.102,
-      "argumentOfPeriapsisDeg": 225
-    },
-    {
-      "name": "Mire",
-      "surfaceColor": "#648C6E",
-      "semiMajorAxisAu": 3.67143,
-      "eccentricity": 0.12,
-      "argumentOfPeriapsisDeg": 272
-    },
-    {
-      "name": "Nadir",
-      "surfaceColor": "#7864A0",
-      "semiMajorAxisAu": 4.33571,
-      "eccentricity": 0.138,
-      "argumentOfPeriapsisDeg": 319
-    },
-    {
-      "name": "Solstice",
-      "surfaceColor": "#E6D2A0",
-      "semiMajorAxisAu": 5.0,
-      "eccentricity": 0.03,
-      "argumentOfPeriapsisDeg": 6
+      "argumentOfPeriapsisDeg": 115,
+      "radiusKm": 2400
     }
   ]
 }
