@@ -56,6 +56,8 @@ public class Game : IGame
     private Vector2 _starSystemVelocity = Vector2.Zero;
     private GameState _previousState = GameState.CanopyView;
 
+    private GameState _planetaryEncounterReturnState = GameState.CanopyView;
+
     public bool ShouldExit { get; private set; } = false;
 
     public Game(
@@ -121,6 +123,13 @@ public class Game : IGame
         float deltaTime = Raylib.GetFrameTime();
 
         _rightPanel.UpdateNavigation(ref _currentState, ref _justSwitchedState);
+
+        if (_currentState == GameState.PlanetaryEncounter
+            && _previousState != GameState.PlanetaryEncounter
+            && _previousState != GameState.StarSystemView)
+        {
+            _planetaryEncounterReturnState = GameState.CanopyView;
+        }
 
         if (_currentState == GameState.StarSystemView && _previousState != GameState.StarSystemView)
         {
@@ -388,6 +397,23 @@ public class Game : IGame
         _ship.Velocity = _starSystemVelocity;
 
         int mainViewW = MainViewWidth;
+
+        if (_rightPanel.MenuLevel == 0
+            && _starSystemInteriorView.TryGetPlanetOverlappingShip(
+                _currentSystem,
+                _starSystemShipPosition,
+                mainViewW,
+                _screenHeight,
+                out LoadedPlanet loadedPlanet))
+        {
+            _currentPlanet = new Planet(loadedPlanet.Name, Vector2.Zero, 50.0f, loadedPlanet.SurfaceColor);
+            _planetView.ResetRotation();
+            _planetaryEncounterReturnState = GameState.StarSystemView;
+            _currentState = GameState.PlanetaryEncounter;
+            _justSwitchedState = true;
+            return;
+        }
+
         float exitRadius = MathF.Min(mainViewW, _screenHeight) * StarSystemInteriorExitBoundaryFraction;
         if (_starSystemShipPosition.LengthSquared() >= exitRadius * exitRadius)
         {
@@ -418,7 +444,7 @@ public class Game : IGame
     {
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _rightPanel.MenuLevel == 0)
         {
-            _currentState = GameState.CanopyView;
+            _currentState = _planetaryEncounterReturnState;
         }
 
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_R))

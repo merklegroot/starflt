@@ -19,6 +19,16 @@ public interface IStarSystemInteriorView
     void Draw(StarSystem? system, int viewWidth, int screenHeight, Vector2 shipSystemPosition, IShip ship);
 
     /// <summary>
+    /// True if the ship (screen center) lies within the drawn planet disk for this system; uses the same orbit math and timing as <see cref="Draw"/>.
+    /// </summary>
+    bool TryGetPlanetOverlappingShip(
+        StarSystem? system,
+        Vector2 shipSystemPosition,
+        int viewWidth,
+        int screenHeight,
+        out LoadedPlanet planet);
+
+    /// <summary>
     /// Star-centered overview of orbits and bodies for the right panel (call after the main star system draw in the same frame).
     /// </summary>
     void DrawOverviewMap(
@@ -164,6 +174,76 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
 
         DrawShipOnly(cx, cy, screenHeight, ship);
         DrawPlanetList(viewWidth, screenHeight, planets);
+    }
+
+    public bool TryGetPlanetOverlappingShip(
+        StarSystem? system,
+        Vector2 shipSystemPosition,
+        int viewWidth,
+        int screenHeight,
+        out LoadedPlanet planet)
+    {
+        planet = default;
+        LoadedPlanet[] planets = ResolvePlanets(system);
+        int n = planets.Length;
+        if (n == 0)
+        {
+            return false;
+        }
+
+        EnsureOrbitPhasesMatch(system, n);
+        float orbitTimeForFrame = _orbitElapsedSeconds + Raylib.GetFrameTime();
+
+        int cx = viewWidth / 2;
+        int cy = screenHeight / 2;
+        float spx = shipSystemPosition.X;
+        float spy = shipSystemPosition.Y;
+        float z = InteriorViewZoom;
+
+        float minAu = planets[0].SemiMajorAxisAu;
+        float maxAu = planets[0].SemiMajorAxisAu;
+        for (int j = 1; j < n; j++)
+        {
+            if (planets[j].SemiMajorAxisAu < minAu)
+            {
+                minAu = planets[j].SemiMajorAxisAu;
+            }
+
+            if (planets[j].SemiMajorAxisAu > maxAu)
+            {
+                maxAu = planets[j].SemiMajorAxisAu;
+            }
+        }
+
+        float bestDistSq = float.MaxValue;
+        bool found = false;
+
+        for (int i = 0; i < n; i++)
+        {
+            LoadedPlanet p = planets[i];
+            float aPx = MapSemiMajorAxisToPixels(p.SemiMajorAxisAu, minAu, maxAu, viewWidth, screenHeight) * z;
+            float e = Math.Clamp(p.Eccentricity, 0f, 0.95f);
+            float omega = p.ArgumentOfPeriapsisRad;
+
+            float meanAnomalyRad = WrapAngle0ToTau(
+                _meanAnomalyAtEpochRad[i] + _meanMotionRadPerSec[i] * orbitTimeForFrame);
+            float nu = MeanAnomalyToTrueAnomaly(meanAnomalyRad, e);
+            EllipseRadiusAndWorldOffset(aPx, e, omega, nu, out float worldPx, out float worldPy);
+
+            float dx = spx * z - worldPx;
+            float dy = spy * z - worldPy;
+            float distSq = dx * dx + dy * dy;
+
+            float pr = (6 + (i % 3)) * z;
+            if (distSq <= pr * pr && distSq < bestDistSq)
+            {
+                bestDistSq = distSq;
+                planet = p;
+                found = true;
+            }
+        }
+
+        return found;
     }
 
     /// <summary>
@@ -394,7 +474,7 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
 
         UiText.DrawText("STAR SYSTEM", 20, titleY, titleFontSize, Color.SKYBLUE);
         UiText.DrawText(
-            "A/D or arrows: turn | W/S: thrust / reverse | P: planet list | ESC: Canopy | X: Quit",
+            "A/D or arrows: turn | W/S: thrust / reverse | P: planet list | Fly over a planet: encounter | ESC: Canopy | X: Quit",
             20,
             helpY,
             helpFontSize,
