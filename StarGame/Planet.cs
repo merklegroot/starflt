@@ -418,10 +418,7 @@ public class Planet
             Raylib.DrawTriangle3D(v1, v2, v3, tri.Color);
         }
 
-        if (Rings.HasValue && Rings.Value.IsValid && RadiusKm > 1e-3f)
-        {
-            DrawPlanetRingAnnulus(Rings.Value, displayRadius, RadiusKm, RotateY);
-        }
+        DrawPlanetRingAnnulus(displayRadius, RotateY);
 
         // End 3D mode
         Raylib.EndMode3D();
@@ -431,14 +428,16 @@ public class Planet
     }
 
     /// <summary>
-    /// Flat annulus in the equatorial plane, tilted so the camera sees an ellipse; drawn after the sphere for depth.
-    /// When <see cref="PlanetRingData.HasGaps"/> is true, draws two separate radial bands with an empty annular gap between them (division), not angular wedges.
+    /// Single flat annulus in the equatorial plane, tilted so the camera sees an ellipse; drawn after the sphere for depth.
+    /// Uses fixed size relative to <paramref name="displayRadius"/> (catalog ring data is not used for rendering).
     /// </summary>
-    private void DrawPlanetRingAnnulus(PlanetRingData ring, float displayRadius, float planetRadiusKm, Func<Vector3, Vector3> rotateY)
+    private void DrawPlanetRingAnnulus(float displayRadius, Func<Vector3, Vector3> rotateY)
     {
-        float kmToScene = displayRadius / planetRadiusKm;
-        float innerR = ring.InnerRadiusKm * kmToScene;
-        float outerR = ring.OuterRadiusKm * kmToScene;
+        // One ring for every planet: inner/outer as multiples of the rendered sphere radius (ignores JSON/catalog).
+        const float innerFactor = 1.24f;
+        const float outerFactor = 1.52f;
+        float innerR = displayRadius * innerFactor;
+        float outerR = displayRadius * outerFactor;
         if (innerR <= 0f || outerR <= innerR)
         {
             return;
@@ -446,6 +445,9 @@ public class Planet
 
         const int segments = 96;
         const float tiltDeg = 26f;
+        const float ringOpacity = 0.78f;
+        Color ringRgb = new Color(200, 190, 160, 255);
+
         float tiltRad = tiltDeg * (MathF.PI / 180f);
         float cosT = MathF.Cos(tiltRad);
         float sinT = MathF.Sin(tiltRad);
@@ -468,60 +470,29 @@ public class Planet
 
         Raylib.BeginBlendMode(BlendMode.BLEND_ALPHA);
 
-        void DrawAnnulusBand(float bandInner, float bandOuter)
+        byte baseA = (byte)Math.Clamp((int)(ringOpacity * 255f), 8, 255);
+        Color c = ringRgb;
+        Color cTop = new Color(c.R, c.G, c.B, baseA);
+        Color cBot = new Color(
+            (byte)Math.Min(255, c.R + 18),
+            (byte)Math.Min(255, c.G + 18),
+            (byte)Math.Min(255, c.B + 18),
+            (byte)Math.Clamp(baseA * 3 / 4, 6, 255));
+
+        for (int i = 0; i < segments; i++)
         {
-            if (bandOuter <= bandInner + 1e-4f)
-            {
-                return;
-            }
+            float a0 = i * MathF.Tau / segments;
+            float a1 = (i + 1) * MathF.Tau / segments;
 
-            for (int i = 0; i < segments; i++)
-            {
-                float a0 = i * MathF.Tau / segments;
-                float a1 = (i + 1) * MathF.Tau / segments;
+            Vector3 o0 = TransformRingPoint(outerR, a0);
+            Vector3 o1 = TransformRingPoint(outerR, a1);
+            Vector3 i0 = TransformRingPoint(innerR, a0);
+            Vector3 i1 = TransformRingPoint(innerR, a1);
 
-                byte baseA = (byte)Math.Clamp((int)(ring.Opacity * 255f), 8, 255);
-                Color c = ring.RingColor;
-                Color cTop = new Color(c.R, c.G, c.B, baseA);
-                Color cBot = new Color(
-                    (byte)Math.Min(255, c.R + 18),
-                    (byte)Math.Min(255, c.G + 18),
-                    (byte)Math.Min(255, c.B + 18),
-                    (byte)Math.Clamp(baseA * 3 / 4, 6, 255));
-
-                Vector3 o0 = TransformRingPoint(bandOuter, a0);
-                Vector3 o1 = TransformRingPoint(bandOuter, a1);
-                Vector3 i0 = TransformRingPoint(bandInner, a0);
-                Vector3 i1 = TransformRingPoint(bandInner, a1);
-
-                Raylib.DrawTriangle3D(i0, o0, o1, cTop);
-                Raylib.DrawTriangle3D(i0, o1, i1, cBot);
-                Raylib.DrawTriangle3D(o0, i0, o1, cTop);
-                Raylib.DrawTriangle3D(o1, i1, i0, cBot);
-            }
-        }
-
-        if (!ring.HasGaps)
-        {
-            DrawAnnulusBand(innerR, outerR);
-        }
-        else
-        {
-            float radialSpan = outerR - innerR;
-            const float gapFractionOfWidth = 0.12f;
-            float gapRad = radialSpan * gapFractionOfWidth;
-            float bandWidth = (radialSpan - gapRad) * 0.5f;
-            if (bandWidth <= 1e-4f)
-            {
-                DrawAnnulusBand(innerR, outerR);
-            }
-            else
-            {
-                float innerBandOuter = innerR + bandWidth;
-                float outerBandInner = innerBandOuter + gapRad;
-                DrawAnnulusBand(innerR, innerBandOuter);
-                DrawAnnulusBand(outerBandInner, outerR);
-            }
+            Raylib.DrawTriangle3D(i0, o0, o1, cTop);
+            Raylib.DrawTriangle3D(i0, o1, i1, cBot);
+            Raylib.DrawTriangle3D(o0, i0, o1, cTop);
+            Raylib.DrawTriangle3D(o1, i1, i0, cBot);
         }
 
         Raylib.EndBlendMode();
