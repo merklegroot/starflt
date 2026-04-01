@@ -48,6 +48,7 @@ public class Game : IGame
     private readonly IStarSystemInteriorView _starSystemInteriorView;
     private readonly IPlanetView _planetView;
     private readonly IRightPanel _rightPanel;
+    private readonly IResourceLoader _resourceLoader;
 
     private bool _justSwitchedState = false;
     private Vector2 _displayedCoordinates = Vector2.Zero;
@@ -67,7 +68,8 @@ public class Game : IGame
         IParallaxStarfield parallax,
         ICanopyStarSystemView canopySystems,
         IStarSystemInteriorView starSystemInteriorView,
-        IPlanetView planetView)
+        IPlanetView planetView,
+        IResourceLoader resourceLoader)
     {
         _ship = ship;
         _rightPanel = rightPanel;
@@ -76,6 +78,7 @@ public class Game : IGame
         _canopySystems = canopySystems;
         _starSystemInteriorView = starSystemInteriorView;
         _planetView = planetView;
+        _resourceLoader = resourceLoader;
         _screenWidth = GameConstants.ScreenWidth;
         _screenHeight = GameConstants.ScreenHeight;
 
@@ -129,6 +132,18 @@ public class Game : IGame
             && _previousState != GameState.StarSystemView)
         {
             _planetaryEncounterReturnState = GameState.CanopyView;
+
+            if (TryGetJupiterPlanet(out LoadedPlanet jupiter))
+            {
+                _currentPlanet = new Planet(
+                    jupiter.Name,
+                    Vector2.Zero,
+                    50.0f,
+                    jupiter.SurfaceColor,
+                    jupiter.RadiusKm,
+                    jupiter.Rings);
+                _planetView.ResetRotation();
+            }
         }
 
         if (_currentState == GameState.StarSystemView && _previousState != GameState.StarSystemView)
@@ -594,6 +609,28 @@ public class Game : IGame
         _starSystemVelocity = Vector2.Zero;
         _ship.Velocity = Vector2.Zero;
         _starSystemInteriorView.NotifyStarSystemViewEntered(_currentSystem);
+    }
+
+    private bool TryGetJupiterPlanet(out LoadedPlanet jupiter)
+    {
+        jupiter = default;
+        IReadOnlyDictionary<string, LoadedPlanet[]> catalog = _resourceLoader.LoadPlanetsByStarSystem();
+
+        if (!catalog.TryGetValue("sol", out LoadedPlanet[]? planets))
+        {
+            return false;
+        }
+
+        for (int i = 0; i < planets.Length; i++)
+        {
+            if (string.Equals(planets[i].Name, "Jupiter", StringComparison.OrdinalIgnoreCase))
+            {
+                jupiter = planets[i];
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void DrawStarMapHud()
