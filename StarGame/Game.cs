@@ -693,7 +693,7 @@ public class Game : IGame
                 infoY += infoLine;
 
                 UiText.DrawText(
-                    $"Opacity: {r.Opacity:F2}  |  texture: {r.ParticleTexture}  |  gaps: {(r.HasGaps ? "yes" : "no")}",
+                    $"Opacity: {r.Opacity:F2}  |  texture: {r.ParticleTexture}  |  radial division: {(r.HasGaps ? "yes" : "no")}",
                     40,
                     infoY,
                     16,
