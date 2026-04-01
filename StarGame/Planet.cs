@@ -479,21 +479,28 @@ public class Planet
             (byte)Math.Min(255, c.B + 18),
             (byte)Math.Clamp(baseA * 3 / 4, 6, 255));
 
-        for (int i = 0; i < segments; i++)
+        void DrawAnnulusBand()
         {
-            float a0 = i * MathF.Tau / segments;
-            float a1 = (i + 1) * MathF.Tau / segments;
+            for (int i = 0; i < segments; i++)
+            {
+                float a0 = i * MathF.Tau / segments;
+                float a1 = (i + 1) * MathF.Tau / segments;
 
-            Vector3 o0 = TransformRingPoint(outerR, a0);
-            Vector3 o1 = TransformRingPoint(outerR, a1);
-            Vector3 i0 = TransformRingPoint(innerR, a0);
-            Vector3 i1 = TransformRingPoint(innerR, a1);
+                Vector3 i0 = TransformRingPoint(innerR, a0);
+                Vector3 i1 = TransformRingPoint(innerR, a1);
+                Vector3 o0 = TransformRingPoint(outerR, a0);
+                Vector3 o1 = TransformRingPoint(outerR, a1);
 
-            Raylib.DrawTriangle3D(i0, o0, o1, cTop);
-            Raylib.DrawTriangle3D(i0, o1, i1, cBot);
-            Raylib.DrawTriangle3D(o0, i0, o1, cTop);
-            Raylib.DrawTriangle3D(o1, i1, i0, cBot);
+                // Quad i0 → i1 → o1 → o0 (two triangles). CCW from one side of the ring plane = front;
+                // reverse vertex order = back, so both sides render with backface culling on.
+                Raylib.DrawTriangle3D(i0, i1, o1, cTop);
+                Raylib.DrawTriangle3D(i0, o1, o0, cTop);
+                Raylib.DrawTriangle3D(i0, o1, i1, cBot);
+                Raylib.DrawTriangle3D(i0, o0, o1, cBot);
+            }
         }
+
+        DrawAnnulusBand();
 
         Raylib.EndBlendMode();
     }
