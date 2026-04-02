@@ -470,9 +470,18 @@ public class Game : IGame
             _currentState = _planetaryEncounterReturnState;
         }
 
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_R))
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_R) && _rightPanel.MenuLevel == 0)
         {
-            _currentPlanet = null;
+            if (_currentSystem != null)
+            {
+                string planetName = _planetView.CreateUniquePlanetName(_currentSystem.Name);
+                _currentPlanet = new Planet(planetName, Vector2.Zero, 50.0f, Color.BLUE);
+            }
+            else
+            {
+                _currentPlanet = null;
+            }
+
             _planetView.ResetRotation();
         }
     }
@@ -689,8 +698,22 @@ public class Game : IGame
 
         if (_currentPlanet == null && _currentSystem != null)
         {
-            string planetName = _planetView.CreateUniquePlanetName(_currentSystem.Name);
-            _currentPlanet = new Planet(planetName, Vector2.Zero, 50.0f, Color.BLUE);
+            if (TryGetJupiterPlanet(out LoadedPlanet jupiter))
+            {
+                _currentPlanet = new Planet(
+                    jupiter.Name,
+                    Vector2.Zero,
+                    50.0f,
+                    jupiter.SurfaceColor,
+                    jupiter.RadiusKm,
+                    jupiter.Rings,
+                    jupiter.Composition);
+            }
+            else
+            {
+                string planetName = _planetView.CreateUniquePlanetName(_currentSystem.Name);
+                _currentPlanet = new Planet(planetName, Vector2.Zero, 50.0f, Color.BLUE);
+            }
         }
 
         if (_currentPlanet != null)

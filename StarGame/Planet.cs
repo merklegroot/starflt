@@ -463,16 +463,22 @@ public class Planet
         // Begin 3D mode
         Raylib.BeginMode3D(camera);
 
-        // Draw all triangles with rotation and scale applied
-        foreach (var tri in _triangles)
+        if (string.Equals(Name, "Jupiter", StringComparison.OrdinalIgnoreCase)
+            && PlanetSphereTextureResources.TryGetJupiter(out Texture2D jupiterTex))
         {
-            // Apply rotation and scale to vertices
-            Vector3 v1 = RotateY(tri.V1) * sphereRadius;
-            Vector3 v2 = RotateY(tri.V2) * sphereRadius;
-            Vector3 v3 = RotateY(tri.V3) * sphereRadius;
-            
-            // Draw triangle in 3D (backface culling handled automatically)
-            Raylib.DrawTriangle3D(v1, v2, v3, tri.Color);
+            PlanetSphereTextureResources.DrawJupiterTextured(jupiterTex, sphereRadius, rotationAngle);
+        }
+        else
+        {
+            // Draw all triangles with rotation and scale applied (procedural noise colors)
+            foreach (var tri in _triangles)
+            {
+                Vector3 v1 = RotateY(tri.V1) * sphereRadius;
+                Vector3 v2 = RotateY(tri.V2) * sphereRadius;
+                Vector3 v3 = RotateY(tri.V3) * sphereRadius;
+
+                Raylib.DrawTriangle3D(v1, v2, v3, tri.Color);
+            }
         }
 
         DrawPlanetRingAnnulus(displayRadius, RotateY, worldScale);

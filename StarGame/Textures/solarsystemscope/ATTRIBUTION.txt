@@ -1,4 +1,5 @@
 Saturn ring texture: saturn_ring_alpha.png (scaled in this repo from the site’s 2K asset; see source URL below.)
+Jupiter surface: jupiter.png (primary) and jupiter.jpg (fallback), both scaled in this repo from the site’s 2K asset; same license as below.
 ================================================================================
 
 Source page (download and terms):
