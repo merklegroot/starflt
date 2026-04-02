@@ -25,12 +25,11 @@ public class Planet
     private List<Vector3> _spherePoints = new();
     private List<float> _pointHeights = new();
     private List<List<int>> _ringIndices = new();
+    private List<TriangleData> _triangles = new();
     private Random _random;
-    private Vector3 _noiseOffset; // Offset for noise sampling to make each planet unique
-
+    private Vector3 _noiseOffset;
     private float _minHeight = float.MaxValue;
     private float _maxHeight = float.MinValue;
-    private List<TriangleData> _triangles = new();
 
     public Planet(
         string name,
@@ -48,17 +47,13 @@ public class Planet
         RadiusKm = radiusKm;
         Rings = rings;
         Composition = composition;
+
         int seed = name.GetHashCode();
         _random = new Random(seed);
-        
-        // Create a unique noise offset using the seeded random number generator
-        // This ensures each planet samples different parts of the noise space
-        // Using Random ensures variation even if hash codes are similar
         _noiseOffset = new Vector3(
             _random.Next(100000, 999999),
             _random.Next(100000, 999999),
-            _random.Next(100000, 999999)
-        );
+            _random.Next(100000, 999999));
 
         GenerateSpherePoints();
         BuildTriangles();
@@ -106,13 +101,13 @@ public class Planet
             _ringIndices.Add(ringIndices);
         }
 
-        // Assign heights using 3D noise → no grid, no helix, no seams
+        // fBm heights drive terrain colors only; mesh vertices stay on the unit sphere when building triangles.
         AssignHeightsWith3DNoise();
     }
 
     private void BuildTriangles()
     {
-        // Build triangles from rings with heights applied using fractional mapping
+        // Unit-sphere positions; triangle colors come from height noise (see AssignHeightsWith3DNoise).
         for (int ring = 0; ring < _ringIndices.Count - 1; ring++)
         {
             List<int> currentRing = _ringIndices[ring];
@@ -123,20 +118,26 @@ public class Planet
             {
                 // Connect pole to first ring - full fan coverage
                 int poleIdx = currentRing[0];
-                Vector3 poleVertex = _spherePoints[poleIdx] * _pointHeights[poleIdx];
+                Vector3 poleVertex = _spherePoints[poleIdx];
                 Color poleColor = GetColorForHeight(_pointHeights[poleIdx]);
-                
+
                 for (int i = 0; i < nextRing.Count; i++)
                 {
                     int nextIdx = nextRing[i];
                     int nextIdx2 = nextRing[(i + 1) % nextRing.Count];
 
                     Vector3 v1 = poleVertex;
-                    Vector3 v2 = _spherePoints[nextIdx] * _pointHeights[nextIdx];
-                    Vector3 v3 = _spherePoints[nextIdx2] * _pointHeights[nextIdx2];
-                    
+                    Vector3 v2 = _spherePoints[nextIdx];
+                    Vector3 v3 = _spherePoints[nextIdx2];
+
                     // Ensure outward-facing winding (counter-clockwise from outside)
-                    TriangleData tri = EnsureOutwardFacing(new TriangleData { V1 = v1, V2 = v2, V3 = v3, Color = AverageColor(poleColor, GetColorForHeight(_pointHeights[nextIdx]), GetColorForHeight(_pointHeights[nextIdx2])) });
+                    TriangleData tri = EnsureOutwardFacing(new TriangleData
+                    {
+                        V1 = v1,
+                        V2 = v2,
+                        V3 = v3,
+                        Color = AverageColor(poleColor, GetColorForHeight(_pointHeights[nextIdx]), GetColorForHeight(_pointHeights[nextIdx2]))
+                    });
                     _triangles.Add(tri);
                 }
             }
@@ -144,20 +145,26 @@ public class Planet
             {
                 // Connect last ring to pole - full fan coverage
                 int poleIdx = nextRing[0];
-                Vector3 poleVertex = _spherePoints[poleIdx] * _pointHeights[poleIdx];
+                Vector3 poleVertex = _spherePoints[poleIdx];
                 Color poleColor = GetColorForHeight(_pointHeights[poleIdx]);
-                
+
                 for (int i = 0; i < currentRing.Count; i++)
                 {
                     int currIdx = currentRing[i];
                     int currIdx2 = currentRing[(i + 1) % currentRing.Count];
 
-                    Vector3 v1 = _spherePoints[currIdx] * _pointHeights[currIdx];
-                    Vector3 v2 = _spherePoints[currIdx2] * _pointHeights[currIdx2];
+                    Vector3 v1 = _spherePoints[currIdx];
+                    Vector3 v2 = _spherePoints[currIdx2];
                     Vector3 v3 = poleVertex;
-                    
+
                     // Ensure outward-facing winding
-                    TriangleData tri = EnsureOutwardFacing(new TriangleData { V1 = v1, V2 = v2, V3 = v3, Color = AverageColor(GetColorForHeight(_pointHeights[currIdx]), GetColorForHeight(_pointHeights[currIdx2]), poleColor) });
+                    TriangleData tri = EnsureOutwardFacing(new TriangleData
+                    {
+                        V1 = v1,
+                        V2 = v2,
+                        V3 = v3,
+                        Color = AverageColor(GetColorForHeight(_pointHeights[currIdx]), GetColorForHeight(_pointHeights[currIdx2]), poleColor)
+                    });
                     _triangles.Add(tri);
                 }
             }
@@ -184,10 +191,13 @@ public class Planet
                     if (!addedTriangles.Contains(key))
                     {
                         addedTriangles.Add(key);
-                        Vector3 v1 = _spherePoints[idx1] * _pointHeights[idx1];
-                        Vector3 v2 = _spherePoints[idx2] * _pointHeights[idx2];
-                        Vector3 v3 = _spherePoints[idx3] * _pointHeights[idx3];
-                        Color avgColor = AverageColor(GetColorForHeight(_pointHeights[idx1]), GetColorForHeight(_pointHeights[idx2]), GetColorForHeight(_pointHeights[idx3]));
+                        Vector3 v1 = _spherePoints[idx1];
+                        Vector3 v2 = _spherePoints[idx2];
+                        Vector3 v3 = _spherePoints[idx3];
+                        Color avgColor = AverageColor(
+                            GetColorForHeight(_pointHeights[idx1]),
+                            GetColorForHeight(_pointHeights[idx2]),
+                            GetColorForHeight(_pointHeights[idx3]));
                         TriangleData tri = EnsureOutwardFacing(new TriangleData { V1 = v1, V2 = v2, V3 = v3, Color = avgColor });
                         _triangles.Add(tri);
                     }
@@ -312,7 +322,7 @@ public class Planet
 
     private void AssignHeightsWith3DNoise()
     {
-        const float baseScale = 2.2f;     // larger = bigger continents
+        const float baseScale = 2.2f;
         const int octaves = 7;
         const float persistence = 0.48f;
         const float lacunarity = 2.1f;
@@ -327,38 +337,37 @@ public class Planet
 
         for (int i = 0; i < _spherePoints.Count; i++)
         {
-            Vector3 p = _spherePoints[i];  // unit vector
+            Vector3 p = _spherePoints[i];
 
-            // Fractional Brownian Motion (fBm) in 3D
             float noise = 0f;
             float frequency = baseScale;
             amp = 1f;
 
             for (int o = 0; o < octaves; o++)
             {
-                // Add noise offset to ensure each planet samples different parts of noise space
                 float sample = Noise3D.Get(
                     (p.X * frequency) + _noiseOffset.X,
                     (p.Y * frequency) + _noiseOffset.Y,
-                    (p.Z * frequency) + _noiseOffset.Z
-                );
+                    (p.Z * frequency) + _noiseOffset.Z);
                 noise += sample * amp;
                 amp *= persistence;
                 frequency *= lacunarity;
             }
 
-            noise /= maxPossible;           // ~ -1 .. 1
-            float height = 1.0f + noise * 0.095f; // Reduced by half again: was 0.19f
+            noise /= maxPossible;
+            float height = 1.0f + noise * 0.095f;
 
-            // Optional ridge / mountain sharpening
             if (noise > 0.15f)
-                height += (noise - 0.15f) * 0.1125f; // Reduced by half again: was 0.225f
+            {
+                height += (noise - 0.15f) * 0.1125f;
+            }
 
-            // Optional ocean flattening
             if (height < 1.0f)
+            {
                 height = 1.0f + (height - 1.0f) * 0.3f;
+            }
 
-            height = MathF.Max(0.9375f, MathF.Min(1.0625f, height)); // Reduced range by half again: was [0.875, 1.125], now [0.9375, 1.0625]
+            height = MathF.Max(0.9375f, MathF.Min(1.0625f, height));
 
             _pointHeights[i] = height;
 
@@ -369,17 +378,20 @@ public class Planet
 
     private Color GetColorForHeight(float height)
     {
-        if (_maxHeight <= _minHeight) return Color.GREEN;
+        if (_maxHeight <= _minHeight)
+        {
+            return Color.GREEN;
+        }
 
         float norm = (height - _minHeight) / (_maxHeight - _minHeight);
 
-        if (norm < 0.18f) return new Color(10, 40, 140, 255);     // deep ocean
-        if (norm < 0.28f) return new Color(40, 100, 180, 255);    // shallow
-        if (norm < 0.38f) return new Color(180, 160, 100, 255);   // beach
-        if (norm < 0.55f) return new Color(40, 140, 40, 255);     // grass/forest
-        if (norm < 0.72f) return new Color(120, 100, 80, 255);    // hills/rock
-        if (norm < 0.88f) return new Color(140, 140, 140, 255);   // mountains
-        return new Color(220, 230, 240, 255);                      // snow
+        if (norm < 0.18f) return new Color(10, 40, 140, 255);
+        if (norm < 0.28f) return new Color(40, 100, 180, 255);
+        if (norm < 0.38f) return new Color(180, 160, 100, 255);
+        if (norm < 0.55f) return new Color(40, 140, 40, 255);
+        if (norm < 0.72f) return new Color(120, 100, 80, 255);
+        if (norm < 0.88f) return new Color(140, 140, 140, 255);
+        return new Color(220, 230, 240, 255);
     }
 
     /// <summary>
@@ -664,11 +676,9 @@ public class Planet
 
         Raylib.EndBlendMode();
     }
-
-
 }
 
-// Self-contained 3D noise helper (no external library needed)
+// Self-contained 3D noise for terrain color sampling (heights are not applied to vertex radius).
 internal static class Noise3D
 {
     private static readonly int[] Perm = new int[512];
@@ -678,10 +688,9 @@ internal static class Noise3D
         int[] p = new int[256];
         for (int i = 0; i < 256; i++) p[i] = i;
 
-        // Simple deterministic shuffle (you can replace with seeded Random if desired)
         for (int i = 255; i > 0; i--)
         {
-            int j = i; // or use a hash here
+            int j = i;
             (p[i], p[j]) = (p[j], p[i]);
         }
 
@@ -733,3 +742,4 @@ internal static class Noise3D
         return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
     }
 }
+
