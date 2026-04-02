@@ -136,6 +136,7 @@ public class ResourceLoader : IResourceLoader
                 converted[i] = new LoadedPlanet
                 {
                     Name = d.Name,
+                    IsFiction = d.IsFiction,
                     SurfaceColor = HexColor.ToRaylibColor(d.SurfaceColor),
                     SemiMajorAxisAu = aAu,
                     Eccentricity = ecc,
@@ -169,6 +170,7 @@ public class ResourceLoader : IResourceLoader
     private sealed class InteriorPlanetDto
     {
         public string Name { get; set; } = "";
+        public bool IsFiction { get; set; }
         public string SurfaceColor { get; set; } = "";
         public float SemiMajorAxisAu { get; set; }
         public float Eccentricity { get; set; }
