@@ -111,6 +111,8 @@ public class ResourceLoader : IResourceLoader
                         $"planets.json: missing surfaceColor for planet '{d.Name}' in star system '{entry.Key}'.");
                 }
 
+                PlanetComposition composition = ParseComposition(d.Composition, d.Name, entry.Key);
+
                 float aAu = d.SemiMajorAxisAu > 0f ? d.SemiMajorAxisAu : 0.5f + i * 0.5f;
                 float ecc = Math.Clamp(d.Eccentricity >= 0f ? d.Eccentricity : 0.05f, 0f, 0.95f);
                 float omegaDeg = d.ArgumentOfPeriapsisDeg;
@@ -137,6 +139,7 @@ public class ResourceLoader : IResourceLoader
                 {
                     Name = d.Name,
                     IsFiction = d.IsFiction,
+                    Composition = composition,
                     SurfaceColor = HexColor.ToRaylibColor(d.SurfaceColor),
                     SemiMajorAxisAu = aAu,
                     Eccentricity = ecc,
@@ -151,6 +154,26 @@ public class ResourceLoader : IResourceLoader
 
         _cachedPlanetsByStarSystemId = result;
         return result;
+    }
+
+    private static PlanetComposition ParseComposition(string? raw, string planetName, string starSystemKey)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return PlanetComposition.Terrestrial;
+        }
+
+        string key = raw.Trim().ToLowerInvariant();
+        return key switch
+        {
+            "terrestrial" => PlanetComposition.Terrestrial,
+            "gas_giant" => PlanetComposition.GasGiant,
+            "ice_giant" => PlanetComposition.IceGiant,
+            "molten" => PlanetComposition.Molten,
+            _ => throw new InvalidOperationException(
+                $"planets.json: invalid composition '{raw}' for planet '{planetName}' in star system '{starSystemKey}'. "
+                + "Expected terrestrial, gas_giant, ice_giant, or molten.")
+        };
     }
 
     private sealed class StarSystemData
@@ -171,6 +194,7 @@ public class ResourceLoader : IResourceLoader
     {
         public string Name { get; set; } = "";
         public bool IsFiction { get; set; }
+        public string Composition { get; set; } = "terrestrial";
         public string SurfaceColor { get; set; } = "";
         public float SemiMajorAxisAu { get; set; }
         public float Eccentricity { get; set; }

@@ -19,6 +19,9 @@ public class Planet
     /// <summary>Ring system from catalog data, if any.</summary>
     public PlanetRingData? Rings { get; set; }
 
+    /// <summary>Broad composition from catalog data when the planet was loaded from <c>planets.json</c>.</summary>
+    public PlanetComposition Composition { get; set; }
+
     private List<Vector3> _spherePoints = new();
     private List<float> _pointHeights = new();
     private List<List<int>> _ringIndices = new();
@@ -29,7 +32,14 @@ public class Planet
     private float _maxHeight = float.MinValue;
     private List<TriangleData> _triangles = new();
 
-    public Planet(string name, Vector2 position, float radius, Color surfaceColor, float radiusKm = 0f, PlanetRingData? rings = null)
+    public Planet(
+        string name,
+        Vector2 position,
+        float radius,
+        Color surfaceColor,
+        float radiusKm = 0f,
+        PlanetRingData? rings = null,
+        PlanetComposition composition = PlanetComposition.Terrestrial)
     {
         Name = name;
         Position = position;
@@ -37,6 +47,7 @@ public class Planet
         SurfaceColor = surfaceColor;
         RadiusKm = radiusKm;
         Rings = rings;
+        Composition = composition;
         int seed = name.GetHashCode();
         _random = new Random(seed);
         

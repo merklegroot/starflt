@@ -141,7 +141,8 @@ public class Game : IGame
                     50.0f,
                     jupiter.SurfaceColor,
                     jupiter.RadiusKm,
-                    jupiter.Rings);
+                    jupiter.Rings,
+                    jupiter.Composition);
                 _planetView.ResetRotation();
             }
         }
@@ -427,7 +428,8 @@ public class Game : IGame
                 50.0f,
                 loadedPlanet.SurfaceColor,
                 loadedPlanet.RadiusKm,
-                loadedPlanet.Rings);
+                loadedPlanet.Rings,
+                loadedPlanet.Composition);
             _planetView.ResetRotation();
             _planetaryEncounterReturnState = GameState.StarSystemView;
             _currentState = GameState.PlanetaryEncounter;
@@ -633,6 +635,18 @@ public class Game : IGame
         return false;
     }
 
+    private static string FormatCompositionLabel(PlanetComposition composition)
+    {
+        return composition switch
+        {
+            PlanetComposition.Terrestrial => "Terrestrial",
+            PlanetComposition.GasGiant => "Gas giant",
+            PlanetComposition.IceGiant => "Ice giant",
+            PlanetComposition.Molten => "Molten",
+            _ => composition.ToString()
+        };
+    }
+
     private void DrawStarMapHud()
     {
         UiText.DrawText($"Fuel: {_ship.Fuel:F1}%", 10, 10, 20, Color.WHITE);
@@ -705,12 +719,20 @@ public class Game : IGame
                 new Color(0, 0, 0, 200));
 
             const int infoLine = 20;
-            int infoY = viewHeight - 118;
+            int infoY = viewHeight - 138;
             if (_currentSystem != null)
             {
                 UiText.DrawText($"System: {_currentSystem.Name}", 40, infoY, 18, Color.SKYBLUE);
                 infoY += infoLine;
             }
+
+            UiText.DrawText(
+                $"Composition: {FormatCompositionLabel(_currentPlanet.Composition)}",
+                40,
+                infoY,
+                18,
+                new Color(190, 200, 225, 255));
+            infoY += infoLine;
 
             if (_currentPlanet.RadiusKm > 0f)
             {

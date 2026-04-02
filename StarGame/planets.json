@@ -3,6 +3,7 @@
     {
       "name": "Mercury",
       "isFiction": false,
+      "composition": "terrestrial",
       "surfaceColor": "#B5B5B5",
       "semiMajorAxisAu": 0.387,
       "eccentricity": 0.2056,
@@ -12,6 +13,7 @@
     {
       "name": "Venus",
       "isFiction": false,
+      "composition": "terrestrial",
       "surfaceColor": "#E6CE8A",
       "semiMajorAxisAu": 0.723,
       "eccentricity": 0.0068,
@@ -21,6 +23,7 @@
     {
       "name": "Earth",
       "isFiction": false,
+      "composition": "terrestrial",
       "surfaceColor": "#6B93D6",
       "semiMajorAxisAu": 1.0,
       "eccentricity": 0.0167,
@@ -30,6 +33,7 @@
     {
       "name": "Mars",
       "isFiction": false,
+      "composition": "terrestrial",
       "surfaceColor": "#C86432",
       "semiMajorAxisAu": 1.524,
       "eccentricity": 0.0934,
@@ -39,6 +43,7 @@
     {
       "name": "Ceres",
       "isFiction": false,
+      "composition": "terrestrial",
       "surfaceColor": "#8A8680",
       "semiMajorAxisAu": 2.77,
       "eccentricity": 0.0758,
@@ -48,6 +53,7 @@
     {
       "name": "Jupiter",
       "isFiction": false,
+      "composition": "gas_giant",
       "surfaceColor": "#D4A574",
       "semiMajorAxisAu": 5.204,
       "eccentricity": 0.0489,
@@ -66,6 +72,7 @@
     {
       "name": "Saturn",
       "isFiction": false,
+      "composition": "gas_giant",
       "surfaceColor": "#E8D4A8",
       "semiMajorAxisAu": 9.582,
       "eccentricity": 0.0565,
@@ -84,6 +91,7 @@
     {
       "name": "Uranus",
       "isFiction": false,
+      "composition": "ice_giant",
       "surfaceColor": "#4FD0E7",
       "semiMajorAxisAu": 19.2,
       "eccentricity": 0.0472,
@@ -102,6 +110,7 @@
     {
       "name": "Neptune",
       "isFiction": false,
+      "composition": "ice_giant",
       "surfaceColor": "#3457D5",
       "semiMajorAxisAu": 30.05,
       "eccentricity": 0.0086,
@@ -120,6 +129,7 @@
     {
       "name": "Pluto",
       "isFiction": false,
+      "composition": "terrestrial",
       "surfaceColor": "#C9B8A0",
       "semiMajorAxisAu": 39.48,
       "eccentricity": 0.2488,
@@ -129,6 +139,7 @@
     {
       "name": "Haumea",
       "isFiction": false,
+      "composition": "terrestrial",
       "surfaceColor": "#9A9A90",
       "semiMajorAxisAu": 43.13,
       "eccentricity": 0.1888,
@@ -138,6 +149,7 @@
     {
       "name": "Makemake",
       "isFiction": false,
+      "composition": "terrestrial",
       "surfaceColor": "#C87860",
       "semiMajorAxisAu": 45.79,
       "eccentricity": 0.1598,
@@ -147,6 +159,7 @@
     {
       "name": "Eris",
       "isFiction": false,
+      "composition": "terrestrial",
       "surfaceColor": "#D8D0C8",
       "semiMajorAxisAu": 67.78,
       "eccentricity": 0.4367,
@@ -158,6 +171,7 @@
     {
       "name": "Proxima d",
       "isFiction": false,
+      "composition": "molten",
       "comment": "Real candidate: sub-Earth, very close orbit around Proxima Centauri (~0.029 AU). Game uses one orbit scale for the whole triple.",
       "surfaceColor": "#9A9690",
       "semiMajorAxisAu": 0.029,
@@ -168,6 +182,7 @@
     {
       "name": "Proxima b",
       "isFiction": false,
+      "composition": "terrestrial",
       "comment": "Real planet: Earth-mass world in Proxima's habitable zone (~0.05 AU). Tidally locked; habitability debated.",
       "surfaceColor": "#3A7CA5",
       "semiMajorAxisAu": 0.049,
@@ -178,6 +193,7 @@
     {
       "name": "Toliman Ember",
       "isFiction": true,
+      "composition": "molten",
       "comment": "Fiction: hot inner rock inspired by the disputed Alpha Centauri Bb detection (since refuted). Toliman is a traditional name for Alpha Cen B.",
       "surfaceColor": "#D45C3C",
       "semiMajorAxisAu": 0.064,
@@ -188,6 +204,7 @@
     {
       "name": "Averaan",
       "isFiction": true,
+      "composition": "terrestrial",
       "comment": "Fiction: inner rocky world filling the gap before temperate orbits. Name is invented.",
       "surfaceColor": "#C4A35A",
       "semiMajorAxisAu": 0.38,
@@ -198,6 +215,7 @@
     {
       "name": "Rigil Haven",
       "isFiction": true,
+      "composition": "terrestrial",
       "comment": "Fiction: temperate world in the habitable-zone ballpark for Alpha Cen A. Rigil Kentaurus is the traditional name for Alpha Cen A.",
       "surfaceColor": "#5B8C6E",
       "semiMajorAxisAu": 1.08,
@@ -208,6 +226,7 @@
     {
       "name": "Proxima c",
       "isFiction": false,
+      "composition": "ice_giant",
       "comment": "Real candidate: more distant super-Earth or mini-Neptune around Proxima (~1.3\u20131.5 AU class). Orbit and nature still debated.",
       "surfaceColor": "#8E8CB8",
       "semiMajorAxisAu": 1.4,
@@ -218,6 +237,7 @@
     {
       "name": "Toliman Major",
       "isFiction": true,
+      "composition": "gas_giant",
       "comment": "Fiction: gas giant; no confirmed giant planets in the Alpha Cen system. Plausible outer companion for narrative scale.",
       "surfaceColor": "#D4A574",
       "semiMajorAxisAu": 2.85,
@@ -237,6 +257,7 @@
     {
       "name": "Kent Gate",
       "isFiction": true,
+      "composition": "gas_giant",
       "comment": "Fiction: gas giant. Name nods to Rigil Kentaurus (the Centaur) and gate imagery.",
       "surfaceColor": "#7AB8D4",
       "semiMajorAxisAu": 5.4,
@@ -256,6 +277,7 @@
     {
       "name": "Centauri Bight",
       "isFiction": true,
+      "composition": "ice_giant",
       "comment": "Fiction: ice giant in the outer system (bight = broad bay; purely flavor).",
       "surfaceColor": "#A89078",
       "semiMajorAxisAu": 9.2,
@@ -266,6 +288,7 @@
     {
       "name": "Bary Ledge",
       "isFiction": true,
+      "composition": "ice_giant",
       "comment": "Fiction: distant ice giant. Name references the system barycenter of the binary.",
       "surfaceColor": "#5C6E8C",
       "semiMajorAxisAu": 16.5,
@@ -276,6 +299,7 @@
     {
       "name": "Proxima Fringe",
       "isFiction": true,
+      "composition": "terrestrial",
       "comment": "Fiction: very distant icy body.",
       "surfaceColor": "#B8B0A0",
       "semiMajorAxisAu": 28.0,
