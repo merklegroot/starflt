@@ -11,7 +11,7 @@ internal static class RingTextureResources
     private static bool _loaded;
     private static bool _loadFailed;
 
-    private const string SaturnRingRelativePath = "Textures/solarsystemscope/2k_saturn_ring_alpha.png";
+    private const string SaturnRingRelativePath = "Textures/solarsystemscope/saturn_ring_alpha.png";
 
     /// <summary>
     /// Solar System Scope Saturn ring alpha (CC BY 4.0). Used for every ringed planet while this is the only ring texture shipped.
