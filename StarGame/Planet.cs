@@ -371,11 +371,45 @@ public class Planet
         return new Color(220, 230, 240, 255);                      // snow
     }
 
+    /// <summary>
+    /// Outer ring radius in the same display units as <paramref name="displayRadius"/>; 0 if no rings.
+    /// Must match scaling in <see cref="DrawPlanetRingAnnulus"/>.
+    /// </summary>
+    private float GetRingOuterRadiusDisplay(float displayRadius)
+    {
+        if (!Rings.HasValue || !Rings.Value.IsValid)
+        {
+            return 0f;
+        }
+
+        PlanetRingData ring = Rings.Value;
+
+        if (RadiusKm > 0f)
+        {
+            float kmToDisplay = displayRadius / RadiusKm;
+            return ring.OuterRadiusKm * kmToDisplay;
+        }
+
+        float kmToDisplayFallback = displayRadius / MathF.Max(ring.OuterRadiusKm, 1f);
+        return ring.OuterRadiusKm * kmToDisplayFallback;
+    }
+
     public void DrawSpherePointsToTexture(RenderTexture2D target, float displayRadius, float rotationAngle = 0f)
     {
-        // Set up 3D camera looking at planet head-on (along Z-axis)
-        // Position camera far enough away to see the entire planet (2.5x the radius)
+        // When rings extend past the sphere, zoom out by uniformly shrinking the scene so the
+        // outer ring fits. Do not move the camera farther: Raylib's default perspective far plane
+        // (~1000) would clip the whole scene if the camera is pushed too far back.
+        float ringOuter = GetRingOuterRadiusDisplay(displayRadius);
+        float maxExtent = MathF.Max(displayRadius, ringOuter);
+        if (maxExtent < 1e-6f)
+        {
+            maxExtent = displayRadius;
+        }
+
+        float worldScale = displayRadius / maxExtent;
+
         float cameraDistance = displayRadius * 2.5f;
+        float sphereRadius = displayRadius * worldScale;
         Camera3D camera = new Camera3D
         {
             Position = new Vector3(0, 0, cameraDistance), // Camera positioned along +Z axis
@@ -410,15 +444,15 @@ public class Planet
         foreach (var tri in _triangles)
         {
             // Apply rotation and scale to vertices
-            Vector3 v1 = RotateY(tri.V1) * displayRadius;
-            Vector3 v2 = RotateY(tri.V2) * displayRadius;
-            Vector3 v3 = RotateY(tri.V3) * displayRadius;
+            Vector3 v1 = RotateY(tri.V1) * sphereRadius;
+            Vector3 v2 = RotateY(tri.V2) * sphereRadius;
+            Vector3 v3 = RotateY(tri.V3) * sphereRadius;
             
             // Draw triangle in 3D (backface culling handled automatically)
             Raylib.DrawTriangle3D(v1, v2, v3, tri.Color);
         }
 
-        DrawPlanetRingAnnulus(displayRadius, RotateY);
+        DrawPlanetRingAnnulus(displayRadius, RotateY, worldScale);
 
         // End 3D mode
         Raylib.EndMode3D();
@@ -430,8 +464,9 @@ public class Planet
     /// <summary>
     /// Single flat annulus in the equatorial plane, tilted so the camera sees an ellipse; drawn after the sphere for depth.
     /// Uses <see cref="Rings"/> when present and valid; skips drawing when the planet has no ring system.
+    /// Spin is applied in the equatorial plane (same Y-axis rotation as the sphere), then tilt.
     /// </summary>
-    private void DrawPlanetRingAnnulus(float displayRadius, Func<Vector3, Vector3> rotateY)
+    private void DrawPlanetRingAnnulus(float displayRadius, Func<Vector3, Vector3> rotateY, float worldScale = 1f)
     {
         if (!Rings.HasValue || !Rings.Value.IsValid)
         {
@@ -455,8 +490,17 @@ public class Planet
             outerR = ring.OuterRadiusKm * kmToDisplay;
         }
 
+        innerR *= worldScale;
+        outerR *= worldScale;
+
         if (innerR <= 0f || outerR <= innerR)
         {
+            return;
+        }
+
+        if (RingTextureResources.TryGetSaturnRingAlpha(out Texture2D ringTex))
+        {
+            DrawPlanetRingAnnulusTextured(innerR, outerR, ring, rotateY, ringTex);
             return;
         }
 
@@ -477,12 +521,16 @@ public class Planet
                 v.Y * sinT + v.Z * cosT);
         }
 
+        // Spin in the equatorial (xz) plane first — same Y-axis rotation as the sphere — then tilt
+        // for viewing. Order Tilt(RotateY(flat)) not RotateY(Tilt(flat)) so the ring co-rotates with
+        // the planet; RotateY(Tilt(...)) tilts in world space first and the ring no longer shares the spin axis.
         Vector3 TransformRingPoint(float radius, float angleRad)
         {
             float cx = radius * MathF.Cos(angleRad);
             float cz = radius * MathF.Sin(angleRad);
             Vector3 flat = new Vector3(cx, 0f, cz);
-            return rotateY(TiltEquatorial(flat));
+            Vector3 spun = rotateY(flat);
+            return TiltEquatorial(spun);
         }
 
         Raylib.BeginBlendMode(BlendMode.BLEND_ALPHA);
@@ -518,6 +566,90 @@ public class Planet
         }
 
         DrawAnnulusBand();
+
+        Raylib.EndBlendMode();
+    }
+
+    /// <summary>
+    /// Saturn ring strip texture (CC BY 4.0, Solar System Scope): UVs use U = radial (inner→outer), V = angle,
+    /// i.e. a 90° rotation from the image’s wide-horizontal layout so it matches the annulus mesh.
+    /// </summary>
+    private void DrawPlanetRingAnnulusTextured(
+        float innerR,
+        float outerR,
+        PlanetRingData ring,
+        Func<Vector3, Vector3> rotateY,
+        Texture2D ringTexture)
+    {
+        const int segments = 96;
+        const float tiltDeg = 26f;
+        float ringOpacity = Math.Clamp(ring.Opacity, 0f, 1f);
+        byte baseA = (byte)Math.Clamp((int)(ringOpacity * 255f), 8, 255);
+
+        float tiltRad = tiltDeg * (MathF.PI / 180f);
+        float cosT = MathF.Cos(tiltRad);
+        float sinT = MathF.Sin(tiltRad);
+
+        Vector3 TiltEquatorial(Vector3 v)
+        {
+            return new Vector3(
+                v.X,
+                v.Y * cosT - v.Z * sinT,
+                v.Y * sinT + v.Z * cosT);
+        }
+
+        Vector3 TransformRingPoint(float radius, float angleRad)
+        {
+            float cx = radius * MathF.Cos(angleRad);
+            float cz = radius * MathF.Sin(angleRad);
+            Vector3 flat = new Vector3(cx, 0f, cz);
+            Vector3 spun = rotateY(flat);
+            return TiltEquatorial(spun);
+        }
+
+        Raylib.BeginBlendMode(BlendMode.BLEND_ALPHA);
+
+        Rlgl.SetTexture(ringTexture.Id);
+        Rlgl.Begin((int)DrawMode.QUADS);
+
+        for (int i = 0; i < segments; i++)
+        {
+            float a0 = i * MathF.Tau / segments;
+            float a1 = (i + 1) * MathF.Tau / segments;
+            float u0 = i / (float)segments;
+            float u1 = (i + 1) / (float)segments;
+
+            Vector3 i0 = TransformRingPoint(innerR, a0);
+            Vector3 i1 = TransformRingPoint(innerR, a1);
+            Vector3 o0 = TransformRingPoint(outerR, a0);
+            Vector3 o1 = TransformRingPoint(outerR, a1);
+
+            // Front (+normal): CCW when viewed from above the ring plane.
+            // Texture UVs rotated 90°: U = radial (0 inner, 1 outer), V = angle around the ring.
+            Rlgl.Color4ub(255, 255, 255, baseA);
+            Rlgl.TexCoord2f(0f, u0);
+            Rlgl.Vertex3f(i0.X, i0.Y, i0.Z);
+            Rlgl.TexCoord2f(0f, u1);
+            Rlgl.Vertex3f(i1.X, i1.Y, i1.Z);
+            Rlgl.TexCoord2f(1f, u1);
+            Rlgl.Vertex3f(o1.X, o1.Y, o1.Z);
+            Rlgl.TexCoord2f(1f, u0);
+            Rlgl.Vertex3f(o0.X, o0.Y, o0.Z);
+
+            // Back: reverse winding so both sides draw with culling on.
+            Rlgl.Color4ub(255, 255, 255, baseA);
+            Rlgl.TexCoord2f(0f, u0);
+            Rlgl.Vertex3f(i0.X, i0.Y, i0.Z);
+            Rlgl.TexCoord2f(1f, u0);
+            Rlgl.Vertex3f(o0.X, o0.Y, o0.Z);
+            Rlgl.TexCoord2f(1f, u1);
+            Rlgl.Vertex3f(o1.X, o1.Y, o1.Z);
+            Rlgl.TexCoord2f(0f, u1);
+            Rlgl.Vertex3f(i1.X, i1.Y, i1.Z);
+        }
+
+        Rlgl.End();
+        Rlgl.SetTexture(0);
 
         Raylib.EndBlendMode();
     }

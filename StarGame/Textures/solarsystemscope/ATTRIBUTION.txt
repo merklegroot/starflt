@@ -1,0 +1,22 @@
+Saturn ring texture: 2k_saturn_ring_alpha.png
+================================================================================
+
+Source page (download and terms):
+  https://www.solarsystemscope.com/textures/
+
+Credit (CC BY 4.0 — keep this when redistributing the texture):
+  Textures: Solar System Scope / INOVE — https://www.solarsystemscope.com/
+
+License:
+  Creative Commons Attribution 4.0 International (CC BY 4.0)
+  https://creativecommons.org/licenses/by/4.0/
+
+Summary from the textures page:
+  “Distributed under Attribution 4.0 International license: You may use, adapt,
+  and share these textures for any purpose, even commercially.”
+
+Data note (from the same page):
+  Textures are based on NASA elevation and imagery data; colors are tuned using
+  spacecraft and Hubble imagery. See the textures page for full notes.
+
+This file is not a substitute for the full CC BY 4.0 legal text; see the link above.
