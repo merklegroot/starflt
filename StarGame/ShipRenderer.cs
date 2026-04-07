@@ -31,12 +31,26 @@ public static class ShipRenderer
         }
 
         string path = Path.Combine(AppContext.BaseDirectory, TextureRelativePath);
-        if (File.Exists(path))
+        if (!File.Exists(path))
         {
-            _texture = Raylib.LoadTexture(path);
-            Raylib.SetTextureFilter(_texture, TextureFilter.TEXTURE_FILTER_POINT);
-            _textureLoaded = true;
+            return;
         }
+
+        if (LooksLikeGitLfsPointer(path))
+        {
+            Console.Error.WriteLine(
+                "Ship texture not loaded: Tiny Spaceships PNGs are Git LFS files. Install Git LFS, run \"git lfs install\" and \"git lfs pull\" in the repo (see ASSETS.md).");
+            return;
+        }
+
+        _texture = Raylib.LoadTexture(path);
+        if (_texture.Id == 0 || _texture.Width <= 0 || _texture.Height <= 0)
+        {
+            return;
+        }
+
+        Raylib.SetTextureFilter(_texture, TextureFilter.TEXTURE_FILTER_POINT);
+        _textureLoaded = true;
     }
 
     public static void Unload()
@@ -59,6 +73,22 @@ public static class ShipRenderer
         else
         {
             DrawProceduralFallback(centerX, centerY, rotation, forwardThrust, reverseThrust, scale);
+        }
+    }
+
+    /// <summary>True when the file is still a Git LFS pointer (real PNG bytes were never fetched).</summary>
+    private static bool LooksLikeGitLfsPointer(string path)
+    {
+        try
+        {
+            using StreamReader reader = new StreamReader(path);
+            string? line = reader.ReadLine();
+            return line != null
+                && line.StartsWith("version https://git-lfs.github.com/spec/v1", StringComparison.Ordinal);
+        }
+        catch
+        {
+            return false;
         }
     }
 
