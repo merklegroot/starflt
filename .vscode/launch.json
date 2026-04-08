@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/StarGame/bin/Debug/net8.0/StarflightGame.dll",
+            "program": "${workspaceFolder}/StarGame/bin/Debug/net10.0/StarflightGame.dll",
             "args": [],
             "cwd": "${workspaceFolder}/StarGame",
             "console": "internalConsole",
