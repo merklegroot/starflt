@@ -12,6 +12,8 @@ public interface IStarMapView
 
     StarSystem? GetSystemAtPosition(Vector2 position);
 
+    StarSystem? GetSystemAtScreenPosition(Vector2 screenPosition, int screenWidth, int screenHeight);
+
     void Update(IShip ship);
 
     void Draw(int screenWidth, int screenHeight, IShip ship);
@@ -57,6 +59,13 @@ public class StarMapView : IStarMapView
         }
 
         return null;
+    }
+
+    public StarSystem? GetSystemAtScreenPosition(Vector2 screenPosition, int screenWidth, int screenHeight)
+    {
+        Vector2 center = new Vector2(screenWidth / 2, screenHeight / 2);
+        Vector2 worldPosition = (screenPosition - center) / _state.Zoom + _state.CameraOffset;
+        return GetSystemAtPosition(worldPosition);
     }
 
     public void Update(IShip ship)
@@ -145,7 +154,7 @@ public class StarMapView : IStarMapView
         Raylib.DrawCircleV(shipScreenPos, 4 * _state.Zoom, Color.BLUE);
 
         // Draw instructions
-        UiText.DrawText("WASD: Move | Mouse Wheel: Zoom | TAB: Warp to nearest system",
+        UiText.DrawText("WASD: Move | Mouse Wheel: Zoom | Click: Enter system | TAB: Warp to nearest system",
             10, screenHeight - 50, 16, Color.YELLOW);
     }
 }

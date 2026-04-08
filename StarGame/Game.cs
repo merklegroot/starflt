@@ -185,6 +185,25 @@ public class Game : IGame
             if (nearby != null)
             {
                 _currentSystem = nearby;
+                _ship.Position = nearby.Position;
+                _maneuverParallaxBoost = Vector2.Zero;
+                _currentState = GameState.StarSystemView;
+                _justSwitchedState = true;
+                _starSystemInteriorView.NotifyStarSystemViewEntered(_currentSystem);
+            }
+        }
+
+        if ((_currentState == GameState.CanopyView || _currentState == GameState.Maneuver)
+            && _rightPanel.MenuLevel == 0
+            && Raylib.IsMouseButtonPressed(MouseButton.MOUSE_BUTTON_LEFT))
+        {
+            Vector2 mouse = Raylib.GetMousePosition();
+            StarSystem? clicked = GetSystemNearCanopyScreenPosition(mouse);
+            if (clicked != null)
+            {
+                _currentSystem = clicked;
+                _ship.Position = clicked.Position;
+                _maneuverParallaxBoost = Vector2.Zero;
                 _currentState = GameState.StarSystemView;
                 _justSwitchedState = true;
                 _starSystemInteriorView.NotifyStarSystemViewEntered(_currentSystem);
@@ -214,6 +233,47 @@ public class Game : IGame
             _screenHeight,
             _maneuverParallaxBoost,
             CanopyStarEnterRadiusPixels);
+    }
+
+    private StarSystem? GetSystemNearCanopyScreenPosition(Vector2 screenPosition)
+    {
+        int viewWidth = MainViewWidth;
+        if (screenPosition.X < 0 || screenPosition.X >= viewWidth || screenPosition.Y < 0 || screenPosition.Y >= _screenHeight)
+        {
+            return null;
+        }
+
+        StarSystem? best = null;
+        float bestDistSq = float.MaxValue;
+
+        foreach (var system in _starMap.GetAllSystems())
+        {
+            _canopySystems.GetStarScreenPosition(
+                _ship,
+                system,
+                viewWidth,
+                _screenHeight,
+                _maneuverParallaxBoost,
+                out int sx,
+                out int sy);
+
+            float dx = sx - screenPosition.X;
+            float dy = sy - screenPosition.Y;
+            float dSq = dx * dx + dy * dy;
+            if (dSq < bestDistSq)
+            {
+                bestDistSq = dSq;
+                best = system;
+            }
+        }
+
+        float maxSq = CanopyStarEnterRadiusPixels * CanopyStarEnterRadiusPixels;
+        if (best != null && bestDistSq <= maxSq)
+        {
+            return best;
+        }
+
+        return null;
     }
 
     private void UpdateCanopyView(float deltaTime)
@@ -313,6 +373,24 @@ public class Game : IGame
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
         {
             _currentState = GameState.CanopyView;
+        }
+
+        if (_rightPanel.MenuLevel == 0 && Raylib.IsMouseButtonPressed(MouseButton.MOUSE_BUTTON_LEFT))
+        {
+            Vector2 mouse = Raylib.GetMousePosition();
+            if (mouse.X >= 0 && mouse.X < MainViewWidth && mouse.Y >= 0 && mouse.Y < _screenHeight)
+            {
+                StarSystem? clicked = _starMap.GetSystemAtScreenPosition(mouse, MainViewWidth, _screenHeight);
+                if (clicked != null)
+                {
+                    _currentSystem = clicked;
+                    _ship.Position = clicked.Position;
+                    _currentState = GameState.StarSystemView;
+                    _justSwitchedState = true;
+                    _starSystemInteriorView.NotifyStarSystemViewEntered(_currentSystem);
+                    return;
+                }
+            }
         }
 
         if (_rightPanel.MenuLevel == 0 && Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER) && _currentSystem != null)
