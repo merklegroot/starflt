@@ -16,8 +16,9 @@ public interface IGameMenu
 
 public sealed class GameMenu : IGameMenu
 {
-    private readonly string[] _topMenuItems = { "Planet", "Captain", "Navigator" };
+    private readonly string[] _topMenuItems = { "Planet", "Captain", "Navigator", "Info" };
     private readonly string[] _navigatorSubMenuItems = { "Manuever", "Starmap", "Star system" };
+    private readonly string[] _infoSubMenuItems = { "Minerals" };
 
     private int _selectedMenuIndex = 0;
     private int _menuLevel = 0;
@@ -32,20 +33,26 @@ public sealed class GameMenu : IGameMenu
 
     public void UpdateNavigation(ref GameState currentState, ref bool justSwitchedState)
     {
-        if (currentState == GameState.ShipStatus)
+        if (currentState == GameState.ShipStatus || currentState == GameState.MineralCatalog)
             return;
 
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && currentState != GameState.StarMap && currentState != GameState.Maneuver && currentState != GameState.PlanetaryEncounter && currentState != GameState.StarSystemView)
         {
-            if (_menuLevel > 0)
+            if (_menuLevel == 2)
+            {
+                _menuLevel = 0;
+                _selectedMenuIndex = 3;
+            }
+            else if (_menuLevel > 0)
             {
                 _menuLevel = 0;
                 _selectedMenuIndex = 0;
             }
+
             return;
         }
 
-        string[] currentMenuItems = _menuLevel == 0 ? _topMenuItems : _navigatorSubMenuItems;
+        string[] currentMenuItems = GetCurrentMenuItems();
 
         if (currentState != GameState.StarMap && currentState != GameState.Maneuver && currentState != GameState.StarSystemView)
         {
@@ -72,6 +79,17 @@ public sealed class GameMenu : IGameMenu
             else if (Raylib.IsKeyPressed(KeyboardKey.KEY_THREE))
             {
                 _selectedMenuIndex = 2;
+            }
+            else if (Raylib.IsKeyPressed(KeyboardKey.KEY_FOUR))
+            {
+                _selectedMenuIndex = 3;
+            }
+        }
+        else if (_menuLevel == 2)
+        {
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_ONE))
+            {
+                _selectedMenuIndex = 0;
             }
         }
 
@@ -101,6 +119,11 @@ public sealed class GameMenu : IGameMenu
                     _menuLevel = 1;
                     _selectedMenuIndex = 0;
                 }
+                else if (_selectedMenuIndex == 3)
+                {
+                    _menuLevel = 2;
+                    _selectedMenuIndex = 0;
+                }
             }
             else if (_menuLevel == 1)
             {
@@ -126,6 +149,14 @@ public sealed class GameMenu : IGameMenu
                     _selectedMenuIndex = 0;
                 }
             }
+            else if (_menuLevel == 2)
+            {
+                if (_selectedMenuIndex == 0)
+                {
+                    currentState = GameState.MineralCatalog;
+                    justSwitchedState = true;
+                }
+            }
         }
 
         _selectedMenuIndex = Math.Clamp(_selectedMenuIndex, 0, currentMenuItems.Length - 1);
@@ -135,11 +166,11 @@ public sealed class GameMenu : IGameMenu
     {
         int y = yPos;
 
-        string menuTitle = _menuLevel == 0 ? "MENU" : "NAVIGATOR";
+        string menuTitle = _menuLevel == 0 ? "MENU" : _menuLevel == 1 ? "NAVIGATOR" : "INFO";
         UiText.DrawText(menuTitle, panelX + panelPadding, y, menuFontSize, Color.WHITE);
         y += menuFontSize + 15;
 
-        string[] currentMenuItems = _menuLevel == 0 ? _topMenuItems : _navigatorSubMenuItems;
+        string[] currentMenuItems = GetCurrentMenuItems();
 
         const int indicatorSize = 16;
         const int indicatorSpacing = 8;
@@ -203,6 +234,17 @@ public sealed class GameMenu : IGameMenu
         return y;
     }
 
+    private string[] GetCurrentMenuItems()
+    {
+        if (_menuLevel == 0)
+            return _topMenuItems;
+
+        if (_menuLevel == 1)
+            return _navigatorSubMenuItems;
+
+        return _infoSubMenuItems;
+    }
+
     private static bool IsMenuItemActive(int level, int index, GameState currentState)
     {
         if (level == 0)
@@ -218,13 +260,22 @@ public sealed class GameMenu : IGameMenu
             {
                 return currentState == GameState.Maneuver;
             }
+
             if (index == 1)
             {
                 return currentState == GameState.StarMap;
             }
+
             if (index == 2)
             {
                 return currentState == GameState.StarSystemView;
+            }
+        }
+        else if (level == 2)
+        {
+            if (index == 0)
+            {
+                return currentState == GameState.MineralCatalog;
             }
         }
 

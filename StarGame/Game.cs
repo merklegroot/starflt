@@ -49,6 +49,7 @@ public class Game : IGame
     private readonly IPlanetView _planetView;
     private readonly IRightPanel _rightPanel;
     private readonly IResourceLoader _resourceLoader;
+    private readonly IReadOnlyList<MineralTradeEntry> _mineralTradeList;
 
     private bool _justSwitchedState = false;
     private Vector2 _displayedCoordinates = Vector2.Zero;
@@ -79,6 +80,7 @@ public class Game : IGame
         _starSystemInteriorView = starSystemInteriorView;
         _planetView = planetView;
         _resourceLoader = resourceLoader;
+        _mineralTradeList = resourceLoader.LoadMineralTradeList();
         _screenWidth = GameConstants.ScreenWidth;
         _screenHeight = GameConstants.ScreenHeight;
 
@@ -174,6 +176,9 @@ public class Game : IGame
                 break;
             case GameState.ShipStatus:
                 UpdateShipStatus();
+                break;
+            case GameState.MineralCatalog:
+                UpdateMineralCatalog();
                 break;
         }
 
@@ -572,6 +577,14 @@ public class Game : IGame
         }
     }
 
+    private void UpdateMineralCatalog()
+    {
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        {
+            _currentState = GameState.CanopyView;
+        }
+    }
+
     public void Draw()
     {
         Raylib.BeginDrawing();
@@ -615,6 +628,10 @@ public class Game : IGame
                 break;
             case GameState.ShipStatus:
                 DrawShipStatus();
+                break;
+            case GameState.MineralCatalog:
+                DrawMineralCatalog();
+                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
                 break;
         }
 
@@ -881,6 +898,46 @@ public class Game : IGame
         UiText.DrawText($"Position: ({_ship.Position.X:F1}, {_ship.Position.Y:F1})", 50, startY, 24, Color.WHITE);
 
         UiText.DrawText("Press ESC to return | X to quit", 50, _screenHeight - 50, 20, Color.YELLOW);
+    }
+
+    private void DrawMineralCatalog()
+    {
+        int mainW = MainViewWidth;
+        Raylib.DrawRectangle(0, 0, mainW, _screenHeight, new Color(10, 12, 22, 255));
+
+        const int titleSize = 30;
+        const int rowSize = 20;
+        const int headerSize = 18;
+        int titleW = UiText.MeasureText("MINERALS — market reference", titleSize);
+        UiText.DrawText("MINERALS — market reference", (mainW - titleW) / 2, 36, titleSize, Color.SKYBLUE);
+
+        int subW = UiText.MeasureText("Prices are in credits per metric ton (standard haul).", headerSize);
+        UiText.DrawText(
+            "Prices are in credits per metric ton (standard haul).",
+            Math.Max(24, (mainW - subW) / 2),
+            72,
+            headerSize,
+            new Color(160, 170, 195, 255));
+
+        int y = 110;
+        UiText.DrawText("Mineral", 32, y, headerSize, Color.GRAY);
+        int priceHeaderX = mainW - UiText.MeasureText("Price (cr.)", headerSize) - 32;
+        UiText.DrawText("Price (cr.)", priceHeaderX, y, headerSize, Color.GRAY);
+        y += headerSize + 8;
+
+        Raylib.DrawLine(24, y, mainW - 24, y, new Color(55, 65, 95, 255));
+        y += 14;
+
+        foreach (MineralTradeEntry m in _mineralTradeList)
+        {
+            UiText.DrawText(m.Name, 32, y, rowSize, Color.LIGHTGRAY);
+            string priceText = m.Price.ToString("N0");
+            int px = mainW - UiText.MeasureText(priceText, rowSize) - 32;
+            UiText.DrawText(priceText, px, y, rowSize, Color.GOLD);
+            y += rowSize + 6;
+        }
+
+        UiText.DrawText("Press ESC to return | X to quit", 24, _screenHeight - 36, 18, Color.YELLOW);
     }
 
     private void DrawCanopyView()

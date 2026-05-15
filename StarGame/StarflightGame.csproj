@@ -16,6 +16,7 @@
   <ItemGroup>
     <EmbeddedResource Include="starSystems.json" />
     <EmbeddedResource Include="planets.json" />
+    <EmbeddedResource Include="minerals.json" />
   </ItemGroup>
 
   <ItemGroup>

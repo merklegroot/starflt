@@ -10,6 +10,8 @@ public interface IResourceLoader
     List<StarSystem> LoadStarSystems();
 
     IReadOnlyDictionary<string, LoadedPlanet[]> LoadPlanetsByStarSystem();
+
+    IReadOnlyList<MineralTradeEntry> LoadMineralTradeList();
 }
 
 public class ResourceLoader : IResourceLoader
@@ -18,7 +20,11 @@ public class ResourceLoader : IResourceLoader
 
     private const string PlanetsResourceName = "StarflightGame.planets.json";
 
+    private const string MineralsResourceName = "StarflightGame.minerals.json";
+
     private IReadOnlyDictionary<string, LoadedPlanet[]>? _cachedPlanetsByStarSystemId;
+
+    private IReadOnlyList<MineralTradeEntry>? _cachedMineralTradeList;
 
     public List<StarSystem> LoadStarSystems()
     {
@@ -156,6 +162,60 @@ public class ResourceLoader : IResourceLoader
         return result;
     }
 
+    public IReadOnlyList<MineralTradeEntry> LoadMineralTradeList()
+    {
+        if (_cachedMineralTradeList != null)
+        {
+            return _cachedMineralTradeList;
+        }
+
+        var assembly = Assembly.GetExecutingAssembly();
+
+        using var stream = assembly.GetManifestResourceStream(MineralsResourceName);
+        if (stream == null)
+        {
+            throw new InvalidOperationException($"Could not find embedded resource: {MineralsResourceName}");
+        }
+
+        using var reader = new StreamReader(stream);
+        string json = reader.ReadToEnd();
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        List<MineralJsonDto>? rows = JsonSerializer.Deserialize<List<MineralJsonDto>>(json, options);
+        if (rows == null || rows.Count == 0)
+        {
+            throw new InvalidOperationException("Failed to deserialize minerals data");
+        }
+
+        var list = new List<MineralTradeEntry>(rows.Count);
+        for (int i = 0; i < rows.Count; i++)
+        {
+            MineralJsonDto? r = rows[i];
+            if (r == null || string.IsNullOrWhiteSpace(r.Name))
+            {
+                throw new InvalidOperationException($"minerals.json: invalid entry at index {i}.");
+            }
+
+            if (r.Price < 0)
+            {
+                throw new InvalidOperationException($"minerals.json: negative price for '{r.Name}'.");
+            }
+
+            list.Add(new MineralTradeEntry
+            {
+                Name = r.Name.Trim(),
+                Price = r.Price
+            });
+        }
+
+        _cachedMineralTradeList = list;
+        return list;
+    }
+
     private static PlanetComposition ParseComposition(string? raw, string planetName, string starSystemKey)
     {
         if (string.IsNullOrWhiteSpace(raw))
@@ -213,5 +273,12 @@ public class ResourceLoader : IResourceLoader
         public string Color { get; set; } = "";
         public string ParticleTexture { get; set; } = "";
         public bool HasGaps { get; set; }
+    }
+
+    private sealed class MineralJsonDto
+    {
+        public string Name { get; set; } = "";
+
+        public int Price { get; set; }
     }
 }

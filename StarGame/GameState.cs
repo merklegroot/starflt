@@ -8,5 +8,6 @@ public enum GameState
     StarSystemView,
     PlanetaryExploration,
     PlanetaryEncounter,
-    ShipStatus
+    ShipStatus,
+    MineralCatalog
 }
