@@ -1,7 +1,7 @@
 namespace StarflightGame;
 
 /// <summary>
-/// A tradeable mineral and its standard buy/sell reference price in credits (from embedded data).
+/// A tradeable mineral and its reference value in MU (monetary units), from embedded data (manual mineral chart).
 /// </summary>
 public sealed class MineralTradeEntry
 {

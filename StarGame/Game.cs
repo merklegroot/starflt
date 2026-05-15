@@ -906,14 +906,15 @@ public class Game : IGame
         Raylib.DrawRectangle(0, 0, mainW, _screenHeight, new Color(10, 12, 22, 255));
 
         const int titleSize = 30;
-        const int rowSize = 20;
+        const int rowSize = 18;
         const int headerSize = 18;
-        int titleW = UiText.MeasureText("MINERALS — market reference", titleSize);
-        UiText.DrawText("MINERALS — market reference", (mainW - titleW) / 2, 36, titleSize, Color.SKYBLUE);
+        int titleW = UiText.MeasureText("MINERAL VALUE CHART", titleSize);
+        UiText.DrawText("MINERAL VALUE CHART", (mainW - titleW) / 2, 36, titleSize, Color.SKYBLUE);
 
-        int subW = UiText.MeasureText("Prices are in credits per metric ton (standard haul).", headerSize);
+        const string subtitle = "Value in MU per unit of volume (manual appendix 7.1.1).";
+        int subW = UiText.MeasureText(subtitle, headerSize);
         UiText.DrawText(
-            "Prices are in credits per metric ton (standard haul).",
+            subtitle,
             Math.Max(24, (mainW - subW) / 2),
             72,
             headerSize,
@@ -921,8 +922,8 @@ public class Game : IGame
 
         int y = 110;
         UiText.DrawText("Mineral", 32, y, headerSize, Color.GRAY);
-        int priceHeaderX = mainW - UiText.MeasureText("Price (cr.)", headerSize) - 32;
-        UiText.DrawText("Price (cr.)", priceHeaderX, y, headerSize, Color.GRAY);
+        int priceHeaderX = mainW - UiText.MeasureText("MU", headerSize) - 32;
+        UiText.DrawText("MU", priceHeaderX, y, headerSize, Color.GRAY);
         y += headerSize + 8;
 
         Raylib.DrawLine(24, y, mainW - 24, y, new Color(55, 65, 95, 255));
@@ -934,7 +935,7 @@ public class Game : IGame
             string priceText = m.Price.ToString("N0");
             int px = mainW - UiText.MeasureText(priceText, rowSize) - 32;
             UiText.DrawText(priceText, px, y, rowSize, Color.GOLD);
-            y += rowSize + 6;
+            y += rowSize + 4;
         }
 
         UiText.DrawText("Press ESC to return | X to quit", 24, _screenHeight - 36, 18, Color.YELLOW);
