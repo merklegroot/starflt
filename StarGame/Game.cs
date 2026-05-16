@@ -159,9 +159,6 @@ public class Game : IGame
             case GameState.CanopyView:
                 UpdateCanopyView(deltaTime);
                 break;
-            case GameState.Maneuver:
-                UpdateManeuver(deltaTime);
-                break;
             case GameState.StarMap:
                 UpdateStarMap();
                 break;
@@ -182,7 +179,7 @@ public class Game : IGame
                 break;
         }
 
-        if ((_currentState == GameState.CanopyView || _currentState == GameState.Maneuver)
+        if (_currentState == GameState.CanopyView
             && _rightPanel.MenuLevel == 0
             && Raylib.IsKeyPressed(KeyboardKey.KEY_SPACE))
         {
@@ -198,7 +195,7 @@ public class Game : IGame
             }
         }
 
-        if ((_currentState == GameState.CanopyView || _currentState == GameState.Maneuver)
+        if (_currentState == GameState.CanopyView
             && _rightPanel.MenuLevel == 0
             && Raylib.IsMouseButtonPressed(MouseButton.MOUSE_BUTTON_LEFT))
         {
@@ -283,26 +280,15 @@ public class Game : IGame
 
     private void UpdateCanopyView(float deltaTime)
     {
-        _parallax.UpdateTwinkling(deltaTime);
-        _canopySystems.Update(deltaTime, _starMap);
-        _currentSystem = GetSystemNearCanopyCrosshair();
-    }
-
-    private void UpdateManeuver(float deltaTime)
-    {
         if (_justSwitchedState)
         {
             _justSwitchedState = false;
             _ship.Velocity = Vector2.Zero;
             _ship.ManeuverThrustForward = false;
             _ship.ManeuverThrustReverse = false;
+            _parallax.UpdateTwinkling(deltaTime);
             _canopySystems.Update(deltaTime, _starMap);
-            return;
-        }
-
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
-        {
-            _currentState = GameState.CanopyView;
+            _currentSystem = GetSystemNearCanopyCrosshair();
             return;
         }
 
@@ -313,15 +299,15 @@ public class Game : IGame
         _ship.ManeuverThrustReverse = false;
 
         float turnInput = 0.0f;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_A) || Raylib.IsKeyDown(KeyboardKey.KEY_LEFT))
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_A))
             turnInput -= 1.0f;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_D) || Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_D))
             turnInput += 1.0f;
 
         _ship.Rotation += turnInput * TurnSpeed * deltaTime;
 
-        bool wantForward = Raylib.IsKeyDown(KeyboardKey.KEY_W) || Raylib.IsKeyDown(KeyboardKey.KEY_UP);
-        bool wantReverse = Raylib.IsKeyDown(KeyboardKey.KEY_S) || Raylib.IsKeyDown(KeyboardKey.KEY_DOWN);
+        bool wantForward = Raylib.IsKeyDown(KeyboardKey.KEY_W);
+        bool wantReverse = Raylib.IsKeyDown(KeyboardKey.KEY_S);
 
         float thrustSign = 0.0f;
         if (wantForward && !wantReverse)
@@ -448,15 +434,15 @@ public class Game : IGame
         _ship.ManeuverThrustReverse = false;
 
         float turnInput = 0.0f;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_A) || Raylib.IsKeyDown(KeyboardKey.KEY_LEFT))
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_A))
             turnInput -= 1.0f;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_D) || Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_D))
             turnInput += 1.0f;
 
         _ship.Rotation += turnInput * TurnSpeed * deltaTime;
 
-        bool wantForward = Raylib.IsKeyDown(KeyboardKey.KEY_W) || Raylib.IsKeyDown(KeyboardKey.KEY_UP);
-        bool wantReverse = Raylib.IsKeyDown(KeyboardKey.KEY_S) || Raylib.IsKeyDown(KeyboardKey.KEY_DOWN);
+        bool wantForward = Raylib.IsKeyDown(KeyboardKey.KEY_W);
+        bool wantReverse = Raylib.IsKeyDown(KeyboardKey.KEY_S);
 
         float thrustSign = 0.0f;
         if (wantForward && !wantReverse)
@@ -593,10 +579,6 @@ public class Game : IGame
         switch (_currentState)
         {
             case GameState.CanopyView:
-                DrawCanopyView();
-                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
-                break;
-            case GameState.Maneuver:
                 DrawCanopyView();
                 _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
                 break;
@@ -958,26 +940,18 @@ public class Game : IGame
 
         UiText.DrawText("CANOPY VIEW", 30, 30, 24, Color.WHITE);
 
-        if (_currentState == GameState.Maneuver)
-        {
-            Vector2 targetPos = new Vector2(
-                MathF.Round(_ship.Position.X),
-                MathF.Round(_ship.Position.Y));
+        Vector2 targetPos = new Vector2(
+            MathF.Round(_ship.Position.X),
+            MathF.Round(_ship.Position.Y));
 
-            if (MathF.Abs(_displayedCoordinates.X - targetPos.X) >= 1.0f)
-            {
-                _displayedCoordinates.X += MathF.Sign(targetPos.X - _displayedCoordinates.X);
-            }
-            if (MathF.Abs(_displayedCoordinates.Y - targetPos.Y) >= 1.0f)
-            {
-                _displayedCoordinates.Y += MathF.Sign(targetPos.Y - _displayedCoordinates.Y);
-            }
-        }
-        else
+        if (MathF.Abs(_displayedCoordinates.X - targetPos.X) >= 1.0f)
         {
-            _displayedCoordinates = new Vector2(
-                MathF.Round(_ship.Position.X),
-                MathF.Round(_ship.Position.Y));
+            _displayedCoordinates.X += MathF.Sign(targetPos.X - _displayedCoordinates.X);
+        }
+
+        if (MathF.Abs(_displayedCoordinates.Y - targetPos.Y) >= 1.0f)
+        {
+            _displayedCoordinates.Y += MathF.Sign(targetPos.Y - _displayedCoordinates.Y);
         }
 
         string coordText = $"Coordinates: ({_displayedCoordinates.X:F0}, {_displayedCoordinates.Y:F0})";
@@ -985,31 +959,28 @@ public class Game : IGame
         int coordX = (viewWidth - coordTextWidth) / 2;
         UiText.DrawText(coordText, coordX, 60, 18, Color.SKYBLUE);
 
-        if (_currentState == GameState.Maneuver)
+        bool thrusting = _ship.ManeuverThrustForward || _ship.ManeuverThrustReverse;
+        bool coasting = !thrusting && _ship.Velocity.LengthSquared() > ManeuverVelocityStopEpsilonSq;
+
+        if (thrusting)
         {
-            bool thrusting = _ship.ManeuverThrustForward || _ship.ManeuverThrustReverse;
-            bool coasting = !thrusting && _ship.Velocity.LengthSquared() > ManeuverVelocityStopEpsilonSq;
-
-            if (thrusting)
-            {
-                UiText.DrawText("Engines: thrust", 30, 90, 18, Color.GREEN);
-            }
-            else if (coasting)
-            {
-                UiText.DrawText("Engines: coast", 30, 90, 18, new Color(230, 180, 80, 255));
-            }
-            else
-            {
-                UiText.DrawText("Engines: idle", 30, 90, 18, new Color(120, 120, 130, 255));
-            }
-
-            UiText.DrawText("A/D or arrows: turn | W/S or up/down: thrust / reverse | ESC: Disengage", 30, _screenHeight - 50, 16, Color.YELLOW);
+            UiText.DrawText("Engines: thrust", 30, 90, 18, Color.GREEN);
+        }
+        else if (coasting)
+        {
+            UiText.DrawText("Engines: coast", 30, 90, 18, new Color(230, 180, 80, 255));
         }
         else
         {
-            UiText.DrawText("Engines: OFF", 30, 90, 18, Color.RED);
-            UiText.DrawText("Use Navigator menu to access Starmap", 30, _screenHeight - 50, 16, Color.YELLOW);
+            UiText.DrawText("Engines: idle", 30, 90, 18, new Color(120, 120, 130, 255));
         }
+
+        UiText.DrawText(
+            "A/D: turn | W/S: thrust / reverse | Navigator: Starmap",
+            30,
+            _screenHeight - 50,
+            16,
+            Color.YELLOW);
 
         if (_rightPanel.MenuLevel == 0)
         {

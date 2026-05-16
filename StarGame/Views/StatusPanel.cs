@@ -121,7 +121,7 @@ public sealed class StatusPanel : IStatusPanel
         Raylib.DrawLine(contentLeft, y, contentRight, y, new Color(60, 80, 140, 255));
         y += 12;
 
-        bool useStarSystemSpeed = currentState == GameState.Maneuver || currentState == GameState.StarSystemView;
+        bool useStarSystemSpeed = currentState == GameState.CanopyView || currentState == GameState.StarSystemView;
         float actualSpeed = useStarSystemSpeed ? ship.Velocity.Length() : 0f;
         DrawLabelValueRow(ref y, "CREDITS :", ship.Credits.ToString("N0"), LayoutConstants.StatusPanelFontSize);
         DrawLabelValueRow(ref y, "SPEED :", $"{actualSpeed:F1}", LayoutConstants.StatusPanelFontSize);
