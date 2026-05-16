@@ -34,10 +34,10 @@ public sealed class GameMenu : IGameMenu
 
     public void UpdateNavigation(ref GameState currentState, ref bool justSwitchedState)
     {
-        if (currentState == GameState.ShipStatus || currentState == GameState.MineralCatalog || currentState == GameState.ShipManifest)
+        if (currentState == GameState.ShipStatus || currentState == GameState.MineralCatalog || currentState == GameState.ShipManifest || currentState == GameState.Combat)
             return;
 
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && currentState != GameState.StarMap && currentState != GameState.PlanetaryEncounter && currentState != GameState.StarSystemView)
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && currentState != GameState.StarMap && currentState != GameState.PlanetaryEncounter && currentState != GameState.StarSystemView && currentState != GameState.Combat)
         {
             if (_menuLevel == 3)
             {
@@ -61,7 +61,7 @@ public sealed class GameMenu : IGameMenu
         string[] displayRows = GetDisplayMenuRows();
         bool readOnlyMenu = IsReadOnlyMenuLevel();
 
-        if (currentState != GameState.StarMap && currentState != GameState.StarSystemView && !readOnlyMenu)
+        if (currentState != GameState.StarMap && currentState != GameState.StarSystemView && currentState != GameState.Combat && !readOnlyMenu)
         {
             if (Raylib.IsKeyPressed(KeyboardKey.KEY_UP))
             {

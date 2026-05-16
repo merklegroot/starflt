@@ -76,10 +76,18 @@ public sealed class StatusPanel : IStatusPanel
 
         string stardate = FormatStardate(ship.Position);
         float fuelFillFraction = ship.GetFuelFillFraction();
-        string damageLabel = fuelFillFraction > 0.12f ? "NONE" : "LOW";
+        float shieldFillFraction = ship.GetShieldFillFraction();
+        float hullFillFraction = ship.GetHullFillFraction();
+        bool inCombat = currentState == GameState.Combat;
+        string damageLabel = inCombat
+            ? (hullFillFraction > 0.66f ? "NONE" : hullFillFraction > 0.33f ? "MOD" : "HEAVY")
+            : (fuelFillFraction > 0.12f ? "NONE" : "LOW");
         int cargoPct = ship.GetCargoFillPercent();
         string fuelStr = ship.FuelQuantity.ToString("F1");
-        string shieldsStr = fuelFillFraction > 0.20f ? "UP" : "DOWN";
+        string shieldsStr = inCombat
+            ? (shieldFillFraction > 0f ? $"{ship.ShieldStrength:F0}" : "DOWN")
+            : (fuelFillFraction > 0.20f ? "UP" : "DOWN");
+        string weaponsStr = inCombat ? "PHASERS" : "UNARMED";
 
         UiText.DrawTextCenteredAtX("STATUS", contentLeft + contentWidth * 0.5f, y, HeaderFontSize, Color.WHITE);
         y += HeaderFontSize + 10;
@@ -97,8 +105,8 @@ public sealed class StatusPanel : IStatusPanel
             rightColX = Math.Max(gaugeX + 70, contentRight - 72);
         }
 
-        float shieldFill = fuelFillFraction > 0.15f ? 1f : 0.35f;
-        float fuelFill = fuelFillFraction;
+        float shieldFill = inCombat ? shieldFillFraction : (fuelFillFraction > 0.15f ? 1f : 0.35f);
+        float fuelFill = inCombat ? hullFillFraction : fuelFillFraction;
         DrawVerticalGauge(gaugeX, gaugeRowTop, GaugeBarW, GaugeBarH, shieldFill, Color.RED);
         int smallLabel = LayoutConstants.StatusPanelFontSize - 2;
         int sW = UiText.MeasureText("S", smallLabel);
@@ -114,7 +122,7 @@ public sealed class StatusPanel : IStatusPanel
         DrawRightColumnRow(rightColX, contentRight, ref ry, "CARGO :", $"{cargoPct} %", LayoutConstants.StatusPanelFontSize);
         DrawRightColumnRow(rightColX, contentRight, ref ry, "FUEL :", fuelStr, LayoutConstants.StatusPanelFontSize);
         DrawRightColumnRow(rightColX, contentRight, ref ry, "SHIELDS :", shieldsStr, LayoutConstants.StatusPanelFontSize);
-        DrawRightColumnRow(rightColX, contentRight, ref ry, "WEAP :", "UNARMED", LayoutConstants.StatusPanelFontSize);
+        DrawRightColumnRow(rightColX, contentRight, ref ry, "WEAP :", weaponsStr, LayoutConstants.StatusPanelFontSize);
 
         int gaugeBlockBottom = gaugeRowTop + GaugeBarH + 18;
         y = Math.Max(gaugeBlockBottom, ry) + 8;
@@ -122,7 +130,9 @@ public sealed class StatusPanel : IStatusPanel
         Raylib.DrawLine(contentLeft, y, contentRight, y, new Color(60, 80, 140, 255));
         y += 12;
 
-        bool useStarSystemSpeed = currentState == GameState.CanopyView || currentState == GameState.StarSystemView;
+        bool useStarSystemSpeed = currentState == GameState.CanopyView
+            || currentState == GameState.StarSystemView
+            || currentState == GameState.Combat;
         float actualSpeed = useStarSystemSpeed ? ship.Velocity.Length() : 0f;
         DrawLabelValueRow(ref y, "CREDITS :", ship.Credits.ToString("N0"), LayoutConstants.StatusPanelFontSize);
         DrawLabelValueRow(ref y, "SPEED :", $"{actualSpeed:F1}", LayoutConstants.StatusPanelFontSize);

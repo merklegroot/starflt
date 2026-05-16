@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using StarflightGame.Combat;
 using StarflightGame.Views;
 using StarflightGame.Views.StarMap;
 
@@ -17,6 +18,7 @@ public static class GameRegistry
             .AddSingleton<IPlanetView, PlanetView>()
             .AddSingleton<ICanopyStarSystemView, CanopyStarSystemView>()
             .AddSingleton<IStarSystemInteriorView, StarSystemInteriorView>()
+            .AddSingleton<ICombatView, CombatView>()
             .AddSingleton<IRightPanel, RightPanel>()
             .AddSingleton<IGame, Game>();
 }

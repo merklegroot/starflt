@@ -1,5 +1,6 @@
 using Raylib_cs;
 using System.Numerics;
+using StarflightGame.Combat;
 using StarflightGame.Constants;
 using StarflightGame.Views;
 using StarflightGame.Views.StarMap;
@@ -47,6 +48,7 @@ public class Game : IGame
     private readonly ICanopyStarSystemView _canopySystems;
     private readonly IStarSystemInteriorView _starSystemInteriorView;
     private readonly IPlanetView _planetView;
+    private readonly ICombatView _combatView;
     private readonly IRightPanel _rightPanel;
     private readonly IResourceLoader _resourceLoader;
     private readonly IReadOnlyList<MineralTradeEntry> _mineralTradeList;
@@ -60,6 +62,7 @@ public class Game : IGame
 
     private GameState _planetaryEncounterReturnState = GameState.CanopyView;
     private GameState _manifestReturnState = GameState.CanopyView;
+    private GameState _combatReturnState = GameState.CanopyView;
 
     public bool ShouldExit { get; private set; } = false;
 
@@ -71,6 +74,7 @@ public class Game : IGame
         ICanopyStarSystemView canopySystems,
         IStarSystemInteriorView starSystemInteriorView,
         IPlanetView planetView,
+        ICombatView combatView,
         IResourceLoader resourceLoader)
     {
         _ship = ship;
@@ -80,6 +84,7 @@ public class Game : IGame
         _canopySystems = canopySystems;
         _starSystemInteriorView = starSystemInteriorView;
         _planetView = planetView;
+        _combatView = combatView;
         _resourceLoader = resourceLoader;
         _mineralTradeList = resourceLoader.LoadMineralTradeList();
         _screenWidth = GameConstants.ScreenWidth;
@@ -181,6 +186,18 @@ public class Game : IGame
             case GameState.ShipManifest:
                 UpdateShipManifest();
                 break;
+            case GameState.Combat:
+                UpdateCombat(deltaTime);
+                break;
+        }
+
+        if (_rightPanel.MenuLevel == 0
+            && Raylib.IsKeyPressed(KeyboardKey.KEY_C)
+            && (_currentState == GameState.CanopyView || _currentState == GameState.StarSystemView))
+        {
+            _combatReturnState = _currentState;
+            _currentState = GameState.Combat;
+            _justSwitchedState = true;
         }
 
         if (_currentState == GameState.CanopyView
@@ -216,7 +233,16 @@ public class Game : IGame
             }
         }
 
-        if (_previousState == GameState.StarSystemView && _currentState != GameState.StarSystemView)
+        if (_previousState == GameState.StarSystemView
+            && _currentState != GameState.StarSystemView
+            && _currentState != GameState.Combat)
+        {
+            _ship.Velocity = Vector2.Zero;
+            _ship.ManeuverThrustForward = false;
+            _ship.ManeuverThrustReverse = false;
+        }
+
+        if (_previousState == GameState.Combat && _currentState != GameState.Combat)
         {
             _ship.Velocity = Vector2.Zero;
             _ship.ManeuverThrustForward = false;
@@ -604,6 +630,32 @@ public class Game : IGame
         }
     }
 
+    private void UpdateCombat(float deltaTime)
+    {
+        int viewWidth = MainViewWidth;
+
+        if (_justSwitchedState)
+        {
+            _justSwitchedState = false;
+            _combatView.BeginSession(viewWidth, _screenHeight, _ship);
+            return;
+        }
+
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _rightPanel.MenuLevel == 0)
+        {
+            if (_ship.IsCombatDestroyed())
+            {
+                _ship.ResetCombatHealth();
+            }
+
+            _currentState = _combatReturnState;
+            _justSwitchedState = true;
+            return;
+        }
+
+        _combatView.Update(deltaTime, viewWidth, _screenHeight, _ship);
+    }
+
     public void Draw()
     {
         Raylib.BeginDrawing();
@@ -652,9 +704,23 @@ public class Game : IGame
                 DrawShipManifest();
                 _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
                 break;
+            case GameState.Combat:
+                DrawCombat();
+                _rightPanel.Draw(
+                    _screenWidth,
+                    _screenHeight,
+                    _ship,
+                    _currentState,
+                    _combatView.PlayerPosition);
+                break;
         }
 
         Raylib.EndDrawing();
+    }
+
+    private void DrawCombat()
+    {
+        _combatView.Draw(MainViewWidth, _screenHeight, _ship);
     }
 
     private void DrawStarSystemView()
@@ -672,7 +738,7 @@ public class Game : IGame
         Raylib.DrawRectangle(viewWidth - frameThickness, 0, frameThickness, _screenHeight, frameColor);
 
         UiText.DrawText(
-            "[ ] or , .  systems   |   P list   |   WASD   |   ESC or fly far from star (edge of map)",
+            "[ ] or , .  systems   |   P list   |   C combat   |   WASD   |   ESC or fly far from star",
             24,
             _screenHeight - frameThickness + 4,
             14,
@@ -1074,7 +1140,7 @@ public class Game : IGame
         }
 
         UiText.DrawText(
-            "A/D: turn | W/S: thrust / reverse | M: manifest | R: refuel | Navigator: Starmap",
+            "A/D: turn | W/S: thrust / reverse | C: combat | M: manifest | R: refuel",
             30,
             _screenHeight - 50,
             16,

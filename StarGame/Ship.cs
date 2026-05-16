@@ -25,11 +25,22 @@ public interface IShip
     void AddMinerals(int amount);
     bool CanMove();
     int GetCargoFillPercent();
+    float ShieldStrength { get; set; }
+    float HullStrength { get; set; }
+    float MaxShieldStrength { get; }
+    float MaxHullStrength { get; }
+    float GetShieldFillFraction();
+    float GetHullFillFraction();
+    void ResetCombatHealth();
+    void ApplyCombatDamage(float amount);
+    bool IsCombatDestroyed();
 }
 
 public class Ship : IShip
 {
     private const float FuelConsumptionRate = 0.05f;
+    private const float DefaultMaxShield = 100f;
+    private const float DefaultMaxHull = 100f;
 
     private readonly List<CargoHoldEntry> _cargo;
     private readonly int _fuelCargoIndex;
@@ -47,6 +58,10 @@ public class Ship : IShip
     public Vector2 Velocity { get; set; } = Vector2.Zero;
     public bool ManeuverThrustForward { get; set; }
     public bool ManeuverThrustReverse { get; set; }
+    public float ShieldStrength { get; set; } = DefaultMaxShield;
+    public float HullStrength { get; set; } = DefaultMaxHull;
+    public float MaxShieldStrength => DefaultMaxShield;
+    public float MaxHullStrength => DefaultMaxHull;
 
     public Ship(IResourceLoader resourceLoader)
     {
@@ -144,6 +159,57 @@ public class Ship : IShip
         }
 
         return Math.Clamp((int)(totalUnits * 100f / CargoCapacity), 0, 100);
+    }
+
+    public float GetShieldFillFraction()
+    {
+        if (MaxShieldStrength <= 0f)
+        {
+            return 0f;
+        }
+
+        return Math.Clamp(ShieldStrength / MaxShieldStrength, 0f, 1f);
+    }
+
+    public float GetHullFillFraction()
+    {
+        if (MaxHullStrength <= 0f)
+        {
+            return 0f;
+        }
+
+        return Math.Clamp(HullStrength / MaxHullStrength, 0f, 1f);
+    }
+
+    public void ResetCombatHealth()
+    {
+        ShieldStrength = MaxShieldStrength;
+        HullStrength = MaxHullStrength;
+    }
+
+    public void ApplyCombatDamage(float amount)
+    {
+        if (amount <= 0f)
+        {
+            return;
+        }
+
+        if (ShieldStrength > 0f)
+        {
+            float absorbed = Math.Min(ShieldStrength, amount);
+            ShieldStrength -= absorbed;
+            amount -= absorbed;
+        }
+
+        if (amount > 0f)
+        {
+            HullStrength = Math.Max(0f, HullStrength - amount);
+        }
+    }
+
+    public bool IsCombatDestroyed()
+    {
+        return HullStrength <= 0f;
     }
 
     private void SyncFuelCargoEntry()
