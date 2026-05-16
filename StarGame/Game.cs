@@ -265,6 +265,15 @@ public class Game : IGame
             _ship.RefuelToFull();
         }
 
+        if (_rightPanel.MenuLevel == 0 && Raylib.IsKeyPressed(KeyboardKey.KEY_H))
+        {
+            _ship.RestoreShipForDebug();
+            if (_currentState == GameState.Combat)
+            {
+                _combatView.RestoreForDebug();
+            }
+        }
+
         if (_currentState == GameState.ShipManifest && _previousState != GameState.ShipManifest)
         {
             _manifestReturnState = _previousState;
@@ -643,11 +652,6 @@ public class Game : IGame
 
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _rightPanel.MenuLevel == 0)
         {
-            if (_ship.IsCombatDestroyed())
-            {
-                _ship.ResetCombatHealth();
-            }
-
             _currentState = _combatReturnState;
             _justSwitchedState = true;
             return;
@@ -1140,7 +1144,7 @@ public class Game : IGame
         }
 
         UiText.DrawText(
-            "A/D: turn | W/S: thrust / reverse | C: combat | M: manifest | R: refuel",
+            "A/D: turn | W/S: thrust / reverse | C: combat | M: manifest | R: refuel | H: restore (debug)",
             30,
             _screenHeight - 50,
             16,

@@ -21,6 +21,7 @@ public interface IShip
     void ConsumeFuel(float amount);
     void ConsumeFuelForMovement();
     void RefuelToFull();
+    void RestoreShipForDebug();
     void AddCredits(int amount);
     void AddMinerals(int amount);
     bool CanMove();
@@ -32,6 +33,7 @@ public interface IShip
     float GetShieldFillFraction();
     float GetHullFillFraction();
     void ResetCombatHealth();
+    void RegenerateShields(float amount);
     void ApplyCombatDamage(float amount);
     bool IsCombatDestroyed();
 }
@@ -123,6 +125,12 @@ public class Ship : IShip
         SyncFuelCargoEntry();
     }
 
+    public void RestoreShipForDebug()
+    {
+        RefuelToFull();
+        ResetCombatHealth();
+    }
+
     public void AddCredits(int amount)
     {
         Credits += amount;
@@ -185,6 +193,16 @@ public class Ship : IShip
     {
         ShieldStrength = MaxShieldStrength;
         HullStrength = MaxHullStrength;
+    }
+
+    public void RegenerateShields(float amount)
+    {
+        if (amount <= 0f)
+        {
+            return;
+        }
+
+        ShieldStrength = Math.Min(MaxShieldStrength, ShieldStrength + amount);
     }
 
     public void ApplyCombatDamage(float amount)

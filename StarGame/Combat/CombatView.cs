@@ -15,6 +15,8 @@ public interface ICombatView
     void Update(float deltaTime, int viewWidth, int viewHeight, IShip ship);
 
     void Draw(int viewWidth, int viewHeight, IShip ship);
+
+    void RestoreForDebug();
 }
 
 public sealed class CombatView : ICombatView
@@ -36,23 +38,55 @@ public sealed class CombatView : ICombatView
     private const float EnemyHullMax = 36f;
     private const float EnemyFireCooldown = 1.4f;
     private const float EnemyShotSpeed = 300f;
-    private const float EnemyShotDamage = 8f;
+    private const float EnemyShotDamage = 16f;
+    private const float ExplosionFlashDuration = 0.35f;
+    private const int ExplosionParticleCount = 40;
     private const float EnemyFireRange = 340f;
     private const float EnemyFireAngleTolerance = 0.35f;
     private const int VictoryCredits = 500;
+    private const float ShieldRegenPerSecond = 4f;
+    private const int HealthBarWidth = 34;
+    private const int HealthBarHeight = 4;
+    private const int HealthBarGap = 2;
 
     private readonly List<CombatEnemy> _enemies = new List<CombatEnemy>();
     private readonly List<CombatProjectile> _projectiles = new List<CombatProjectile>();
+    private readonly List<CombatExplosionParticle> _explosionParticles = new List<CombatExplosionParticle>();
     private Vector2 _playerPosition = Vector2.Zero;
     private Vector2 _playerVelocity = Vector2.Zero;
     private float _playerFireCooldown;
     private float _arenaRadius;
     private bool _sessionActive;
     private bool _outcomeHandled;
+    private float _explosionFlashTimer;
 
     public bool IsVictory { get; private set; }
     public bool IsDefeat { get; private set; }
     public Vector2 PlayerPosition => _playerPosition;
+
+    public void RestoreForDebug()
+    {
+        IsDefeat = false;
+        IsVictory = false;
+        _outcomeHandled = false;
+        _explosionParticles.Clear();
+        _explosionFlashTimer = 0f;
+
+        bool anyAlive = false;
+        for (int i = 0; i < _enemies.Count; i++)
+        {
+            if (_enemies[i].IsAlive)
+            {
+                anyAlive = true;
+                break;
+            }
+        }
+
+        if (!anyAlive)
+        {
+            SpawnEnemies();
+        }
+    }
 
     public void BeginSession(int viewWidth, int viewHeight, IShip ship)
     {
@@ -65,8 +99,9 @@ public sealed class CombatView : ICombatView
         _playerFireCooldown = 0f;
         _projectiles.Clear();
         _enemies.Clear();
+        _explosionParticles.Clear();
+        _explosionFlashTimer = 0f;
 
-        ship.ResetCombatHealth();
         ship.Rotation = 0f;
         ship.Velocity = Vector2.Zero;
         ship.ManeuverThrustForward = false;
@@ -78,13 +113,20 @@ public sealed class CombatView : ICombatView
 
     public void Update(float deltaTime, int viewWidth, int viewHeight, IShip ship)
     {
-        if (!_sessionActive || IsVictory || IsDefeat)
+        if (!_sessionActive || IsVictory)
         {
+            return;
+        }
+
+        if (IsDefeat)
+        {
+            UpdateExplosion(deltaTime);
             return;
         }
 
         _arenaRadius = MathF.Min(viewWidth, viewHeight) * ArenaRadiusFraction;
 
+        UpdateShieldRegen(deltaTime, ship);
         UpdatePlayerMovement(deltaTime, ship);
         UpdatePlayerWeapons(deltaTime, viewWidth, ship);
         UpdateEnemies(deltaTime, ship);
@@ -105,12 +147,21 @@ public sealed class CombatView : ICombatView
         DrawProjectiles(centerX, centerY);
         DrawEnemies(centerX, centerY);
         Vector2 screenPos = new Vector2(centerX, centerY) + _playerPosition;
-        ShipRenderer.Draw(
-            (int)screenPos.X,
-            (int)screenPos.Y,
-            ship.Rotation,
-            ship.ManeuverThrustForward,
-            ship.ManeuverThrustReverse);
+        if (IsDefeat)
+        {
+            DrawPlayerExplosion(centerX, centerY);
+        }
+        else
+        {
+            ShipRenderer.Draw(
+                (int)screenPos.X,
+                (int)screenPos.Y,
+                ship.Rotation,
+                ship.ManeuverThrustForward,
+                ship.ManeuverThrustReverse);
+
+            DrawPlayerHealthBars((int)screenPos.X, (int)screenPos.Y, ship);
+        }
 
         DrawCombatHud(viewWidth, viewHeight, ship);
     }
@@ -132,6 +183,14 @@ public sealed class CombatView : ICombatView
                 Hull = EnemyHullMax,
                 FireCooldown = 0.5f + i * 0.3f
             });
+        }
+    }
+
+    private static void UpdateShieldRegen(float deltaTime, IShip ship)
+    {
+        if (ship.ShieldStrength < ship.MaxShieldStrength)
+        {
+            ship.RegenerateShields(ShieldRegenPerSecond * deltaTime);
         }
     }
 
@@ -326,6 +385,7 @@ public sealed class CombatView : ICombatView
         {
             IsDefeat = true;
             _outcomeHandled = true;
+            SpawnPlayerExplosion();
             return;
         }
 
@@ -344,6 +404,85 @@ public sealed class CombatView : ICombatView
             IsVictory = true;
             ship.AddCredits(VictoryCredits);
             _outcomeHandled = true;
+        }
+    }
+
+    private void SpawnPlayerExplosion()
+    {
+        _explosionParticles.Clear();
+        _explosionFlashTimer = ExplosionFlashDuration;
+        _playerVelocity = Vector2.Zero;
+
+        Random rng = new Random(7711);
+        Color[] palette =
+        {
+            new Color(255, 240, 180, 255),
+            new Color(255, 180, 60, 255),
+            new Color(255, 110, 50, 255),
+            new Color(255, 60, 40, 255),
+            new Color(200, 200, 220, 255)
+        };
+
+        for (int i = 0; i < ExplosionParticleCount; i++)
+        {
+            float angle = (float)(rng.NextDouble() * Math.PI * 2.0);
+            float speed = 90f + (float)rng.NextDouble() * 260f;
+            float lifetime = 0.5f + (float)rng.NextDouble() * 0.9f;
+
+            _explosionParticles.Add(new CombatExplosionParticle
+            {
+                Position = _playerPosition,
+                Velocity = new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * speed,
+                Lifetime = lifetime,
+                MaxLifetime = lifetime,
+                Size = 2f + (float)rng.NextDouble() * 5f,
+                Color = palette[rng.Next(palette.Length)]
+            });
+        }
+    }
+
+    private void UpdateExplosion(float deltaTime)
+    {
+        _explosionFlashTimer = MathF.Max(0f, _explosionFlashTimer - deltaTime);
+
+        for (int i = _explosionParticles.Count - 1; i >= 0; i--)
+        {
+            CombatExplosionParticle particle = _explosionParticles[i];
+            particle.Position += particle.Velocity * deltaTime;
+            particle.Velocity *= MathF.Exp(-2.8f * deltaTime);
+            particle.Lifetime -= deltaTime;
+
+            if (!particle.IsAlive)
+            {
+                _explosionParticles.RemoveAt(i);
+            }
+        }
+    }
+
+    private void DrawPlayerExplosion(int centerX, int centerY)
+    {
+        int sx = centerX + (int)_playerPosition.X;
+        int sy = centerY + (int)_playerPosition.Y;
+
+        if (_explosionFlashTimer > 0f)
+        {
+            float flashT = _explosionFlashTimer / ExplosionFlashDuration;
+            int flashRadius = (int)(18f + (1f - flashT) * 42f);
+            byte flashAlpha = (byte)(220 * flashT);
+            Raylib.DrawCircle(sx, sy, flashRadius, new Color((byte)255, (byte)230, (byte)160, flashAlpha));
+            Raylib.DrawCircle(sx, sy, flashRadius * 0.55f, new Color((byte)255, (byte)120, (byte)50, (byte)(180 * flashT)));
+        }
+
+        for (int i = 0; i < _explosionParticles.Count; i++)
+        {
+            CombatExplosionParticle particle = _explosionParticles[i];
+            float lifeT = particle.Lifetime / particle.MaxLifetime;
+            int px = centerX + (int)particle.Position.X;
+            int py = centerY + (int)particle.Position.Y;
+            byte alpha = (byte)(255 * lifeT);
+            Color color = new Color(particle.Color.R, particle.Color.G, particle.Color.B, alpha);
+            int radius = Math.Max(1, (int)(particle.Size * (0.5f + lifeT * 0.5f)));
+            Raylib.DrawCircle(px, py, radius, color);
         }
     }
 
@@ -408,11 +547,42 @@ public sealed class CombatView : ICombatView
         Raylib.DrawTriangleLines(points[0], points[1], points[2], outline);
 
         float hullPct = enemy.Hull / EnemyHullMax;
-        int barW = 28;
-        int barX = sx - barW / 2;
         int barY = sy - 36;
-        Raylib.DrawRectangle(barX, barY, barW, 4, new Color(40, 40, 50, 255));
-        Raylib.DrawRectangle(barX, barY, (int)(barW * hullPct), 4, Color.RED);
+        DrawHealthBar(sx - HealthBarWidth / 2, barY, HealthBarWidth, HealthBarHeight, hullPct, Color.RED);
+    }
+
+    private static void DrawPlayerHealthBars(int shipCenterX, int shipCenterY, IShip ship)
+    {
+        int barX = shipCenterX - HealthBarWidth / 2;
+        int armorBarY = shipCenterY - 44;
+        int shieldBarY = armorBarY - HealthBarHeight - HealthBarGap;
+
+        DrawHealthBar(
+            barX,
+            shieldBarY,
+            HealthBarWidth,
+            HealthBarHeight,
+            ship.GetShieldFillFraction(),
+            new Color(80, 200, 255, 255));
+        DrawHealthBar(
+            barX,
+            armorBarY,
+            HealthBarWidth,
+            HealthBarHeight,
+            ship.GetHullFillFraction(),
+            new Color(210, 170, 90, 255));
+    }
+
+    private static void DrawHealthBar(int x, int y, int width, int height, float fill01, Color fillColor)
+    {
+        Raylib.DrawRectangle(x, y, width, height, new Color(40, 40, 50, 255));
+        if (fill01 <= 0f)
+        {
+            return;
+        }
+
+        int fillW = Math.Max(1, (int)(width * Math.Clamp(fill01, 0f, 1f)));
+        Raylib.DrawRectangle(x, y, fillW, height, fillColor);
     }
 
     private void DrawCombatHud(int viewWidth, int viewHeight, IShip ship)
@@ -438,7 +608,7 @@ public sealed class CombatView : ICombatView
 
         UiText.DrawText($"Hostiles: {aliveCount}", 30, 58, 18, Color.LIGHTGRAY);
         UiText.DrawText(
-            $"Shields: {ship.ShieldStrength:F0}   Hull: {ship.HullStrength:F0}",
+            $"Shields: {ship.ShieldStrength:F0}   Armor: {ship.HullStrength:F0}",
             30,
             80,
             18,
@@ -453,12 +623,12 @@ public sealed class CombatView : ICombatView
         }
         else if (IsDefeat)
         {
-            statusLine = "HULL BREACH — Press ESC to retreat.";
+            statusLine = "ARMOR BREACHED — Press ESC to retreat.";
             statusColor = new Color(255, 100, 100, 255);
         }
         else
         {
-            statusLine = "WASD move | A/D turn | SPACE or click: phasers | ESC: disengage | C: combat";
+            statusLine = "WASD | A/D | SPACE fire | ESC leave | H: restore ship (debug)";
             statusColor = Color.YELLOW;
         }
 
