@@ -103,6 +103,6 @@ public sealed class RightPanel : IRightPanel
             yPos += 18;
         }
 
-        yPos = _statusPanel.Draw(panelX, yPos, ship, currentState, starSystemLocalPosition);
+        yPos = _statusPanel.Draw(panelX, yPos, panelWidth, ship, currentState, starSystemLocalPosition);
     }
 }
