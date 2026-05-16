@@ -8,5 +8,6 @@ public enum GameState
     PlanetaryExploration,
     PlanetaryEncounter,
     ShipStatus,
-    MineralCatalog
+    MineralCatalog,
+    ShipManifest
 }

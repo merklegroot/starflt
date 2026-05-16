@@ -103,10 +103,10 @@ public class StarMapView : IStarMapView
         {
             // Warp to nearest system
             StarSystem? nearest = FindNearestSystem(ship.Position);
-            if (nearest != null && ship.Fuel > 10)
+            if (nearest != null && ship.FuelQuantity >= 1f)
             {
                 ship.Position = nearest.Position;
-                ship.ConsumeFuel(10);
+                ship.ConsumeFuel(1f);
             }
         }
     }

@@ -5,9 +5,13 @@ namespace StarflightGame;
 public interface IShip
 {
     Vector2 Position { get; set; }
-    float Fuel { get; set; }
     int Credits { get; set; }
     int Minerals { get; set; }
+    IReadOnlyList<CargoHoldEntry> Cargo { get; }
+    int CargoCapacity { get; }
+    int FuelCapacity { get; }
+    float FuelQuantity { get; }
+    float GetFuelFillFraction();
     float Speed { get; set; }
     float Rotation { get; set; }
     Vector2 Velocity { get; set; }
@@ -16,30 +20,81 @@ public interface IShip
 
     void ConsumeFuel(float amount);
     void ConsumeFuelForMovement();
-    void Refuel(float amount);
+    void RefuelToFull();
     void AddCredits(int amount);
     void AddMinerals(int amount);
     bool CanMove();
+    int GetCargoFillPercent();
 }
 
 public class Ship : IShip
 {
+    private const float FuelConsumptionRate = 0.05f;
+
+    private readonly List<CargoHoldEntry> _cargo;
+    private readonly int _fuelCargoIndex;
+    private float _fuelUnits;
+
     public Vector2 Position { get; set; } = Vector2.Zero;
-    public float Fuel { get; set; } = 100.0f;
     public int Credits { get; set; } = 1000;
     public int Minerals { get; set; } = 0;
+    public IReadOnlyList<CargoHoldEntry> Cargo => _cargo;
+    public int CargoCapacity { get; }
+    public int FuelCapacity { get; }
+    public float FuelQuantity => _fuelUnits;
     public float Speed { get; set; } = 3.0f;
     public float Rotation { get; set; } = -MathF.PI / 2.0f; // Default: pointing up (0 degrees = right, -90 = up)
     public Vector2 Velocity { get; set; } = Vector2.Zero;
     public bool ManeuverThrustForward { get; set; }
     public bool ManeuverThrustReverse { get; set; }
-    
-    private const float FuelConsumptionRate = 0.05f;
-    private const float MaxFuel = 100.0f;
+
+    public Ship(IResourceLoader resourceLoader)
+    {
+        CargoManifest manifest = resourceLoader.LoadCargoManifest();
+        CargoCapacity = manifest.Capacity;
+        FuelCapacity = manifest.FuelCapacity;
+
+        _cargo = new List<CargoHoldEntry>(manifest.Items.Count);
+        _fuelCargoIndex = -1;
+        for (int i = 0; i < manifest.Items.Count; i++)
+        {
+            CargoHoldEntry entry = manifest.Items[i];
+            _cargo.Add(new CargoHoldEntry
+            {
+                Name = entry.Name,
+                Quantity = entry.Quantity,
+                Category = entry.Category
+            });
+
+            if (string.Equals(entry.Name, "Fuel", StringComparison.OrdinalIgnoreCase))
+            {
+                _fuelCargoIndex = i;
+            }
+        }
+
+        _fuelUnits = _fuelCargoIndex >= 0 ? _cargo[_fuelCargoIndex].Quantity : 0f;
+        SyncFuelCargoEntry();
+    }
+
+    public float GetFuelFillFraction()
+    {
+        if (FuelCapacity <= 0)
+        {
+            return 0f;
+        }
+
+        return Math.Clamp(_fuelUnits / FuelCapacity, 0f, 1f);
+    }
 
     public void ConsumeFuel(float amount)
     {
-        Fuel = Math.Max(0, Fuel - amount);
+        if (amount <= 0f)
+        {
+            return;
+        }
+
+        _fuelUnits = Math.Max(0f, _fuelUnits - amount);
+        SyncFuelCargoEntry();
     }
 
     public void ConsumeFuelForMovement()
@@ -47,9 +102,10 @@ public class Ship : IShip
         ConsumeFuel(FuelConsumptionRate);
     }
 
-    public void Refuel(float amount)
+    public void RefuelToFull()
     {
-        Fuel = Math.Min(MaxFuel, Fuel + amount);
+        _fuelUnits = FuelCapacity;
+        SyncFuelCargoEntry();
     }
 
     public void AddCredits(int amount)
@@ -64,6 +120,39 @@ public class Ship : IShip
 
     public bool CanMove()
     {
-        return Fuel > 0;
+        return _fuelUnits > 0.001f;
+    }
+
+    public int GetCargoFillPercent()
+    {
+        float totalUnits = 0f;
+        for (int i = 0; i < _cargo.Count; i++)
+        {
+            if (i == _fuelCargoIndex)
+            {
+                totalUnits += _fuelUnits;
+            }
+            else
+            {
+                totalUnits += _cargo[i].Quantity;
+            }
+        }
+
+        if (CargoCapacity <= 0)
+        {
+            return 0;
+        }
+
+        return Math.Clamp((int)(totalUnits * 100f / CargoCapacity), 0, 100);
+    }
+
+    private void SyncFuelCargoEntry()
+    {
+        if (_fuelCargoIndex < 0)
+        {
+            return;
+        }
+
+        _cargo[_fuelCargoIndex].Quantity = (int)MathF.Round(_fuelUnits);
     }
 }

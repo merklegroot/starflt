@@ -12,6 +12,8 @@ public interface IResourceLoader
     IReadOnlyDictionary<string, LoadedPlanet[]> LoadPlanetsByStarSystem();
 
     IReadOnlyList<MineralTradeEntry> LoadMineralTradeList();
+
+    CargoManifest LoadCargoManifest();
 }
 
 public class ResourceLoader : IResourceLoader
@@ -22,9 +24,13 @@ public class ResourceLoader : IResourceLoader
 
     private const string MineralsResourceName = "StarflightGame.minerals.json";
 
+    private const string InitialCargoResourceName = "StarflightGame.initial-cargo.json";
+
     private IReadOnlyDictionary<string, LoadedPlanet[]>? _cachedPlanetsByStarSystemId;
 
     private IReadOnlyList<MineralTradeEntry>? _cachedMineralTradeList;
+
+    private CargoManifest? _cachedCargoManifest;
 
     public List<StarSystem> LoadStarSystems()
     {
@@ -216,6 +222,82 @@ public class ResourceLoader : IResourceLoader
         return list;
     }
 
+    public CargoManifest LoadCargoManifest()
+    {
+        if (_cachedCargoManifest != null)
+        {
+            return _cachedCargoManifest;
+        }
+
+        var assembly = Assembly.GetExecutingAssembly();
+
+        using var stream = assembly.GetManifestResourceStream(InitialCargoResourceName);
+        if (stream == null)
+        {
+            throw new InvalidOperationException($"Could not find embedded resource: {InitialCargoResourceName}");
+        }
+
+        using var reader = new StreamReader(stream);
+        string json = reader.ReadToEnd();
+
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        CargoManifestJsonDto? root = JsonSerializer.Deserialize<CargoManifestJsonDto>(json, options);
+        if (root?.Cargo == null || root.Cargo.Count == 0)
+        {
+            throw new InvalidOperationException("Failed to deserialize initial-cargo data");
+        }
+
+        if (root.Capacity <= 0)
+        {
+            throw new InvalidOperationException("initial-cargo.json: capacity must be positive.");
+        }
+
+        if (root.FuelCapacity <= 0)
+        {
+            throw new InvalidOperationException("initial-cargo.json: fuelCapacity must be positive.");
+        }
+
+        var items = new List<CargoHoldEntry>(root.Cargo.Count);
+        for (int i = 0; i < root.Cargo.Count; i++)
+        {
+            CargoHoldJsonDto? row = root.Cargo[i];
+            if (row == null || string.IsNullOrWhiteSpace(row.Name))
+            {
+                throw new InvalidOperationException($"initial-cargo.json: invalid entry at index {i}.");
+            }
+
+            if (row.Quantity < 0)
+            {
+                throw new InvalidOperationException($"initial-cargo.json: negative quantity for '{row.Name}'.");
+            }
+
+            if (string.IsNullOrWhiteSpace(row.Category))
+            {
+                throw new InvalidOperationException($"initial-cargo.json: missing category for '{row.Name}'.");
+            }
+
+            items.Add(new CargoHoldEntry
+            {
+                Name = row.Name.Trim(),
+                Quantity = row.Quantity,
+                Category = row.Category.Trim()
+            });
+        }
+
+        _cachedCargoManifest = new CargoManifest
+        {
+            Capacity = root.Capacity,
+            FuelCapacity = root.FuelCapacity,
+            Items = items
+        };
+
+        return _cachedCargoManifest;
+    }
+
     private static PlanetComposition ParseComposition(string? raw, string planetName, string starSystemKey)
     {
         if (string.IsNullOrWhiteSpace(raw))
@@ -280,5 +362,23 @@ public class ResourceLoader : IResourceLoader
         public string Name { get; set; } = "";
 
         public int Price { get; set; }
+    }
+
+    private sealed class CargoManifestJsonDto
+    {
+        public int Capacity { get; set; }
+
+        public int FuelCapacity { get; set; }
+
+        public List<CargoHoldJsonDto>? Cargo { get; set; }
+    }
+
+    private sealed class CargoHoldJsonDto
+    {
+        public string Name { get; set; } = "";
+
+        public int Quantity { get; set; }
+
+        public string Category { get; set; } = "";
     }
 }

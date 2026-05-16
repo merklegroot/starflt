@@ -75,10 +75,11 @@ public sealed class StatusPanel : IStatusPanel
         }
 
         string stardate = FormatStardate(ship.Position);
-        string damageLabel = ship.Fuel > 12f ? "NONE" : "LOW";
-        int cargoPct = Math.Clamp(ship.Minerals * 5, 0, 100);
-        string energyStr = (ship.Fuel * 1.911f).ToString("F1");
-        string shieldsStr = ship.Fuel > 20f ? "UP" : "DOWN";
+        float fuelFillFraction = ship.GetFuelFillFraction();
+        string damageLabel = fuelFillFraction > 0.12f ? "NONE" : "LOW";
+        int cargoPct = ship.GetCargoFillPercent();
+        string fuelStr = ship.FuelQuantity.ToString("F1");
+        string shieldsStr = fuelFillFraction > 0.20f ? "UP" : "DOWN";
 
         UiText.DrawTextCenteredAtX("STATUS", contentLeft + contentWidth * 0.5f, y, HeaderFontSize, Color.WHITE);
         y += HeaderFontSize + 10;
@@ -96,8 +97,8 @@ public sealed class StatusPanel : IStatusPanel
             rightColX = Math.Max(gaugeX + 70, contentRight - 72);
         }
 
-        float shieldFill = ship.Fuel > 15f ? 1f : 0.35f;
-        float fuelFill = Math.Clamp(ship.Fuel / 100f, 0f, 1f);
+        float shieldFill = fuelFillFraction > 0.15f ? 1f : 0.35f;
+        float fuelFill = fuelFillFraction;
         DrawVerticalGauge(gaugeX, gaugeRowTop, GaugeBarW, GaugeBarH, shieldFill, Color.RED);
         int smallLabel = LayoutConstants.StatusPanelFontSize - 2;
         int sW = UiText.MeasureText("S", smallLabel);
@@ -111,7 +112,7 @@ public sealed class StatusPanel : IStatusPanel
 
         int ry = gaugeRowTop;
         DrawRightColumnRow(rightColX, contentRight, ref ry, "CARGO :", $"{cargoPct} %", LayoutConstants.StatusPanelFontSize);
-        DrawRightColumnRow(rightColX, contentRight, ref ry, "ENERGY :", energyStr, LayoutConstants.StatusPanelFontSize);
+        DrawRightColumnRow(rightColX, contentRight, ref ry, "FUEL :", fuelStr, LayoutConstants.StatusPanelFontSize);
         DrawRightColumnRow(rightColX, contentRight, ref ry, "SHIELDS :", shieldsStr, LayoutConstants.StatusPanelFontSize);
         DrawRightColumnRow(rightColX, contentRight, ref ry, "WEAP :", "UNARMED", LayoutConstants.StatusPanelFontSize);
 

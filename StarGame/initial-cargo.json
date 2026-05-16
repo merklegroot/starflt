@@ -1,0 +1,16 @@
+{
+  "capacity": 50,
+  "fuelCapacity": 100,
+  "cargo": [
+    { "name": "Lead", "quantity": 12, "category": "Minerals" },
+    { "name": "Copper", "quantity": 8, "category": "Minerals" },
+    { "name": "Titanium", "quantity": 5, "category": "Minerals" },
+    { "name": "Fuel", "quantity": 100, "category": "Fuel" },
+    { "name": "Medical supplies", "quantity": 4, "category": "Supplies" },
+    { "name": "Food rations", "quantity": 6, "category": "Supplies" },
+    { "name": "Water reclamation filters", "quantity": 2, "category": "Supplies" },
+    { "name": "Spare engine parts", "quantity": 1, "category": "Equipment" },
+    { "name": "Probe drones", "quantity": 3, "category": "Equipment" },
+    { "name": "Communication relay", "quantity": 1, "category": "Equipment" }
+  ]
+}

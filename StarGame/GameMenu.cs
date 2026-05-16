@@ -18,7 +18,7 @@ public sealed class GameMenu : IGameMenu
 {
     private readonly string[] _topMenuItems = { "Planet", "Captain", "Navigator", "Info" };
     private readonly string[] _navigatorSubMenuItems = { "Starmap", "Star system" };
-    private readonly string[] _infoSubMenuItems = { "Minerals" };
+    private readonly string[] _infoSubMenuItems = { "Minerals", "Manifest" };
     private static readonly string[] _noOptionsPlaceholder = { "No options" };
 
     private int _selectedMenuIndex = 0;
@@ -34,7 +34,7 @@ public sealed class GameMenu : IGameMenu
 
     public void UpdateNavigation(ref GameState currentState, ref bool justSwitchedState)
     {
-        if (currentState == GameState.ShipStatus || currentState == GameState.MineralCatalog)
+        if (currentState == GameState.ShipStatus || currentState == GameState.MineralCatalog || currentState == GameState.ShipManifest)
             return;
 
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && currentState != GameState.StarMap && currentState != GameState.PlanetaryEncounter && currentState != GameState.StarSystemView)
@@ -109,6 +109,10 @@ public sealed class GameMenu : IGameMenu
             {
                 _selectedMenuIndex = 0;
             }
+            else if (Raylib.IsKeyPressed(KeyboardKey.KEY_TWO))
+            {
+                _selectedMenuIndex = 1;
+            }
         }
 
         if (Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER))
@@ -171,6 +175,11 @@ public sealed class GameMenu : IGameMenu
                 if (_selectedMenuIndex == 0)
                 {
                     currentState = GameState.MineralCatalog;
+                    justSwitchedState = true;
+                }
+                else if (_selectedMenuIndex == 1)
+                {
+                    currentState = GameState.ShipManifest;
                     justSwitchedState = true;
                 }
             }
@@ -322,6 +331,11 @@ public sealed class GameMenu : IGameMenu
             if (index == 0)
             {
                 return currentState == GameState.MineralCatalog;
+            }
+
+            if (index == 1)
+            {
+                return currentState == GameState.ShipManifest;
             }
         }
 

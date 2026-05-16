@@ -59,6 +59,7 @@ public class Game : IGame
     private GameState _previousState = GameState.CanopyView;
 
     private GameState _planetaryEncounterReturnState = GameState.CanopyView;
+    private GameState _manifestReturnState = GameState.CanopyView;
 
     public bool ShouldExit { get; private set; } = false;
 
@@ -177,6 +178,9 @@ public class Game : IGame
             case GameState.MineralCatalog:
                 UpdateMineralCatalog();
                 break;
+            case GameState.ShipManifest:
+                UpdateShipManifest();
+                break;
         }
 
         if (_currentState == GameState.CanopyView
@@ -217,6 +221,27 @@ public class Game : IGame
             _ship.Velocity = Vector2.Zero;
             _ship.ManeuverThrustForward = false;
             _ship.ManeuverThrustReverse = false;
+        }
+
+        if (_rightPanel.MenuLevel == 0
+            && Raylib.IsKeyPressed(KeyboardKey.KEY_M)
+            && _currentState != GameState.ShipManifest)
+        {
+            _currentState = GameState.ShipManifest;
+            _justSwitchedState = true;
+        }
+
+        if (_rightPanel.MenuLevel == 0
+            && Raylib.IsKeyPressed(KeyboardKey.KEY_R)
+            && _currentState != GameState.PlanetaryExploration
+            && _currentState != GameState.PlanetaryEncounter)
+        {
+            _ship.RefuelToFull();
+        }
+
+        if (_currentState == GameState.ShipManifest && _previousState != GameState.ShipManifest)
+        {
+            _manifestReturnState = _previousState;
         }
 
         _previousState = _currentState;
@@ -571,6 +596,14 @@ public class Game : IGame
         }
     }
 
+    private void UpdateShipManifest()
+    {
+        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        {
+            _currentState = _manifestReturnState;
+        }
+    }
+
     public void Draw()
     {
         Raylib.BeginDrawing();
@@ -613,6 +646,10 @@ public class Game : IGame
                 break;
             case GameState.MineralCatalog:
                 DrawMineralCatalog();
+                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
+                break;
+            case GameState.ShipManifest:
+                DrawShipManifest();
                 _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
                 break;
         }
@@ -735,7 +772,7 @@ public class Game : IGame
 
     private void DrawStarMapHud()
     {
-        UiText.DrawText($"Fuel: {_ship.Fuel:F1}%", 10, 10, 20, Color.WHITE);
+        UiText.DrawText($"Fuel: {_ship.FuelQuantity:F1} / {_ship.FuelCapacity}", 10, 10, 20, Color.WHITE);
         UiText.DrawText($"Credits: {_ship.Credits}", 10, 35, 20, Color.WHITE);
         UiText.DrawText($"Press ENTER to explore planet | I for ship status | X to quit", 10, _screenHeight - 30, 16, Color.YELLOW);
     }
@@ -761,7 +798,7 @@ public class Game : IGame
 
     private void DrawPlanetaryUi()
     {
-        UiText.DrawText($"Fuel: {_ship.Fuel:F1}%", 10, 10, 20, Color.WHITE);
+        UiText.DrawText($"Fuel: {_ship.FuelQuantity:F1} / {_ship.FuelCapacity}", 10, 10, 20, Color.WHITE);
         UiText.DrawText($"Minerals: {_ship.Minerals}", 10, 35, 20, Color.WHITE);
         UiText.DrawText($"Press ESC to return to star map | R to regenerate | X to quit", 10, _screenHeight - 30, 16, Color.YELLOW);
     }
@@ -871,7 +908,7 @@ public class Game : IGame
         UiText.DrawText("SHIP STATUS", _screenWidth / 2 - 100, startY, 32, Color.WHITE);
 
         startY += 60;
-        UiText.DrawText($"Fuel: {_ship.Fuel:F1}%", 50, startY, 24, Color.WHITE);
+        UiText.DrawText($"Fuel: {_ship.FuelQuantity:F1} / {_ship.FuelCapacity}", 50, startY, 24, Color.WHITE);
         startY += lineHeight;
         UiText.DrawText($"Credits: {_ship.Credits}", 50, startY, 24, Color.WHITE);
         startY += lineHeight;
@@ -921,6 +958,67 @@ public class Game : IGame
         }
 
         UiText.DrawText("Press ESC to return | X to quit", 24, _screenHeight - 36, 18, Color.YELLOW);
+    }
+
+    private void DrawShipManifest()
+    {
+        int mainW = MainViewWidth;
+        Raylib.DrawRectangle(0, 0, mainW, _screenHeight, new Color(10, 12, 22, 255));
+
+        const int titleSize = 30;
+        const int rowSize = 18;
+        const int headerSize = 18;
+        int titleW = UiText.MeasureText("SHIP MANIFEST", titleSize);
+        UiText.DrawText("SHIP MANIFEST", (mainW - titleW) / 2, 36, titleSize, Color.SKYBLUE);
+
+        float totalUnits = 0f;
+        for (int i = 0; i < _ship.Cargo.Count; i++)
+        {
+            CargoHoldEntry entry = _ship.Cargo[i];
+            if (string.Equals(entry.Name, "Fuel", StringComparison.OrdinalIgnoreCase))
+            {
+                totalUnits += _ship.FuelQuantity;
+            }
+            else
+            {
+                totalUnits += entry.Quantity;
+            }
+        }
+
+        string holdSummary = $"Hold: {totalUnits:F1} / {_ship.CargoCapacity} units ({_ship.GetCargoFillPercent()}% full)";
+        int holdW = UiText.MeasureText(holdSummary, headerSize);
+        UiText.DrawText(
+            holdSummary,
+            Math.Max(24, (mainW - holdW) / 2),
+            72,
+            headerSize,
+            new Color(160, 170, 195, 255));
+
+        int y = 110;
+        int itemColX = 32;
+        int qtyColX = mainW / 2 - 20;
+        int categoryColX = mainW - 180;
+        UiText.DrawText("Item", itemColX, y, headerSize, Color.GRAY);
+        UiText.DrawText("Qty", qtyColX, y, headerSize, Color.GRAY);
+        UiText.DrawText("Category", categoryColX, y, headerSize, Color.GRAY);
+        y += headerSize + 8;
+
+        Raylib.DrawLine(24, y, mainW - 24, y, new Color(55, 65, 95, 255));
+        y += 14;
+
+        for (int i = 0; i < _ship.Cargo.Count; i++)
+        {
+            CargoHoldEntry entry = _ship.Cargo[i];
+            UiText.DrawText(entry.Name, itemColX, y, rowSize, Color.LIGHTGRAY);
+            string qtyText = string.Equals(entry.Name, "Fuel", StringComparison.OrdinalIgnoreCase)
+                ? _ship.FuelQuantity.ToString("F1")
+                : entry.Quantity.ToString();
+            UiText.DrawText(qtyText, qtyColX, y, rowSize, Color.WHITE);
+            UiText.DrawText(entry.Category, categoryColX, y, rowSize, new Color(140, 180, 220, 255));
+            y += rowSize + 4;
+        }
+
+        UiText.DrawText("Press ESC to return | M: Manifest | X to quit", 24, _screenHeight - 36, 18, Color.YELLOW);
     }
 
     private void DrawCanopyView()
@@ -976,7 +1074,7 @@ public class Game : IGame
         }
 
         UiText.DrawText(
-            "A/D: turn | W/S: thrust / reverse | Navigator: Starmap",
+            "A/D: turn | W/S: thrust / reverse | M: manifest | R: refuel | Navigator: Starmap",
             30,
             _screenHeight - 50,
             16,
