@@ -26,7 +26,8 @@ public interface IRightPanel
 
 
 /// <summary>
-/// Right-hand chrome: dark sidebar with <see cref="IGameMenu"/> navigation and <see cref="StatusPanel"/> ship readouts.
+/// Right-hand chrome: dark sidebar with <see cref="IStatusPanel"/> at the top and <see cref="IGameMenu"/> below
+/// (optional star-system overview map between them).
 /// </summary>
 public sealed class RightPanel : IRightPanel
 {
@@ -73,7 +74,7 @@ public sealed class RightPanel : IRightPanel
 
         int yPos = LayoutConstants.RightPanelPadding;
 
-        yPos = _gameMenu.Draw(panelX, yPos, panelWidth, LayoutConstants.RightPanelPadding, menuFontSize, LayoutConstants.RightPanelLineSpacing, currentState);
+        yPos = _statusPanel.Draw(panelX, yPos, panelWidth, ship, currentState, starSystemLocalPosition);
 
         yPos += 10;
         Raylib.DrawLine(panelX + LayoutConstants.RightPanelPadding, yPos, panelX + panelWidth - LayoutConstants.RightPanelPadding, yPos, Color.DARKGRAY);
@@ -103,6 +104,6 @@ public sealed class RightPanel : IRightPanel
             yPos += 18;
         }
 
-        yPos = _statusPanel.Draw(panelX, yPos, panelWidth, ship, currentState, starSystemLocalPosition);
+        _gameMenu.Draw(panelX, yPos, panelWidth, LayoutConstants.RightPanelPadding, menuFontSize, LayoutConstants.RightPanelLineSpacing, currentState);
     }
 }
