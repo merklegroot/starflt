@@ -40,7 +40,8 @@ public sealed class CombatView : ICombatView
     private const float EnemyShotSpeed = 300f;
     private const float EnemyShotDamage = 16f;
     private const float ExplosionFlashDuration = 0.35f;
-    private const int ExplosionParticleCount = 40;
+    private const int PlayerExplosionParticleCount = 40;
+    private const int EnemyExplosionParticleCount = 28;
     private const float EnemyFireRange = 340f;
     private const float EnemyFireAngleTolerance = 0.35f;
     private const int VictoryCredits = 500;
@@ -51,15 +52,13 @@ public sealed class CombatView : ICombatView
 
     private readonly List<CombatEnemy> _enemies = new List<CombatEnemy>();
     private readonly List<CombatProjectile> _projectiles = new List<CombatProjectile>();
-    private readonly List<CombatExplosionParticle> _explosionParticles = new List<CombatExplosionParticle>();
+    private readonly List<CombatExplosionBurst> _explosionBursts = new List<CombatExplosionBurst>();
     private Vector2 _playerPosition = Vector2.Zero;
     private Vector2 _playerVelocity = Vector2.Zero;
     private float _playerFireCooldown;
     private float _arenaRadius;
     private bool _sessionActive;
     private bool _outcomeHandled;
-    private float _explosionFlashTimer;
-
     public bool IsVictory { get; private set; }
     public bool IsDefeat { get; private set; }
     public Vector2 PlayerPosition => _playerPosition;
@@ -69,8 +68,7 @@ public sealed class CombatView : ICombatView
         IsDefeat = false;
         IsVictory = false;
         _outcomeHandled = false;
-        _explosionParticles.Clear();
-        _explosionFlashTimer = 0f;
+        _explosionBursts.Clear();
 
         bool anyAlive = false;
         for (int i = 0; i < _enemies.Count; i++)
@@ -99,8 +97,7 @@ public sealed class CombatView : ICombatView
         _playerFireCooldown = 0f;
         _projectiles.Clear();
         _enemies.Clear();
-        _explosionParticles.Clear();
-        _explosionFlashTimer = 0f;
+        _explosionBursts.Clear();
 
         ship.Rotation = 0f;
         ship.Velocity = Vector2.Zero;
@@ -120,7 +117,7 @@ public sealed class CombatView : ICombatView
 
         if (IsDefeat)
         {
-            UpdateExplosion(deltaTime);
+            UpdateExplosions(deltaTime);
             return;
         }
 
@@ -131,6 +128,7 @@ public sealed class CombatView : ICombatView
         UpdatePlayerWeapons(deltaTime, viewWidth, ship);
         UpdateEnemies(deltaTime, ship);
         UpdateProjectiles(deltaTime, ship);
+        UpdateExplosions(deltaTime);
         CheckOutcomes(ship);
 
         ship.Velocity = _playerVelocity;
@@ -146,12 +144,9 @@ public sealed class CombatView : ICombatView
         DrawArenaBoundary(centerX, centerY, _arenaRadius);
         DrawProjectiles(centerX, centerY);
         DrawEnemies(centerX, centerY);
+        DrawExplosions(centerX, centerY);
         Vector2 screenPos = new Vector2(centerX, centerY) + _playerPosition;
-        if (IsDefeat)
-        {
-            DrawPlayerExplosion(centerX, centerY);
-        }
-        else
+        if (!IsDefeat)
         {
             ShipRenderer.Draw(
                 (int)screenPos.X,
@@ -355,7 +350,13 @@ public sealed class CombatView : ICombatView
 
                     if (Vector2.Distance(proj.Position, enemy.Position) < 22f)
                     {
+                        float hullBefore = enemy.Hull;
                         enemy.Hull -= proj.Damage;
+                        if (hullBefore > 0f && enemy.Hull <= 0f)
+                        {
+                            SpawnExplosionAt(enemy.Position, EnemyExplosionParticleCount, 9000 + e);
+                        }
+
                         hit = true;
                         break;
                     }
@@ -409,11 +410,19 @@ public sealed class CombatView : ICombatView
 
     private void SpawnPlayerExplosion()
     {
-        _explosionParticles.Clear();
-        _explosionFlashTimer = ExplosionFlashDuration;
         _playerVelocity = Vector2.Zero;
+        SpawnExplosionAt(_playerPosition, PlayerExplosionParticleCount, 7711);
+    }
 
-        Random rng = new Random(7711);
+    private void SpawnExplosionAt(Vector2 arenaPosition, int particleCount, int randomSeed)
+    {
+        CombatExplosionBurst burst = new CombatExplosionBurst
+        {
+            Position = arenaPosition,
+            FlashTimer = ExplosionFlashDuration
+        };
+
+        Random rng = new Random(randomSeed);
         Color[] palette =
         {
             new Color(255, 240, 180, 255),
@@ -423,15 +432,15 @@ public sealed class CombatView : ICombatView
             new Color(200, 200, 220, 255)
         };
 
-        for (int i = 0; i < ExplosionParticleCount; i++)
+        for (int i = 0; i < particleCount; i++)
         {
             float angle = (float)(rng.NextDouble() * Math.PI * 2.0);
             float speed = 90f + (float)rng.NextDouble() * 260f;
             float lifetime = 0.5f + (float)rng.NextDouble() * 0.9f;
 
-            _explosionParticles.Add(new CombatExplosionParticle
+            burst.Particles.Add(new CombatExplosionParticle
             {
-                Position = _playerPosition,
+                Position = arenaPosition,
                 Velocity = new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * speed,
                 Lifetime = lifetime,
                 MaxLifetime = lifetime,
@@ -439,50 +448,65 @@ public sealed class CombatView : ICombatView
                 Color = palette[rng.Next(palette.Length)]
             });
         }
+
+        _explosionBursts.Add(burst);
     }
 
-    private void UpdateExplosion(float deltaTime)
+    private void UpdateExplosions(float deltaTime)
     {
-        _explosionFlashTimer = MathF.Max(0f, _explosionFlashTimer - deltaTime);
-
-        for (int i = _explosionParticles.Count - 1; i >= 0; i--)
+        for (int b = _explosionBursts.Count - 1; b >= 0; b--)
         {
-            CombatExplosionParticle particle = _explosionParticles[i];
-            particle.Position += particle.Velocity * deltaTime;
-            particle.Velocity *= MathF.Exp(-2.8f * deltaTime);
-            particle.Lifetime -= deltaTime;
+            CombatExplosionBurst burst = _explosionBursts[b];
+            burst.FlashTimer = MathF.Max(0f, burst.FlashTimer - deltaTime);
 
-            if (!particle.IsAlive)
+            for (int i = burst.Particles.Count - 1; i >= 0; i--)
             {
-                _explosionParticles.RemoveAt(i);
+                CombatExplosionParticle particle = burst.Particles[i];
+                particle.Position += particle.Velocity * deltaTime;
+                particle.Velocity *= MathF.Exp(-2.8f * deltaTime);
+                particle.Lifetime -= deltaTime;
+
+                if (!particle.IsAlive)
+                {
+                    burst.Particles.RemoveAt(i);
+                }
+            }
+
+            if (burst.IsFinished)
+            {
+                _explosionBursts.RemoveAt(b);
             }
         }
     }
 
-    private void DrawPlayerExplosion(int centerX, int centerY)
+    private void DrawExplosions(int centerX, int centerY)
     {
-        int sx = centerX + (int)_playerPosition.X;
-        int sy = centerY + (int)_playerPosition.Y;
-
-        if (_explosionFlashTimer > 0f)
+        for (int b = 0; b < _explosionBursts.Count; b++)
         {
-            float flashT = _explosionFlashTimer / ExplosionFlashDuration;
-            int flashRadius = (int)(18f + (1f - flashT) * 42f);
-            byte flashAlpha = (byte)(220 * flashT);
-            Raylib.DrawCircle(sx, sy, flashRadius, new Color((byte)255, (byte)230, (byte)160, flashAlpha));
-            Raylib.DrawCircle(sx, sy, flashRadius * 0.55f, new Color((byte)255, (byte)120, (byte)50, (byte)(180 * flashT)));
-        }
+            CombatExplosionBurst burst = _explosionBursts[b];
+            int sx = centerX + (int)burst.Position.X;
+            int sy = centerY + (int)burst.Position.Y;
 
-        for (int i = 0; i < _explosionParticles.Count; i++)
-        {
-            CombatExplosionParticle particle = _explosionParticles[i];
-            float lifeT = particle.Lifetime / particle.MaxLifetime;
-            int px = centerX + (int)particle.Position.X;
-            int py = centerY + (int)particle.Position.Y;
-            byte alpha = (byte)(255 * lifeT);
-            Color color = new Color(particle.Color.R, particle.Color.G, particle.Color.B, alpha);
-            int radius = Math.Max(1, (int)(particle.Size * (0.5f + lifeT * 0.5f)));
-            Raylib.DrawCircle(px, py, radius, color);
+            if (burst.FlashTimer > 0f)
+            {
+                float flashT = burst.FlashTimer / ExplosionFlashDuration;
+                int flashRadius = (int)(18f + (1f - flashT) * 42f);
+                byte flashAlpha = (byte)(220 * flashT);
+                Raylib.DrawCircle(sx, sy, flashRadius, new Color((byte)255, (byte)230, (byte)160, flashAlpha));
+                Raylib.DrawCircle(sx, sy, flashRadius * 0.55f, new Color((byte)255, (byte)120, (byte)50, (byte)(180 * flashT)));
+            }
+
+            for (int i = 0; i < burst.Particles.Count; i++)
+            {
+                CombatExplosionParticle particle = burst.Particles[i];
+                float lifeT = particle.Lifetime / particle.MaxLifetime;
+                int px = centerX + (int)particle.Position.X;
+                int py = centerY + (int)particle.Position.Y;
+                byte alpha = (byte)(255 * lifeT);
+                Color color = new Color(particle.Color.R, particle.Color.G, particle.Color.B, alpha);
+                int radius = Math.Max(1, (int)(particle.Size * (0.5f + lifeT * 0.5f)));
+                Raylib.DrawCircle(px, py, radius, color);
+            }
         }
     }
 

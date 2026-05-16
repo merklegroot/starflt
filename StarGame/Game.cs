@@ -2,6 +2,7 @@ using Raylib_cs;
 using System.Numerics;
 using StarflightGame.Combat;
 using StarflightGame.Constants;
+using StarflightGame.Mining;
 using StarflightGame.Views;
 using StarflightGame.Views.StarMap;
 
@@ -33,6 +34,8 @@ public class Game : IGame
 
     /// <summary>Exit star system interior when ship offset from the star exceeds this fraction of the smaller main-view dimension (same units as orbit layout).</summary>
     private const float StarSystemInteriorExitBoundaryFraction = 0.42f;
+    private const float MiningRigProductionIntervalSeconds = 4f;
+    private const int MineralsPerRigPerTick = 1;
     private readonly int _screenWidth;
     private readonly int _screenHeight;
 
@@ -51,9 +54,13 @@ public class Game : IGame
     private readonly ICombatView _combatView;
     private readonly IRightPanel _rightPanel;
     private readonly IResourceLoader _resourceLoader;
+    private readonly IPlanetMiningRigStore _planetMiningRigStore;
     private readonly IReadOnlyList<MineralTradeEntry> _mineralTradeList;
 
     private bool _justSwitchedState = false;
+    private float _miningProductionAccumulator = 0f;
+    private string _miningRigStatusMessage = "";
+    private float _miningRigStatusTimer = 0f;
     private Vector2 _displayedCoordinates = Vector2.Zero;
     private Vector2 _maneuverParallaxBoost = Vector2.Zero;
     private Vector2 _starSystemShipPosition = Vector2.Zero;
@@ -75,7 +82,8 @@ public class Game : IGame
         IStarSystemInteriorView starSystemInteriorView,
         IPlanetView planetView,
         ICombatView combatView,
-        IResourceLoader resourceLoader)
+        IResourceLoader resourceLoader,
+        IPlanetMiningRigStore planetMiningRigStore)
     {
         _ship = ship;
         _rightPanel = rightPanel;
@@ -86,6 +94,7 @@ public class Game : IGame
         _planetView = planetView;
         _combatView = combatView;
         _resourceLoader = resourceLoader;
+        _planetMiningRigStore = planetMiningRigStore;
         _mineralTradeList = resourceLoader.LoadMineralTradeList();
         _screenWidth = GameConstants.ScreenWidth;
         _screenHeight = GameConstants.ScreenHeight;
@@ -132,6 +141,9 @@ public class Game : IGame
         }
 
         float deltaTime = Raylib.GetFrameTime();
+
+        UpdateMiningProduction(deltaTime);
+        UpdateMiningRigStatusMessage(deltaTime);
 
         _rightPanel.UpdateNavigation(ref _currentState, ref _justSwitchedState);
 
@@ -613,7 +625,106 @@ public class Game : IGame
 
             _planetView.ResetRotation();
         }
+
+        if (_rightPanel.MenuLevel == 0
+            && Raylib.IsMouseButtonPressed(MouseButton.MOUSE_BUTTON_LEFT)
+            && TryGetPlanetaryEncounterContext(out string systemId, out Planet planet))
+        {
+            TryPlaceMiningRigAtMouse(systemId, planet);
+        }
     }
+
+    private void UpdateMiningProduction(float deltaTime)
+    {
+        int rigCount = _planetMiningRigStore.GetTotalRigCount();
+        if (rigCount == 0)
+        {
+            return;
+        }
+
+        _miningProductionAccumulator += deltaTime;
+        while (_miningProductionAccumulator >= MiningRigProductionIntervalSeconds)
+        {
+            _miningProductionAccumulator -= MiningRigProductionIntervalSeconds;
+            _ship.AddMinerals(rigCount * MineralsPerRigPerTick);
+        }
+    }
+
+    private void UpdateMiningRigStatusMessage(float deltaTime)
+    {
+        if (_miningRigStatusTimer <= 0f)
+        {
+            return;
+        }
+
+        _miningRigStatusTimer -= deltaTime;
+        if (_miningRigStatusTimer <= 0f)
+        {
+            _miningRigStatusMessage = "";
+        }
+    }
+
+    private void TryPlaceMiningRigAtMouse(string systemId, Planet planet)
+    {
+        int viewWidth = MainViewWidth;
+        int viewHeight = _screenHeight;
+        Vector2 mouse = Raylib.GetMousePosition();
+        if (mouse.X < 0f || mouse.X >= viewWidth || mouse.Y < 0f || mouse.Y >= viewHeight)
+        {
+            return;
+        }
+
+        if (!CanDeployMiningRigOn(planet))
+        {
+            SetMiningRigStatusMessage("Mining rigs cannot be built on gas giants.");
+            return;
+        }
+
+        if (!PlanetEncounterRender.TryPickSurfaceDirection(
+                mouse,
+                viewWidth,
+                viewHeight,
+                planet,
+                _planetView.EncounterRotationAngle,
+                out Vector3 surfaceDirection))
+        {
+            SetMiningRigStatusMessage("Click on the planet surface to deploy a rig.");
+            return;
+        }
+
+        var rig = new MiningRig(systemId, planet.Name, surfaceDirection);
+        if (!_planetMiningRigStore.TryAddRig(rig, out string failureReason))
+        {
+            SetMiningRigStatusMessage(failureReason);
+            return;
+        }
+
+        int count = _planetMiningRigStore.GetRigCount(systemId, planet.Name);
+        SetMiningRigStatusMessage($"Mining rig deployed ({count} on {planet.Name}).");
+    }
+
+    private void SetMiningRigStatusMessage(string message)
+    {
+        _miningRigStatusMessage = message;
+        _miningRigStatusTimer = 3.5f;
+    }
+
+    private bool TryGetPlanetaryEncounterContext(out string systemId, out Planet planet)
+    {
+        systemId = "";
+        planet = null!;
+        if (_currentPlanet == null || _currentSystem == null)
+        {
+            return false;
+        }
+
+        systemId = _currentSystem.Id.ToLowerInvariant();
+        planet = _currentPlanet;
+        return true;
+    }
+
+    private static bool CanDeployMiningRigOn(Planet planet) =>
+        planet.Composition != PlanetComposition.GasGiant;
 
     private void UpdateShipStatus()
     {
@@ -904,6 +1015,12 @@ public class Game : IGame
         {
             _planetView.DrawEncounterFullBleed(_currentPlanet, viewWidth, viewHeight);
 
+            if (TryGetPlanetaryEncounterContext(out string systemId, out Planet planet))
+            {
+                IReadOnlyList<MiningRig> rigs = _planetMiningRigStore.GetRigs(systemId, planet.Name);
+                _planetView.DrawMiningRigMarkers(planet, viewWidth, viewHeight, rigs);
+            }
+
             const int titleSize = 22;
             const int planetNameSize = 34;
             float titleY = 22;
@@ -964,6 +1081,31 @@ public class Game : IGame
                     infoY,
                     16,
                     new Color(160, 175, 195, 255));
+            }
+
+            if (TryGetPlanetaryEncounterContext(out string rigSystemId, out Planet rigPlanet))
+            {
+                int rigCount = _planetMiningRigStore.GetRigCount(rigSystemId, rigPlanet.Name);
+                UiText.DrawText($"Mining rigs: {rigCount}", 40, infoY, 18, new Color(255, 200, 90, 255));
+                infoY += infoLine;
+
+                if (CanDeployMiningRigOn(rigPlanet))
+                {
+                    UiText.DrawText("Left-click planet to deploy mining rig", 40, infoY, 16, new Color(210, 220, 140, 255));
+                    infoY += infoLine;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(_miningRigStatusMessage))
+            {
+                UiText.DrawTextCenteredAtXClamped(
+                    _miningRigStatusMessage,
+                    viewWidth * 0.5f,
+                    viewHeight * 0.5f + 80f,
+                    20,
+                    new Color(255, 220, 120, 255),
+                    40f,
+                    viewWidth - 40f);
             }
         }
 

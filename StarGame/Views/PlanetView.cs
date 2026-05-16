@@ -1,10 +1,13 @@
 using Raylib_cs;
+using StarflightGame.Mining;
 using System.Numerics;
 
 namespace StarflightGame.Views;
 
 public interface IPlanetView
 {
+    float EncounterRotationAngle { get; }
+
     void ResetRotation();
 
     void Unload();
@@ -14,6 +17,8 @@ public interface IPlanetView
     void DrawExplorationPanel(Planet planet, int panelX, int panelY, int panelWidth, int panelHeight);
 
     void DrawEncounterFullBleed(Planet planet, int viewWidth, int viewHeight);
+
+    void DrawMiningRigMarkers(Planet planet, int viewWidth, int viewHeight, IReadOnlyList<MiningRig> rigs);
 }
 
 
@@ -26,6 +31,8 @@ public sealed class PlanetView : IPlanetView
     private readonly Random _regenRandom = new Random();
     private RenderTexture2D? _renderTexture = null;
     private float _rotationAngle = 0.0f;
+
+    public float EncounterRotationAngle => _rotationAngle;
 
     public void ResetRotation()
     {
@@ -78,6 +85,35 @@ public sealed class PlanetView : IPlanetView
             new Rectangle(0, 0, viewWidth, -viewHeight),
             Vector2.Zero,
             Color.WHITE);
+    }
+
+    public void DrawMiningRigMarkers(Planet planet, int viewWidth, int viewHeight, IReadOnlyList<MiningRig> rigs)
+    {
+        if (rigs.Count == 0)
+        {
+            return;
+        }
+
+        float rotationAngle = _rotationAngle;
+        for (int i = 0; i < rigs.Count; i++)
+        {
+            if (!PlanetEncounterRender.TryProjectSurfaceDirection(
+                    rigs[i].SurfaceDirection,
+                    viewWidth,
+                    viewHeight,
+                    planet,
+                    rotationAngle,
+                    out Vector2 screen))
+            {
+                continue;
+            }
+
+            const int outerRadius = 7;
+            const int innerRadius = 3;
+            Raylib.DrawCircleV(screen, outerRadius, new Color(255, 180, 40, 220));
+            Raylib.DrawCircleV(screen, innerRadius, new Color(40, 28, 8, 255));
+            Raylib.DrawCircleLines((int)screen.X, (int)screen.Y, outerRadius, new Color(255, 230, 120, 255));
+        }
     }
 
     private void EnsureTexture(int width, int height)
