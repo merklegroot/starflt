@@ -2,11 +2,13 @@ namespace StarflightGame.Mining;
 
 public interface IPlanetMiningRigStore
 {
-    IReadOnlyList<MiningRig> GetRigs(string systemId, string planetName);
-
     int GetRigCount(string systemId, string planetName);
 
-    bool TryAddRig(MiningRig rig, out string failureReason);
+    int GetStoredMinerals(string systemId, string planetName);
 
-    int GetTotalRigCount();
+    bool TryAddRig(string systemId, string planetName, out string failureReason);
+
+    bool TryHarvest(string systemId, string planetName, out int harvested, out string failureReason);
+
+    void UpdateProduction(float deltaTime);
 }
