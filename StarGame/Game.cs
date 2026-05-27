@@ -109,6 +109,7 @@ public class Game : IGame
     {
         Raylib.InitWindow(GameConstants.ScreenWidth, GameConstants.ScreenHeight, "Starflight");
         Raylib.SetTargetFPS(60);
+        InputManager.Initialize();
         UiText.Load();
         ShipRenderer.Load();
 
@@ -131,7 +132,9 @@ public class Game : IGame
 
     public void Update()
     {
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_X))
+        InputManager.Update();
+
+        if (InputManager.IsQuitPressed())
         {
             ShouldExit = true;
             return;
@@ -201,7 +204,7 @@ public class Game : IGame
         }
 
         if (_rightPanel.MenuLevel == 0
-            && Raylib.IsKeyPressed(KeyboardKey.KEY_C)
+            && InputManager.IsCombatPressed()
             && (_currentState == GameState.CanopyView || _currentState == GameState.StarSystemView))
         {
             _combatReturnState = _currentState;
@@ -211,7 +214,7 @@ public class Game : IGame
 
         if (_currentState == GameState.CanopyView
             && _rightPanel.MenuLevel == 0
-            && Raylib.IsKeyPressed(KeyboardKey.KEY_SPACE))
+            && InputManager.IsEnterStarSystemPressed())
         {
             StarSystem? nearby = GetSystemNearCanopyCrosshair();
             if (nearby != null)
@@ -259,7 +262,7 @@ public class Game : IGame
         }
 
         if (_rightPanel.MenuLevel == 0
-            && Raylib.IsKeyPressed(KeyboardKey.KEY_M)
+            && InputManager.IsManifestPressed()
             && _currentState != GameState.ShipManifest
             && _currentState != GameState.PlanetaryEncounter)
         {
@@ -268,7 +271,7 @@ public class Game : IGame
         }
 
         if (_rightPanel.MenuLevel == 0
-            && Raylib.IsKeyPressed(KeyboardKey.KEY_R)
+            && InputManager.IsRefuelPressed()
             && _currentState != GameState.PlanetaryExploration
             && _currentState != GameState.PlanetaryEncounter)
         {
@@ -276,7 +279,7 @@ public class Game : IGame
         }
 
         if (_rightPanel.MenuLevel == 0
-            && Raylib.IsKeyPressed(KeyboardKey.KEY_H)
+            && InputManager.IsDebugHealPressed()
             && _currentState != GameState.PlanetaryEncounter)
         {
             _ship.RestoreShipForDebug();
@@ -370,16 +373,11 @@ public class Game : IGame
         _ship.ManeuverThrustForward = false;
         _ship.ManeuverThrustReverse = false;
 
-        float turnInput = 0.0f;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_A))
-            turnInput -= 1.0f;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_D))
-            turnInput += 1.0f;
+        float turnInput = InputManager.GetTurnAxis();
 
         _ship.Rotation += turnInput * TurnSpeed * deltaTime;
 
-        bool wantForward = Raylib.IsKeyDown(KeyboardKey.KEY_W);
-        bool wantReverse = Raylib.IsKeyDown(KeyboardKey.KEY_S);
+        InputManager.GetThrustHeld(out bool wantForward, out bool wantReverse);
 
         float thrustSign = 0.0f;
         if (wantForward && !wantReverse)
@@ -433,7 +431,7 @@ public class Game : IGame
             return;
         }
 
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        if (InputManager.IsBackPressed())
         {
             _currentState = GameState.CanopyView;
         }
@@ -456,12 +454,12 @@ public class Game : IGame
             }
         }
 
-        if (_rightPanel.MenuLevel == 0 && Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER) && _currentSystem != null)
+        if (_rightPanel.MenuLevel == 0 && InputManager.IsConfirmPressed() && _currentSystem != null)
         {
             _currentState = GameState.PlanetaryExploration;
         }
 
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_I))
+        if (InputManager.IsShipStatusPressed())
         {
             _currentState = GameState.ShipStatus;
         }
@@ -492,7 +490,7 @@ public class Game : IGame
             return;
         }
 
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _rightPanel.MenuLevel == 0)
+        if (InputManager.IsBackPressed() && _rightPanel.MenuLevel == 0)
         {
             _currentState = GameState.CanopyView;
             return;
@@ -505,16 +503,11 @@ public class Game : IGame
         _ship.ManeuverThrustForward = false;
         _ship.ManeuverThrustReverse = false;
 
-        float turnInput = 0.0f;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_A))
-            turnInput -= 1.0f;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_D))
-            turnInput += 1.0f;
+        float turnInput = InputManager.GetTurnAxis();
 
         _ship.Rotation += turnInput * TurnSpeed * deltaTime;
 
-        bool wantForward = Raylib.IsKeyDown(KeyboardKey.KEY_W);
-        bool wantReverse = Raylib.IsKeyDown(KeyboardKey.KEY_S);
+        InputManager.GetThrustHeld(out bool wantForward, out bool wantReverse);
 
         float thrustSign = 0.0f;
         if (wantForward && !wantReverse)
@@ -592,12 +585,12 @@ public class Game : IGame
 
     private void UpdatePlanetaryExploration()
     {
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _rightPanel.MenuLevel == 0)
+        if (InputManager.IsBackPressed() && _rightPanel.MenuLevel == 0)
         {
             _currentState = GameState.StarMap;
         }
 
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_R))
+        if (InputManager.IsRefuelPressed())
         {
             _currentPlanet = null;
             _planetView.ResetRotation();
@@ -606,12 +599,12 @@ public class Game : IGame
 
     private void UpdatePlanetaryEncounter()
     {
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _rightPanel.MenuLevel == 0)
+        if (InputManager.IsBackPressed() && _rightPanel.MenuLevel == 0)
         {
             _currentState = _planetaryEncounterReturnState;
         }
 
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_R) && _rightPanel.MenuLevel == 0)
+        if (InputManager.IsRefuelPressed() && _rightPanel.MenuLevel == 0)
         {
             if (_currentSystem != null)
             {
@@ -628,12 +621,12 @@ public class Game : IGame
 
         if (_rightPanel.MenuLevel == 0 && TryGetPlanetaryEncounterContext(out string systemId, out Planet planet))
         {
-            if (Raylib.IsKeyPressed(KeyboardKey.KEY_M))
+            if (InputManager.IsManifestPressed())
             {
                 TryDeployMiningRig(systemId, planet);
             }
 
-            if (Raylib.IsKeyPressed(KeyboardKey.KEY_H))
+            if (InputManager.IsDebugHealPressed())
             {
                 TryHarvestPlanetMinerals(systemId, planet);
             }
@@ -703,7 +696,7 @@ public class Game : IGame
 
     private void UpdateShipStatus()
     {
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        if (InputManager.IsBackPressed())
         {
             _currentState = GameState.StarMap;
         }
@@ -711,7 +704,7 @@ public class Game : IGame
 
     private void UpdateMineralCatalog()
     {
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        if (InputManager.IsBackPressed())
         {
             _currentState = GameState.CanopyView;
         }
@@ -719,7 +712,7 @@ public class Game : IGame
 
     private void UpdateShipManifest()
     {
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        if (InputManager.IsBackPressed())
         {
             _currentState = _manifestReturnState;
         }
@@ -736,7 +729,7 @@ public class Game : IGame
             return;
         }
 
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && _rightPanel.MenuLevel == 0)
+        if (InputManager.IsBackPressed() && _rightPanel.MenuLevel == 0)
         {
             _currentState = _combatReturnState;
             _justSwitchedState = true;
@@ -828,7 +821,7 @@ public class Game : IGame
         Raylib.DrawRectangle(viewWidth - frameThickness, 0, frameThickness, _screenHeight, frameColor);
 
         UiText.DrawText(
-            "[ ] or , .  systems   |   P list   |   C combat   |   WASD   |   ESC or fly far from star",
+            "L2/R2 systems | P list | X combat | Stick fly | A enter star | B canopy | fly far: exit",
             24,
             _screenHeight - frameThickness + 4,
             14,
@@ -838,13 +831,11 @@ public class Game : IGame
     private void TryCycleStarSystemInteriorView()
     {
         int delta = 0;
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_LEFT_BRACKET)
-            || Raylib.IsKeyPressed(KeyboardKey.KEY_COMMA))
+        if (InputManager.IsPreviousSystemPressed())
         {
             delta = -1;
         }
-        else if (Raylib.IsKeyPressed(KeyboardKey.KEY_RIGHT_BRACKET)
-            || Raylib.IsKeyPressed(KeyboardKey.KEY_PERIOD))
+        else if (InputManager.IsNextSystemPressed())
         {
             delta = 1;
         }
@@ -1277,7 +1268,7 @@ public class Game : IGame
                     out int starScreenX,
                     out int starScreenY);
 
-                string enterHint = $"Press SPACE to enter {nearbyForHint.Name}";
+                string enterHint = $"Press SPACE / A to enter {nearbyForHint.Name}";
                 int belowY = starScreenY + canopyStarRadius + 8;
                 const int bottomFrameReserve = 78;
                 float enterHintY;
@@ -1307,7 +1298,7 @@ public class Game : IGame
     {
         bool closeRequested = Raylib.WindowShouldClose();
 
-        if (closeRequested && Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE))
+        if (closeRequested && InputManager.IsBackPressed())
         {
             return false;
         }

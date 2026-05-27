@@ -194,16 +194,11 @@ public sealed class CombatView : ICombatView
         ship.ManeuverThrustForward = false;
         ship.ManeuverThrustReverse = false;
 
-        float turnInput = 0f;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_A))
-            turnInput -= 1f;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_D))
-            turnInput += 1f;
+        float turnInput = InputManager.GetTurnAxis();
 
         ship.Rotation += turnInput * TurnSpeed * deltaTime;
 
-        bool wantForward = Raylib.IsKeyDown(KeyboardKey.KEY_W);
-        bool wantReverse = Raylib.IsKeyDown(KeyboardKey.KEY_S);
+        InputManager.GetThrustHeld(out bool wantForward, out bool wantReverse);
         float thrustSign = 0f;
         if (wantForward && !wantReverse)
             thrustSign = 1f;
@@ -243,7 +238,7 @@ public sealed class CombatView : ICombatView
 
         Vector2 mouse = Raylib.GetMousePosition();
         bool mouseInView = mouse.X >= 0 && mouse.X < viewWidth;
-        bool fire = Raylib.IsKeyDown(KeyboardKey.KEY_SPACE)
+        bool fire = InputManager.IsFireHeld()
             || (mouseInView && Raylib.IsMouseButtonDown(MouseButton.MOUSE_BUTTON_LEFT));
 
         if (!fire || _playerFireCooldown > 0f)

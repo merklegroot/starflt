@@ -71,22 +71,14 @@ public class StarMapView : IStarMapView
     public void Update(IShip ship)
     {
         // Camera movement
-        Vector2 movement = Vector2.Zero;
         float speed = 5.0f / _state.Zoom;
-
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_W) || Raylib.IsKeyDown(KeyboardKey.KEY_UP))
-            movement.Y -= speed;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_S) || Raylib.IsKeyDown(KeyboardKey.KEY_DOWN))
-            movement.Y += speed;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_A) || Raylib.IsKeyDown(KeyboardKey.KEY_LEFT))
-            movement.X -= speed;
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_D) || Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
-            movement.X += speed;
+        Vector2 panAxis = InputManager.GetMapPanAxis();
+        Vector2 movement = panAxis * speed;
 
         _state = _state with { CameraOffset = _state.CameraOffset + movement };
 
         // Zoom
-        float wheelMove = Raylib.GetMouseWheelMove();
+        float wheelMove = InputManager.GetMapZoomWheelDelta();
         if (wheelMove != 0)
         {
             _state = _state with
@@ -99,7 +91,7 @@ public class StarMapView : IStarMapView
         }
 
         // Ship movement in star map (warp travel)
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_TAB))
+        if (InputManager.IsWarpPressed())
         {
             // Warp to nearest system
             StarSystem? nearest = FindNearestSystem(ship.Position);

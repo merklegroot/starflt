@@ -75,7 +75,7 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
 
     public void UpdateStarSystemUiInput()
     {
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_P))
+        if (InputManager.IsPlanetListTogglePressed())
         {
             _planetListVisible = !_planetListVisible;
         }
@@ -474,7 +474,7 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
 
         UiText.DrawText("STAR SYSTEM", 20, titleY, titleFontSize, Color.SKYBLUE);
         UiText.DrawText(
-            "A/D: turn | W/S: thrust / reverse | P: planet list | Fly over a planet: encounter | ESC: Canopy | X: Quit",
+            "Stick: fly | A: enter planet | P / L3: planet list | L2/R2: prev/next system | B: Canopy | Steam: Quit",
             20,
             helpY,
             helpFontSize,

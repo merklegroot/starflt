@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Numerics;
 using Raylib_cs;
 
 namespace StarflightGame;
@@ -23,6 +25,7 @@ public sealed class GameMenu : IGameMenu
 
     private int _selectedMenuIndex = 0;
     private int _menuLevel = 0;
+    private readonly List<Rectangle> _menuItemHitRects = new List<Rectangle>();
 
     public int MenuLevel => _menuLevel;
 
@@ -37,7 +40,7 @@ public sealed class GameMenu : IGameMenu
         if (currentState == GameState.ShipStatus || currentState == GameState.MineralCatalog || currentState == GameState.ShipManifest || currentState == GameState.Combat)
             return;
 
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ESCAPE) && currentState != GameState.StarMap && currentState != GameState.PlanetaryEncounter && currentState != GameState.StarSystemView && currentState != GameState.Combat)
+        if (InputManager.IsBackPressed() && currentState != GameState.StarMap && currentState != GameState.PlanetaryEncounter && currentState != GameState.StarSystemView && currentState != GameState.Combat)
         {
             if (_menuLevel == 3)
             {
@@ -63,11 +66,11 @@ public sealed class GameMenu : IGameMenu
 
         if (currentState != GameState.StarMap && currentState != GameState.StarSystemView && currentState != GameState.Combat && !readOnlyMenu)
         {
-            if (Raylib.IsKeyPressed(KeyboardKey.KEY_UP))
+            if (InputManager.IsMenuUpPressed())
             {
                 _selectedMenuIndex = Math.Max(0, _selectedMenuIndex - 1);
             }
-            else if (Raylib.IsKeyPressed(KeyboardKey.KEY_DOWN))
+            else if (InputManager.IsMenuDownPressed())
             {
                 _selectedMenuIndex = Math.Min(displayRows.Length - 1, _selectedMenuIndex + 1);
             }
@@ -115,75 +118,12 @@ public sealed class GameMenu : IGameMenu
             }
         }
 
-        if (Raylib.IsKeyPressed(KeyboardKey.KEY_ENTER))
+        if (InputManager.IsConfirmPressed() && !readOnlyMenu)
         {
-            if (readOnlyMenu)
-            {
-                return;
-            }
-
-            bool isCurrentlyActive = IsMenuItemActive(_menuLevel, _selectedMenuIndex, currentState);
-            if (isCurrentlyActive)
-            {
-                currentState = GameState.CanopyView;
-                justSwitchedState = true;
-                return;
-            }
-
-            if (_menuLevel == 0)
-            {
-                if (_selectedMenuIndex == 0)
-                {
-                    currentState = GameState.PlanetaryEncounter;
-                    justSwitchedState = true;
-                }
-                else if (_selectedMenuIndex == 1)
-                {
-                    _menuLevel = 3;
-                    _selectedMenuIndex = 0;
-                }
-                else if (_selectedMenuIndex == 2)
-                {
-                    _menuLevel = 1;
-                    _selectedMenuIndex = 0;
-                }
-                else if (_selectedMenuIndex == 3)
-                {
-                    _menuLevel = 2;
-                    _selectedMenuIndex = 0;
-                }
-            }
-            else if (_menuLevel == 1)
-            {
-                if (_selectedMenuIndex == 0)
-                {
-                    currentState = GameState.StarMap;
-                    justSwitchedState = true;
-                    _menuLevel = 0;
-                    _selectedMenuIndex = 0;
-                }
-                else if (_selectedMenuIndex == 1)
-                {
-                    currentState = GameState.StarSystemView;
-                    justSwitchedState = true;
-                    _menuLevel = 0;
-                    _selectedMenuIndex = 0;
-                }
-            }
-            else if (_menuLevel == 2)
-            {
-                if (_selectedMenuIndex == 0)
-                {
-                    currentState = GameState.MineralCatalog;
-                    justSwitchedState = true;
-                }
-                else if (_selectedMenuIndex == 1)
-                {
-                    currentState = GameState.ShipManifest;
-                    justSwitchedState = true;
-                }
-            }
+            ApplyMenuSelection(ref currentState, ref justSwitchedState);
         }
+
+        HandleMouseInput(ref currentState, ref justSwitchedState, readOnlyMenu);
 
         _selectedMenuIndex = Math.Clamp(_selectedMenuIndex, 0, Math.Max(0, displayRows.Length - 1));
     }
@@ -210,6 +150,8 @@ public sealed class GameMenu : IGameMenu
         const int indicatorSize = 16;
         const int indicatorSpacing = 8;
         const int innerBoxPadding = 2;
+
+        _menuItemHitRects.Clear();
 
         for (int i = 0; i < displayRows.Length; i++)
         {
@@ -257,6 +199,11 @@ public sealed class GameMenu : IGameMenu
                 Raylib.DrawRectangleLines(innerBoxX, innerBoxY, innerBoxSize, innerBoxSize, innerBoxOutline);
             }
 
+            if (!readOnlyMenu)
+            {
+                _menuItemHitRects.Add(new Rectangle(panelX, y, panelWidth, lineSpacing));
+            }
+
             UiText.DrawText(displayRows[i], textX, y, menuFontSize, itemColor);
             y += lineSpacing;
         }
@@ -264,14 +211,101 @@ public sealed class GameMenu : IGameMenu
         y += 10;
         if (_menuLevel > 0)
         {
-            UiText.DrawText("ESC: Back", panelX + panelPadding, y, menuFontSize - 4, Color.DARKGRAY);
+            UiText.DrawText("ESC / B: Back", panelX + panelPadding, y, menuFontSize - 4, Color.DARKGRAY);
         }
         else
         {
-            UiText.DrawText("ENTER: Select", panelX + panelPadding, y, menuFontSize - 4, Color.DARKGRAY);
+            UiText.DrawText("ENTER / A: Select  |  D-pad: Navigate", panelX + panelPadding, y, menuFontSize - 4, Color.DARKGRAY);
         }
 
         return y;
+    }
+
+    private void HandleMouseInput(ref GameState currentState, ref bool justSwitchedState, bool readOnlyMenu)
+    {
+        if (readOnlyMenu || !Raylib.IsMouseButtonPressed(MouseButton.MOUSE_BUTTON_LEFT))
+        {
+            return;
+        }
+
+        Vector2 mouse = Raylib.GetMousePosition();
+
+        for (int i = 0; i < _menuItemHitRects.Count; i++)
+        {
+            if (!Raylib.CheckCollisionPointRec(mouse, _menuItemHitRects[i]))
+            {
+                continue;
+            }
+
+            _selectedMenuIndex = i;
+            ApplyMenuSelection(ref currentState, ref justSwitchedState);
+            return;
+        }
+    }
+
+    private void ApplyMenuSelection(ref GameState currentState, ref bool justSwitchedState)
+    {
+        bool isCurrentlyActive = IsMenuItemActive(_menuLevel, _selectedMenuIndex, currentState);
+        if (isCurrentlyActive)
+        {
+            currentState = GameState.CanopyView;
+            justSwitchedState = true;
+            return;
+        }
+
+        if (_menuLevel == 0)
+        {
+            if (_selectedMenuIndex == 0)
+            {
+                currentState = GameState.PlanetaryEncounter;
+                justSwitchedState = true;
+            }
+            else if (_selectedMenuIndex == 1)
+            {
+                _menuLevel = 3;
+                _selectedMenuIndex = 0;
+            }
+            else if (_selectedMenuIndex == 2)
+            {
+                _menuLevel = 1;
+                _selectedMenuIndex = 0;
+            }
+            else if (_selectedMenuIndex == 3)
+            {
+                _menuLevel = 2;
+                _selectedMenuIndex = 0;
+            }
+        }
+        else if (_menuLevel == 1)
+        {
+            if (_selectedMenuIndex == 0)
+            {
+                currentState = GameState.StarMap;
+                justSwitchedState = true;
+                _menuLevel = 0;
+                _selectedMenuIndex = 0;
+            }
+            else if (_selectedMenuIndex == 1)
+            {
+                currentState = GameState.StarSystemView;
+                justSwitchedState = true;
+                _menuLevel = 0;
+                _selectedMenuIndex = 0;
+            }
+        }
+        else if (_menuLevel == 2)
+        {
+            if (_selectedMenuIndex == 0)
+            {
+                currentState = GameState.MineralCatalog;
+                justSwitchedState = true;
+            }
+            else if (_selectedMenuIndex == 1)
+            {
+                currentState = GameState.ShipManifest;
+                justSwitchedState = true;
+            }
+        }
     }
 
     private bool IsReadOnlyMenuLevel()
