@@ -43,7 +43,7 @@ public sealed class PlanetView : IPlanetView
 
     public string CreateUniquePlanetName(string systemName)
     {
-        return systemName + " I " + _regenRandom.Next(1000000) + "_" + DateTime.Now.Ticks + "_" + Guid.NewGuid().ToString("N").Substring(0, 8);
+        return PlanetGenerator.CreateName(systemName, _regenRandom);
     }
 
     public void DrawExplorationPanel(Planet planet, int panelX, int panelY, int panelWidth, int panelHeight)

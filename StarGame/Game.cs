@@ -608,8 +608,7 @@ public class Game : IGame
         {
             if (_currentSystem != null)
             {
-                string planetName = _planetView.CreateUniquePlanetName(_currentSystem.Name);
-                _currentPlanet = new Planet(planetName, Vector2.Zero, 50.0f, Color.BLUE);
+                _currentPlanet = PlanetGenerator.CreateRandom(_currentSystem.Name);
             }
             else
             {
@@ -928,8 +927,7 @@ public class Game : IGame
     {
         if (_currentPlanet == null && _currentSystem != null)
         {
-            string planetName = _planetView.CreateUniquePlanetName(_currentSystem.Name);
-            _currentPlanet = new Planet(planetName, Vector2.Zero, 50.0f, Color.GREEN);
+            _currentPlanet = PlanetGenerator.CreateRandom(_currentSystem.Name);
         }
 
         if (_currentPlanet != null)
@@ -972,8 +970,7 @@ public class Game : IGame
             }
             else
             {
-                string planetName = _planetView.CreateUniquePlanetName(_currentSystem.Name);
-                _currentPlanet = new Planet(planetName, Vector2.Zero, 50.0f, Color.BLUE);
+                _currentPlanet = PlanetGenerator.CreateRandom(_currentSystem.Name);
             }
         }
 
@@ -1016,6 +1013,14 @@ public class Game : IGame
                 infoY,
                 18,
                 new Color(190, 200, 225, 255));
+            infoY += infoLine;
+
+            UiText.DrawText(
+                $"Terrain: {PlanetGenerator.FormatTerrainLabel(_currentPlanet.TerrainStyle)}",
+                40,
+                infoY,
+                18,
+                new Color(175, 195, 215, 255));
             infoY += infoLine;
 
             if (_currentPlanet.RadiusKm > 0f)

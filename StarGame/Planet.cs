@@ -2,7 +2,6 @@ using Raylib_cs;
 using System.Numerics;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace StarflightGame;
 
@@ -22,6 +21,9 @@ public class Planet
     /// <summary>Broad composition from catalog data when the planet was loaded from <c>planets.json</c>.</summary>
     public PlanetComposition Composition { get; set; }
 
+    /// <summary>Visual terrain family used when coloring the procedural sphere.</summary>
+    public PlanetTerrainStyle TerrainStyle { get; private set; } = PlanetTerrainStyle.Oceanic;
+
     private List<Vector3> _spherePoints = new();
     private List<float> _pointHeights = new();
     private List<List<int>> _ringIndices = new();
@@ -30,6 +32,8 @@ public class Planet
     private Vector3 _noiseOffset;
     private float _minHeight = float.MaxValue;
     private float _maxHeight = float.MinValue;
+    private float _bandFrequency = 6.5f;
+    private float _bandTurbulence = 1.8f;
 
     public Planet(
         string name,
@@ -38,7 +42,8 @@ public class Planet
         Color surfaceColor,
         float radiusKm = 0f,
         PlanetRingData? rings = null,
-        PlanetComposition composition = PlanetComposition.Terrestrial)
+        PlanetComposition composition = PlanetComposition.Terrestrial,
+        PlanetTerrainStyle? terrainStyle = null)
     {
         Name = name;
         Position = position;
@@ -47,8 +52,10 @@ public class Planet
         RadiusKm = radiusKm;
         Rings = rings;
         Composition = composition;
+        TerrainStyle = terrainStyle ?? PlanetGenerator.ClassifyStyle(composition, surfaceColor);
+        ConfigureNoiseForStyle();
 
-        int seed = name.GetHashCode();
+        int seed = PlanetGenerator.StableHash(name);
         _random = new Random(seed);
         _noiseOffset = new Vector3(
             _random.Next(100000, 999999),
@@ -119,7 +126,7 @@ public class Planet
                 // Connect pole to first ring - full fan coverage
                 int poleIdx = currentRing[0];
                 Vector3 poleVertex = _spherePoints[poleIdx];
-                Color poleColor = GetColorForHeight(_pointHeights[poleIdx]);
+                Color poleColor = GetVertexColor(poleIdx);
 
                 for (int i = 0; i < nextRing.Count; i++)
                 {
@@ -136,7 +143,7 @@ public class Planet
                         V1 = v1,
                         V2 = v2,
                         V3 = v3,
-                        Color = AverageColor(poleColor, GetColorForHeight(_pointHeights[nextIdx]), GetColorForHeight(_pointHeights[nextIdx2]))
+                        Color = AverageColor(poleColor, GetVertexColor(nextIdx), GetVertexColor(nextIdx2))
                     });
                     _triangles.Add(tri);
                 }
@@ -146,7 +153,7 @@ public class Planet
                 // Connect last ring to pole - full fan coverage
                 int poleIdx = nextRing[0];
                 Vector3 poleVertex = _spherePoints[poleIdx];
-                Color poleColor = GetColorForHeight(_pointHeights[poleIdx]);
+                Color poleColor = GetVertexColor(poleIdx);
 
                 for (int i = 0; i < currentRing.Count; i++)
                 {
@@ -163,130 +170,83 @@ public class Planet
                         V1 = v1,
                         V2 = v2,
                         V3 = v3,
-                        Color = AverageColor(GetColorForHeight(_pointHeights[currIdx]), GetColorForHeight(_pointHeights[currIdx2]), poleColor)
+                        Color = AverageColor(GetVertexColor(currIdx), GetVertexColor(currIdx2), poleColor)
                     });
                     _triangles.Add(tri);
                 }
             }
             else
             {
-                // Connect two rings with density-aware fan/quad fill
-                // This ensures every point is connected, even when point counts differ dramatically
-                int n1 = currentRing.Count;
-                int n2 = nextRing.Count;
-                float ratio = n2 / (float)n1;
-                
-                // Build a set to track which connections we've made (to avoid duplicates)
-                HashSet<(int, int, int)> addedTriangles = new HashSet<(int, int, int)>();
-                
-                // Helper to add triangle if not already added
-                void AddTriangleIfNew(int idx1, int idx2, int idx3)
-                {
-                    // Normalize triangle indices (smallest first) for duplicate detection
-                    int min = Math.Min(Math.Min(idx1, idx2), idx3);
-                    int max = Math.Max(Math.Max(idx1, idx2), idx3);
-                    int mid = idx1 + idx2 + idx3 - min - max;
-                    var key = (min, mid, max);
-                    
-                    if (!addedTriangles.Contains(key))
-                    {
-                        addedTriangles.Add(key);
-                        Vector3 v1 = _spherePoints[idx1];
-                        Vector3 v2 = _spherePoints[idx2];
-                        Vector3 v3 = _spherePoints[idx3];
-                        Color avgColor = AverageColor(
-                            GetColorForHeight(_pointHeights[idx1]),
-                            GetColorForHeight(_pointHeights[idx2]),
-                            GetColorForHeight(_pointHeights[idx3]));
-                        TriangleData tri = EnsureOutwardFacing(new TriangleData { V1 = v1, V2 = v2, V3 = v3, Color = avgColor });
-                        _triangles.Add(tri);
-                    }
-                }
-                
-                // For each edge in current ring, connect to all points in next ring that map to it
-                for (int i = 0; i < n1; i++)
-                {
-                    int currIdx = currentRing[i];
-                    int currIdx2 = currentRing[(i + 1) % n1]; // Wrap for seam
-                    
-                    // Use fractional mapping to find range of points in next ring
-                    float mappedStart = i * ratio;
-                    float mappedEnd = (i + 1) * ratio;
-                    if (i + 1 == n1) mappedEnd = n2; // Explicitly handle seam
-                    
-                    int nextStart = WrapIndex((int)MathF.Floor(mappedStart), n2);
-                    int nextEnd = WrapIndex((int)MathF.Ceiling(mappedEnd - 0.0001f), n2); // Use slightly less than mappedEnd to avoid including next edge's start
-                    
-                    // Collect all points in next ring that should connect to this edge
-                    List<int> nextPoints = new List<int>();
-                    
-                    // Add points from nextStart to nextEnd (handling wrap-around)
-                    if (nextEnd >= nextStart)
-                    {
-                        // Normal case: no wrap-around
-                        for (int j = nextStart; j <= nextEnd; j++)
-                        {
-                            nextPoints.Add(nextRing[j]);
-                        }
-                    }
-                    else
-                    {
-                        // Wrap-around case: nextEnd < nextStart means we wrapped past the seam
-                        for (int j = nextStart; j < n2; j++)
-                        {
-                            nextPoints.Add(nextRing[j]);
-                        }
-                        for (int j = 0; j <= nextEnd; j++)
-                        {
-                            nextPoints.Add(nextRing[j]);
-                        }
-                    }
-                    
-                    // Ensure we have at least one point (should always be true)
-                    if (nextPoints.Count == 0)
-                    {
-                        nextPoints.Add(nextRing[nextStart]);
-                    }
-                    
-                    // Remove duplicates while preserving order
-                    nextPoints = nextPoints.Distinct().ToList();
-                    
-                    // Connect edge currIdx->currIdx2 to all points in nextPoints using fan pattern
-                    // This ensures complete coverage
-                    if (nextPoints.Count == 1)
-                    {
-                        // Single point: just one triangle
-                        AddTriangleIfNew(currIdx, currIdx2, nextPoints[0]);
-                    }
-                    else
-                    {
-                        // Multiple points: fan pattern
-                        // First triangle: currIdx, currIdx2, first point
-                        AddTriangleIfNew(currIdx, currIdx2, nextPoints[0]);
-                        
-                        // Fan: connect each consecutive pair to currIdx2
-                        for (int k = 0; k < nextPoints.Count - 1; k++)
-                        {
-                            AddTriangleIfNew(currIdx2, nextPoints[k], nextPoints[k + 1]);
-                        }
-                        
-                        // Also connect currIdx to points for better quad coverage
-                        for (int k = 1; k < nextPoints.Count; k++)
-                        {
-                            AddTriangleIfNew(currIdx, nextPoints[k - 1], nextPoints[k]);
-                        }
-                    }
-                }
+                StitchLatitudeRings(currentRing, nextRing);
             }
         }
     }
 
-    private int WrapIndex(int index, int count)
+    /// <summary>
+    /// Connects two latitude loops with exactly n1 + n2 triangles and no overlapping faces.
+    /// The old dual-fan fill covered the same patch twice; those coplanar triangles z-fought while rotating.
+    /// </summary>
+    private void StitchLatitudeRings(List<int> currentRing, List<int> nextRing)
     {
-        // Wrap index to valid range [0, count)
-        index = index % count;
-        if (index < 0) index += count;
-        return index;
+        int n1 = currentRing.Count;
+        int n2 = nextRing.Count;
+        if (n1 == 0 || n2 == 0)
+        {
+            return;
+        }
+
+        int i = 0;
+        int j = 0;
+        int steps = n1 + n2;
+
+        for (int step = 0; step < steps; step++)
+        {
+            int currIdx = currentRing[i % n1];
+            int nextIdx = nextRing[j % n2];
+            bool advanceCurrent = i < n1 && (j >= n2 || (i + 1) * n2 <= (j + 1) * n1);
+
+            if (advanceCurrent)
+            {
+                int currIdx2 = currentRing[(i + 1) % n1];
+                AddSphereTriangle(currIdx, currIdx2, nextIdx);
+                i++;
+            }
+            else
+            {
+                int nextIdx2 = nextRing[(j + 1) % n2];
+                AddSphereTriangle(currIdx, nextIdx2, nextIdx);
+                j++;
+            }
+        }
+    }
+
+    private void AddSphereTriangle(int idx1, int idx2, int idx3)
+    {
+        if (idx1 == idx2 || idx2 == idx3 || idx1 == idx3)
+        {
+            return;
+        }
+
+        Vector3 v1 = _spherePoints[idx1];
+        Vector3 v2 = _spherePoints[idx2];
+        Vector3 v3 = _spherePoints[idx3];
+        Vector3 cross = Vector3.Cross(v2 - v1, v3 - v1);
+        if (cross.LengthSquared() < 1e-16f)
+        {
+            return;
+        }
+
+        Color avgColor = AverageColor(
+            GetVertexColor(idx1),
+            GetVertexColor(idx2),
+            GetVertexColor(idx3));
+        _triangles.Add(EnsureOutwardFacing(new TriangleData
+        {
+            V1 = v1,
+            V2 = v2,
+            V3 = v3,
+            Color = avgColor
+        }));
     }
 
     private TriangleData EnsureOutwardFacing(TriangleData tri)
@@ -320,12 +280,92 @@ public class Planet
         );
     }
 
+    private void ConfigureNoiseForStyle()
+    {
+        switch (TerrainStyle)
+        {
+            case PlanetTerrainStyle.GasBanded:
+                _bandFrequency = 7.2f;
+                _bandTurbulence = 2.1f;
+                break;
+            case PlanetTerrainStyle.IceBanded:
+                _bandFrequency = 4.1f;
+                _bandTurbulence = 1.15f;
+                break;
+            default:
+                _bandFrequency = 6.5f;
+                _bandTurbulence = 1.8f;
+                break;
+        }
+    }
+
+    private void GetNoiseParameters(out float baseScale, out int octaves, out float persistence, out float lacunarity, out bool ridged)
+    {
+        ridged = false;
+        switch (TerrainStyle)
+        {
+            case PlanetTerrainStyle.Desert:
+                baseScale = 2.8f;
+                octaves = 6;
+                persistence = 0.42f;
+                lacunarity = 2.15f;
+                break;
+            case PlanetTerrainStyle.Rocky:
+                baseScale = 3.6f;
+                octaves = 7;
+                persistence = 0.5f;
+                lacunarity = 2.25f;
+                ridged = true;
+                break;
+            case PlanetTerrainStyle.Ice:
+                baseScale = 1.7f;
+                octaves = 5;
+                persistence = 0.4f;
+                lacunarity = 2.0f;
+                break;
+            case PlanetTerrainStyle.Lush:
+                baseScale = 2.35f;
+                octaves = 6;
+                persistence = 0.46f;
+                lacunarity = 2.1f;
+                break;
+            case PlanetTerrainStyle.Clouded:
+                baseScale = 1.55f;
+                octaves = 6;
+                persistence = 0.58f;
+                lacunarity = 2.05f;
+                break;
+            case PlanetTerrainStyle.GasBanded:
+                baseScale = 3.8f;
+                octaves = 5;
+                persistence = 0.52f;
+                lacunarity = 2.2f;
+                break;
+            case PlanetTerrainStyle.IceBanded:
+                baseScale = 2.1f;
+                octaves = 4;
+                persistence = 0.45f;
+                lacunarity = 2.0f;
+                break;
+            case PlanetTerrainStyle.Volcanic:
+                baseScale = 2.7f;
+                octaves = 6;
+                persistence = 0.5f;
+                lacunarity = 2.2f;
+                ridged = true;
+                break;
+            default:
+                baseScale = 2.2f;
+                octaves = 7;
+                persistence = 0.48f;
+                lacunarity = 2.1f;
+                break;
+        }
+    }
+
     private void AssignHeightsWith3DNoise()
     {
-        const float baseScale = 2.2f;
-        const int octaves = 7;
-        const float persistence = 0.48f;
-        const float lacunarity = 2.1f;
+        GetNoiseParameters(out float baseScale, out int octaves, out float persistence, out float lacunarity, out bool ridged);
 
         float maxPossible = 0f;
         float amp = 1f;
@@ -349,6 +389,11 @@ public class Planet
                     (p.X * frequency) + _noiseOffset.X,
                     (p.Y * frequency) + _noiseOffset.Y,
                     (p.Z * frequency) + _noiseOffset.Z);
+                if (ridged)
+                {
+                    sample = 1f - MathF.Abs(sample);
+                }
+
                 noise += sample * amp;
                 amp *= persistence;
                 frequency *= lacunarity;
@@ -376,22 +421,207 @@ public class Planet
         }
     }
 
-    private Color GetColorForHeight(float height)
+    private float NormalizedHeight(float height)
     {
         if (_maxHeight <= _minHeight)
         {
-            return Color.GREEN;
+            return 0.5f;
         }
 
-        float norm = (height - _minHeight) / (_maxHeight - _minHeight);
+        return (height - _minHeight) / (_maxHeight - _minHeight);
+    }
 
-        if (norm < 0.18f) return new Color(10, 40, 140, 255);
-        if (norm < 0.28f) return new Color(40, 100, 180, 255);
-        if (norm < 0.38f) return new Color(180, 160, 100, 255);
-        if (norm < 0.55f) return new Color(40, 140, 40, 255);
-        if (norm < 0.72f) return new Color(120, 100, 80, 255);
-        if (norm < 0.88f) return new Color(140, 140, 140, 255);
-        return new Color(220, 230, 240, 255);
+    private Color GetVertexColor(int index)
+    {
+        Vector3 point = _spherePoints[index];
+        float norm = NormalizedHeight(_pointHeights[index]);
+
+        return TerrainStyle switch
+        {
+            PlanetTerrainStyle.Desert => ColorDesert(point, norm),
+            PlanetTerrainStyle.Rocky => ColorRocky(point, norm),
+            PlanetTerrainStyle.Ice => ColorIce(point, norm),
+            PlanetTerrainStyle.Lush => ColorLush(point, norm),
+            PlanetTerrainStyle.Clouded => ColorClouded(point, norm),
+            PlanetTerrainStyle.GasBanded => ColorGasGiant(point, norm),
+            PlanetTerrainStyle.IceBanded => ColorIceGiant(point, norm),
+            PlanetTerrainStyle.Volcanic => ColorVolcanic(norm),
+            _ => ColorOceanic(point, norm)
+        };
+    }
+
+    private Color ColorOceanic(Vector3 point, float norm)
+    {
+        Color color;
+        if (norm < 0.18f) color = new Color(10, 40, 140, 255);
+        else if (norm < 0.28f) color = new Color(40, 100, 180, 255);
+        else if (norm < 0.38f) color = new Color(180, 160, 100, 255);
+        else if (norm < 0.55f) color = new Color(40, 140, 40, 255);
+        else if (norm < 0.72f) color = new Color(120, 100, 80, 255);
+        else if (norm < 0.88f) color = new Color(140, 140, 140, 255);
+        else color = new Color(220, 230, 240, 255);
+
+        return ApplyPolarIce(point, color, 0.78f);
+    }
+
+    private Color ColorLush(Vector3 point, float norm)
+    {
+        Color color;
+        if (norm < 0.12f) color = new Color(18, 70, 140, 255);
+        else if (norm < 0.22f) color = new Color(50, 120, 90, 255);
+        else if (norm < 0.48f) color = new Color(36, 130, 48, 255);
+        else if (norm < 0.68f) color = new Color(90, 120, 50, 255);
+        else if (norm < 0.84f) color = new Color(110, 95, 70, 255);
+        else color = new Color(200, 210, 215, 255);
+
+        return ApplyPolarIce(point, color, 0.84f);
+    }
+
+    private Color ColorDesert(Vector3 point, float norm)
+    {
+        Color dark = Shade(SurfaceColor, 0.45f);
+        Color mid = SurfaceColor;
+        Color dune = Tint(SurfaceColor, new Color(220, 170, 90, 255), 0.35f);
+        Color rock = new Color(70, 48, 36, 255);
+        Color highland = new Color(160, 130, 100, 255);
+
+        Color color;
+        if (norm < 0.22f) color = dark;
+        else if (norm < 0.4f) color = mid;
+        else if (norm < 0.62f) color = dune;
+        else if (norm < 0.82f) color = rock;
+        else color = highland;
+
+        float equator = 1f - MathF.Abs(point.Y);
+        return LerpColor(color, Shade(color, 0.72f), equator * 0.18f);
+    }
+
+    private Color ColorRocky(Vector3 point, float norm)
+    {
+        Color baseRock = SurfaceColor;
+        Color dark = Shade(baseRock, 0.4f);
+        Color crater = Shade(baseRock, 0.22f);
+        Color highland = Tint(baseRock, new Color(210, 205, 195, 255), 0.25f);
+
+        if (norm > 0.88f)
+        {
+            return crater;
+        }
+
+        if (norm < 0.3f)
+        {
+            return dark;
+        }
+
+        Color color = LerpColor(baseRock, highland, norm);
+        float polar = MathF.Abs(point.Y);
+        if (polar > 0.88f)
+        {
+            return LerpColor(color, new Color(230, 230, 235, 255), (polar - 0.88f) / 0.12f);
+        }
+
+        return color;
+    }
+
+    private Color ColorIce(Vector3 point, float norm)
+    {
+        Color ice = Tint(SurfaceColor, new Color(230, 240, 250, 255), 0.35f);
+        Color frost = new Color(200, 215, 230, 255);
+        Color rock = new Color(90, 80, 70, 255);
+        Color deep = Shade(ice, 0.55f);
+
+        Color color;
+        if (norm < 0.2f) color = deep;
+        else if (norm < 0.45f) color = ice;
+        else if (norm < 0.7f) color = frost;
+        else color = rock;
+
+        return ApplyPolarIce(point, color, 0.7f);
+    }
+
+    private Color ColorClouded(Vector3 point, float norm)
+    {
+        Color deep = Shade(SurfaceColor, 0.55f);
+        Color mid = SurfaceColor;
+        Color bright = Tint(SurfaceColor, new Color(255, 245, 220, 255), 0.5f);
+        float swirl = 0.5f + 0.5f * MathF.Sin(point.Y * 9f + norm * 8f + point.X * 3f);
+        Color color = LerpColor(LerpColor(deep, mid, swirl), bright, norm * 0.65f);
+        return color;
+    }
+
+    private Color ColorGasGiant(Vector3 point, float norm)
+    {
+        Color dark = Shade(SurfaceColor, 0.42f);
+        Color mid = SurfaceColor;
+        Color light = Tint(SurfaceColor, new Color(255, 236, 200, 255), 0.4f);
+        float band = MathF.Sin(point.Y * MathF.PI * _bandFrequency + norm * _bandTurbulence * 4f);
+        float t = 0.5f + 0.5f * band;
+        Color color = LerpColor(dark, LerpColor(mid, light, t), 0.35f + 0.65f * t);
+
+        if (norm > 0.86f && MathF.Abs(point.Y) < 0.38f)
+        {
+            Color storm = Tint(SurfaceColor, new Color(180, 50, 40, 255), 0.55f);
+            color = LerpColor(color, storm, 0.7f);
+        }
+
+        return color;
+    }
+
+    private Color ColorIceGiant(Vector3 point, float norm)
+    {
+        Color deep = Shade(SurfaceColor, 0.5f);
+        Color mid = SurfaceColor;
+        Color haze = Tint(SurfaceColor, new Color(210, 235, 250, 255), 0.45f);
+        float band = MathF.Sin(point.Y * MathF.PI * _bandFrequency + norm * _bandTurbulence * 3f);
+        float t = 0.5f + 0.5f * band;
+        Color color = LerpColor(deep, LerpColor(mid, haze, t), 0.4f + 0.6f * t);
+        return ApplyPolarIce(point, color, 0.72f);
+    }
+
+    private Color ColorVolcanic(float norm)
+    {
+        if (norm < 0.22f) return new Color(255, 220, 80, 255);
+        if (norm < 0.34f) return new Color(230, 90, 20, 255);
+        if (norm < 0.46f) return new Color(140, 40, 20, 255);
+        if (norm < 0.7f) return Shade(SurfaceColor, 0.55f);
+        return Shade(SurfaceColor, 0.28f);
+    }
+
+    private Color ApplyPolarIce(Vector3 point, Color color, float startAbsY)
+    {
+        float polar = MathF.Abs(point.Y);
+        if (polar <= startAbsY)
+        {
+            return color;
+        }
+
+        float t = Math.Clamp((polar - startAbsY) / (1f - startAbsY), 0f, 1f);
+        return LerpColor(color, new Color(230, 238, 245, 255), t);
+    }
+
+    private static Color Shade(Color color, float amount)
+    {
+        amount = Math.Clamp(amount, 0f, 1f);
+        return new Color(
+            (byte)(color.R * amount),
+            (byte)(color.G * amount),
+            (byte)(color.B * amount),
+            (byte)255);
+    }
+
+    private static Color Tint(Color color, Color toward, float t)
+    {
+        return LerpColor(color, toward, t);
+    }
+
+    private static Color LerpColor(Color a, Color b, float t)
+    {
+        t = Math.Clamp(t, 0f, 1f);
+        return new Color(
+            (byte)(a.R + (b.R - a.R) * t),
+            (byte)(a.G + (b.G - a.G) * t),
+            (byte)(a.B + (b.B - a.B) * t),
+            (byte)255);
     }
 
     /// <summary>
@@ -470,6 +700,9 @@ public class Planet
         }
         else
         {
+            Rlgl.EnableDepthTest();
+            Rlgl.EnableBackfaceCulling();
+
             // Draw all triangles with rotation and scale applied (procedural noise colors)
             foreach (var tri in _triangles)
             {
@@ -691,16 +924,30 @@ internal static class Noise3D
 
     static Noise3D()
     {
-        int[] p = new int[256];
-        for (int i = 0; i < 256; i++) p[i] = i;
-
-        for (int i = 255; i > 0; i--)
+        int[] p =
         {
-            int j = i;
-            (p[i], p[j]) = (p[j], p[i]);
-        }
+            151, 160, 137, 91, 90, 15, 131, 13, 201, 95, 96, 53, 194, 233, 7, 225,
+            140, 36, 103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23, 190, 6, 148,
+            247, 120, 234, 75, 0, 26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32,
+            57, 177, 33, 88, 237, 149, 56, 87, 174, 20, 125, 136, 171, 168, 68, 175,
+            74, 165, 71, 134, 139, 48, 27, 166, 77, 146, 158, 231, 83, 111, 229, 122,
+            60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244, 102, 143, 54,
+            65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169,
+            200, 196, 135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64,
+            52, 217, 226, 250, 124, 123, 5, 202, 38, 147, 118, 126, 255, 82, 85, 212,
+            207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42, 223, 183, 170, 213,
+            119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
+            129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104,
+            218, 246, 97, 228, 251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241,
+            81, 51, 145, 235, 249, 14, 239, 107, 49, 192, 214, 31, 181, 199, 106, 157,
+            184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254, 138, 236, 205, 93,
+            222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
+        };
 
-        for (int i = 0; i < 512; i++) Perm[i] = p[i % 256];
+        for (int i = 0; i < 512; i++)
+        {
+            Perm[i] = p[i % 256];
+        }
     }
 
     public static float Get(float x, float y, float z)
