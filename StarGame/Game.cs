@@ -289,6 +289,11 @@ public class Game : IGame
             }
         }
 
+        if (_rightPanel.MenuLevel == 0 && InputManager.IsRandomPlanetPressed())
+        {
+            OpenRandomPlanetEncounter();
+        }
+
         if (_currentState == GameState.ShipManifest && _previousState != GameState.ShipManifest)
         {
             _manifestReturnState = _previousState;
@@ -597,6 +602,20 @@ public class Game : IGame
         }
     }
 
+    private void OpenRandomPlanetEncounter()
+    {
+        if (_currentState != GameState.PlanetaryEncounter)
+        {
+            _planetaryEncounterReturnState = _currentState;
+        }
+
+        string systemName = _currentSystem?.Name ?? "Unknown";
+        _currentPlanet = PlanetGenerator.CreateRandom(systemName);
+        _planetView.ResetRotation();
+        _currentState = GameState.PlanetaryEncounter;
+        _justSwitchedState = true;
+    }
+
     private void UpdatePlanetaryEncounter()
     {
         if (InputManager.IsBackPressed() && _rightPanel.MenuLevel == 0)
@@ -606,15 +625,8 @@ public class Game : IGame
 
         if (InputManager.IsRefuelPressed() && _rightPanel.MenuLevel == 0)
         {
-            if (_currentSystem != null)
-            {
-                _currentPlanet = PlanetGenerator.CreateRandom(_currentSystem.Name);
-            }
-            else
-            {
-                _currentPlanet = null;
-            }
-
+            string systemName = _currentSystem?.Name ?? "Unknown";
+            _currentPlanet = PlanetGenerator.CreateRandom(systemName);
             _planetView.ResetRotation();
         }
 
@@ -820,7 +832,7 @@ public class Game : IGame
         Raylib.DrawRectangle(viewWidth - frameThickness, 0, frameThickness, _screenHeight, frameColor);
 
         UiText.DrawText(
-            "L2/R2 systems | P list | X combat | Stick fly | A enter star | B canopy | fly far: exit",
+            "L2/R2 systems | L list | P random planet | X combat | Stick fly | A enter star | B canopy",
             24,
             _screenHeight - frameThickness + 4,
             14,
@@ -945,7 +957,7 @@ public class Game : IGame
     {
         UiText.DrawText($"Fuel: {_ship.FuelQuantity:F1} / {_ship.FuelCapacity}", 10, 10, 20, Color.WHITE);
         UiText.DrawText($"Minerals: {_ship.Minerals}", 10, 35, 20, Color.WHITE);
-        UiText.DrawText($"Press ESC to return to star map | R to regenerate | X to quit", 10, _screenHeight - 30, 16, Color.YELLOW);
+        UiText.DrawText($"Press ESC to return to star map | P for a random planet | X to quit", 10, _screenHeight - 30, 16, Color.YELLOW);
     }
 
     private void DrawPlanetaryEncounter()
@@ -1074,7 +1086,7 @@ public class Game : IGame
             }
         }
 
-        UiText.DrawText("Press ESC to return | R to regenerate | X to quit", 40, viewHeight - 30, 18, Color.YELLOW);
+        UiText.DrawText("Press ESC to return | P or R for a random planet | X to quit", 40, viewHeight - 30, 18, Color.YELLOW);
     }
 
     private void DrawShipStatus()

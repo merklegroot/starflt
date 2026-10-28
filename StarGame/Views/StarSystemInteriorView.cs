@@ -474,7 +474,7 @@ public sealed class StarSystemInteriorView : IStarSystemInteriorView
 
         UiText.DrawText("STAR SYSTEM", 20, titleY, titleFontSize, Color.SKYBLUE);
         UiText.DrawText(
-            "Stick: fly | A: enter planet | P / L3: planet list | L2/R2: prev/next system | B: Canopy | Steam: Quit",
+            "Stick: fly | A: enter planet | P: random planet | L / L3: planet list | L2/R2: systems | B: Canopy",
             20,
             helpY,
             helpFontSize,

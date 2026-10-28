@@ -83,8 +83,11 @@ public static class InputManager
         Raylib.IsKeyPressed(KeyboardKey.KEY_I)
         || GamepadPressed(GamepadButton.GAMEPAD_BUTTON_MIDDLE_RIGHT);
 
+    public static bool IsRandomPlanetPressed() =>
+        Raylib.IsKeyPressed(KeyboardKey.KEY_P);
+
     public static bool IsPlanetListTogglePressed() =>
-        Raylib.IsKeyPressed(KeyboardKey.KEY_P)
+        Raylib.IsKeyPressed(KeyboardKey.KEY_L)
         || GamepadPressed(GamepadButton.GAMEPAD_BUTTON_LEFT_THUMB);
 
     public static bool IsWarpPressed() =>
