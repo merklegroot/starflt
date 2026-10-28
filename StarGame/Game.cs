@@ -162,7 +162,10 @@ public class Game : IGame
                     jupiter.SurfaceColor,
                     jupiter.RadiusKm,
                     jupiter.Rings,
-                    jupiter.Composition);
+                    jupiter.Composition)
+                {
+                    SystemName = _currentSystem?.Name ?? "Sol"
+                };
                 _planetView.ResetRotation();
             }
         }
@@ -568,7 +571,10 @@ public class Game : IGame
                 loadedPlanet.SurfaceColor,
                 loadedPlanet.RadiusKm,
                 loadedPlanet.Rings,
-                loadedPlanet.Composition);
+                loadedPlanet.Composition)
+            {
+                SystemName = _currentSystem?.Name ?? ""
+            };
             _planetView.ResetRotation();
             _planetaryEncounterReturnState = GameState.StarSystemView;
             _currentState = GameState.PlanetaryEncounter;
@@ -609,11 +615,22 @@ public class Game : IGame
             _planetaryEncounterReturnState = _currentState;
         }
 
-        string systemName = _currentSystem?.Name ?? "Unknown";
-        _currentPlanet = PlanetGenerator.CreateRandom(systemName);
+        _currentPlanet = PlanetGenerator.CreateRandom(knownSystems: GetKnownSystemNames());
         _planetView.ResetRotation();
         _currentState = GameState.PlanetaryEncounter;
         _justSwitchedState = true;
+    }
+
+    private IReadOnlyList<string> GetKnownSystemNames()
+    {
+        List<StarSystem> systems = _starMap.GetAllSystems();
+        var names = new string[systems.Count];
+        for (int i = 0; i < systems.Count; i++)
+        {
+            names[i] = systems[i].Name;
+        }
+
+        return names;
     }
 
     private void UpdatePlanetaryEncounter()
@@ -625,8 +642,7 @@ public class Game : IGame
 
         if (InputManager.IsRefuelPressed() && _rightPanel.MenuLevel == 0)
         {
-            string systemName = _currentSystem?.Name ?? "Unknown";
-            _currentPlanet = PlanetGenerator.CreateRandom(systemName);
+            _currentPlanet = PlanetGenerator.CreateRandom(knownSystems: GetKnownSystemNames());
             _planetView.ResetRotation();
         }
 
@@ -978,11 +994,14 @@ public class Game : IGame
                     jupiter.SurfaceColor,
                     jupiter.RadiusKm,
                     jupiter.Rings,
-                    jupiter.Composition);
+                    jupiter.Composition)
+                {
+                    SystemName = _currentSystem.Name
+                };
             }
             else
             {
-                _currentPlanet = PlanetGenerator.CreateRandom(_currentSystem.Name);
+                _currentPlanet = PlanetGenerator.CreateRandom(knownSystems: GetKnownSystemNames());
             }
         }
 
@@ -1013,9 +1032,12 @@ public class Game : IGame
 
             const int infoLine = 20;
             int infoY = viewHeight - 138;
-            if (_currentSystem != null)
+            string systemLabel = !string.IsNullOrWhiteSpace(_currentPlanet.SystemName)
+                ? _currentPlanet.SystemName
+                : _currentSystem?.Name ?? "";
+            if (!string.IsNullOrWhiteSpace(systemLabel))
             {
-                UiText.DrawText($"System: {_currentSystem.Name}", 40, infoY, 18, Color.SKYBLUE);
+                UiText.DrawText($"System: {systemLabel}", 40, infoY, 18, Color.SKYBLUE);
                 infoY += infoLine;
             }
 

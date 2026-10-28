@@ -8,6 +8,10 @@ namespace StarflightGame;
 public class Planet
 {
     public string Name { get; set; } = "";
+
+    /// <summary>Host star system shown on the encounter HUD. Independent of ship location for random planets.</summary>
+    public string SystemName { get; set; } = "";
+
     public Vector2 Position { get; set; }
     public float Radius { get; set; }
     public Color SurfaceColor { get; set; }

@@ -43,17 +43,26 @@ public static class PlanetGenerator
         "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"
     };
 
-    public static Planet CreateRandom(string systemName)
+    public static Planet CreateRandom(string? systemName = null, IReadOnlyList<string>? knownSystems = null)
     {
         Random rng = new Random();
+        string hostSystem = ResolveHostSystem(systemName, knownSystems, rng);
         PlanetComposition composition = PickComposition(rng);
         PlanetTerrainStyle style = PickStyle(composition, rng);
         Color surfaceColor = PickSurfaceColor(style, rng);
         float radiusKm = PickRadiusKm(composition, rng);
         PlanetRingData? rings = MaybeCreateRings(composition, surfaceColor, radiusKm, rng);
-        string name = CreateName(systemName, rng);
+        string name = CreateName(hostSystem, rng);
 
-        return new Planet(name, Vector2.Zero, 50f, surfaceColor, radiusKm, rings, composition, style);
+        return new Planet(name, Vector2.Zero, 50f, surfaceColor, radiusKm, rings, composition, style)
+        {
+            SystemName = hostSystem
+        };
+    }
+
+    public static string CreateSystemName()
+    {
+        return CreateSystemName(new Random());
     }
 
     public static string CreateName(string systemName)
@@ -68,11 +77,43 @@ public static class PlanetGenerator
             return $"{systemName.Trim()} {RomanNumerals[rng.Next(RomanNumerals.Length)]}";
         }
 
+        return CreateInventedName(rng);
+    }
+
+    private static string ResolveHostSystem(string? systemName, IReadOnlyList<string>? knownSystems, Random rng)
+    {
+        if (!string.IsNullOrWhiteSpace(systemName))
+        {
+            return systemName.Trim();
+        }
+
+        bool useCatalog = knownSystems != null && knownSystems.Count > 0 && rng.NextDouble() < 0.4;
+        if (useCatalog)
+        {
+            return knownSystems![rng.Next(knownSystems.Count)];
+        }
+
+        return CreateSystemName(rng);
+    }
+
+    private static string CreateSystemName(Random rng)
+    {
+        string name = CreateInventedName(rng, includeRoman: false);
+        return rng.Next(5) switch
+        {
+            0 => name + " Reach",
+            1 => name + " Expanse",
+            _ => name
+        };
+    }
+
+    private static string CreateInventedName(Random rng, bool includeRoman = true)
+    {
         string name = NamePrefixes[rng.Next(NamePrefixes.Length)]
             + NameMiddles[rng.Next(NameMiddles.Length)]
             + NameSuffixes[rng.Next(NameSuffixes.Length)];
 
-        if (rng.NextDouble() < 0.35)
+        if (includeRoman && rng.NextDouble() < 0.35)
         {
             name += " " + RomanNumerals[rng.Next(RomanNumerals.Length)];
         }
