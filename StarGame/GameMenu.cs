@@ -23,6 +23,7 @@ public sealed class GameMenu : IGameMenu
     private readonly string[] _topMenuItems = { "Planet", "Captain", "Navigator", "Info", "Science Officer" };
     private readonly string[] _navigatorSubMenuItems = { "Starmap", "Star system" };
     private readonly string[] _infoSubMenuItems = { "Minerals", "Manifest" };
+    private readonly string[] _captainSubMenuItems = { "Land" };
     private readonly string[] _scienceOfficerSubMenuItems = { "Sensors" };
     private static readonly string[] _noOptionsPlaceholder = { "No options" };
 
@@ -134,6 +135,13 @@ public sealed class GameMenu : IGameMenu
             else if (Raylib.IsKeyPressed(KeyboardKey.KEY_TWO))
             {
                 _selectedMenuIndex = 1;
+            }
+        }
+        else if (_menuLevel == 3)
+        {
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_ONE))
+            {
+                _selectedMenuIndex = 0;
             }
         }
         else if (_menuLevel == 4)
@@ -338,6 +346,10 @@ public sealed class GameMenu : IGameMenu
                 justSwitchedState = true;
             }
         }
+        else if (_menuLevel == 3)
+        {
+            // Land: no-op until landing is implemented.
+        }
         else if (_menuLevel == 4)
         {
             _sensorsRequested = true;
@@ -368,7 +380,7 @@ public sealed class GameMenu : IGameMenu
             return _infoSubMenuItems;
 
         if (_menuLevel == 3)
-            return Array.Empty<string>();
+            return _captainSubMenuItems;
 
         if (_menuLevel == 4)
             return _scienceOfficerSubMenuItems;
