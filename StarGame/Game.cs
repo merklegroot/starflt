@@ -1030,85 +1030,198 @@ public class Game : IGame
                 Color.WHITE,
                 new Color(0, 0, 0, 200));
 
-            const int infoLine = 20;
-            int infoY = viewHeight - 138;
-            string systemLabel = !string.IsNullOrWhiteSpace(_currentPlanet.SystemName)
-                ? _currentPlanet.SystemName
-                : _currentSystem?.Name ?? "";
-            if (!string.IsNullOrWhiteSpace(systemLabel))
-            {
-                UiText.DrawText($"System: {systemLabel}", 40, infoY, 18, Color.SKYBLUE);
-                infoY += infoLine;
-            }
+            DrawPlanetaryEncounterHud(viewWidth, viewHeight, _currentPlanet);
+        }
+        else
+        {
+            DrawEncounterHintBar(viewWidth, viewHeight, showMiningHints: false);
+        }
+    }
 
-            UiText.DrawText(
-                $"Composition: {FormatCompositionLabel(_currentPlanet.Composition)}",
-                40,
-                infoY,
-                18,
-                new Color(190, 200, 225, 255));
-            infoY += infoLine;
+    private void DrawPlanetaryEncounterHud(int viewWidth, int viewHeight, Planet planet)
+    {
+        const int hintHeight = 38;
+        const int panelPad = 14;
+        const int rowHeight = 24;
+        const int labelWidth = 96;
+        const int leftColWidth = 340;
+        const int rightColWidth = 220;
+        const int colGap = 28;
+        const int valueSize = 18;
+        const int labelSize = 14;
+        Color labelColor = new Color(130, 140, 160, 255);
 
-            UiText.DrawText(
-                $"Terrain: {PlanetGenerator.FormatTerrainLabel(_currentPlanet.TerrainStyle)}",
-                40,
-                infoY,
-                18,
-                new Color(175, 195, 215, 255));
-            infoY += infoLine;
+        string systemLabel = !string.IsNullOrWhiteSpace(planet.SystemName)
+            ? planet.SystemName
+            : _currentSystem?.Name ?? "";
 
-            if (_currentPlanet.RadiusKm > 0f)
-            {
-                UiText.DrawText($"Radius: {_currentPlanet.RadiusKm:N0} km", 40, infoY, 18, new Color(180, 210, 235, 255));
-                infoY += infoLine;
-            }
-
-            if (_currentPlanet.Rings.HasValue && _currentPlanet.Rings.Value.IsValid)
-            {
-                PlanetRingData r = _currentPlanet.Rings.Value;
-                UiText.DrawText(
-                    $"Rings: {r.InnerRadiusKm:N0} – {r.OuterRadiusKm:N0} km  |  thickness ~{r.ThicknessKm:F2} km",
-                    40,
-                    infoY,
-                    16,
-                    new Color(220, 200, 160, 255));
-                infoY += infoLine;
-
-                UiText.DrawText(
-                    $"Opacity: {r.Opacity:F2}  |  texture: {r.ParticleTexture}  |  radial division: {(r.HasGaps ? "yes" : "no")}",
-                    40,
-                    infoY,
-                    16,
-                    new Color(160, 175, 195, 255));
-            }
-
-            if (TryGetPlanetaryEncounterContext(out string rigSystemId, out Planet rigPlanet))
-            {
-                int rigCount = _planetMiningRigStore.GetRigCount(rigSystemId, rigPlanet.Name);
-                int stored = _planetMiningRigStore.GetStoredMinerals(rigSystemId, rigPlanet.Name);
-                UiText.DrawText($"Mining rigs: {rigCount}", 40, infoY, 18, new Color(255, 200, 90, 255));
-                infoY += infoLine;
-                UiText.DrawText($"Stored minerals: {stored}", 40, infoY, 18, new Color(255, 200, 90, 255));
-                infoY += infoLine;
-
-                UiText.DrawText("M deploy rig | H harvest minerals", 40, infoY, 16, new Color(210, 220, 140, 255));
-                infoY += infoLine;
-            }
-
-            if (!string.IsNullOrEmpty(_miningRigStatusMessage))
-            {
-                UiText.DrawTextCenteredAtXClamped(
-                    _miningRigStatusMessage,
-                    viewWidth * 0.5f,
-                    viewHeight * 0.5f + 80f,
-                    20,
-                    new Color(255, 220, 120, 255),
-                    40f,
-                    viewWidth - 40f);
-            }
+        bool hasMining = TryGetPlanetaryEncounterContext(out string rigSystemId, out Planet rigPlanet);
+        int rigCount = 0;
+        int stored = 0;
+        if (hasMining)
+        {
+            rigCount = _planetMiningRigStore.GetRigCount(rigSystemId, rigPlanet.Name);
+            stored = _planetMiningRigStore.GetStoredMinerals(rigSystemId, rigPlanet.Name);
         }
 
-        UiText.DrawText("Press ESC to return | P or R for a random planet | X to quit", 40, viewHeight - 30, 18, Color.YELLOW);
+        int leftRows = 2;
+        if (!string.IsNullOrWhiteSpace(systemLabel))
+        {
+            leftRows++;
+        }
+
+        if (planet.RadiusKm > 0f)
+        {
+            leftRows++;
+        }
+
+        if (planet.Rings.HasValue && planet.Rings.Value.IsValid)
+        {
+            leftRows++;
+        }
+
+        int rightRows = hasMining ? 2 : 0;
+        int rowCount = Math.Max(leftRows, rightRows);
+        int panelWidth = hasMining ? panelPad * 2 + leftColWidth + colGap + rightColWidth : panelPad * 2 + leftColWidth;
+        panelWidth = Math.Min(panelWidth, viewWidth - 32);
+        int panelHeight = panelPad * 2 + rowCount * rowHeight;
+        int panelX = 16;
+        int panelY = viewHeight - hintHeight - 12 - panelHeight;
+
+        Raylib.DrawRectangle(panelX, panelY, panelWidth, panelHeight, new Color(8, 10, 16, 200));
+        Raylib.DrawRectangleLines(panelX, panelY, panelWidth, panelHeight, new Color(70, 80, 105, 180));
+
+        int leftX = panelX + panelPad;
+        int y = panelY + panelPad;
+
+        if (!string.IsNullOrWhiteSpace(systemLabel))
+        {
+            DrawEncounterFact(leftX, y, labelWidth, "System", systemLabel, Color.SKYBLUE, labelColor, labelSize, valueSize);
+            y += rowHeight;
+        }
+
+        DrawEncounterFact(
+            leftX,
+            y,
+            labelWidth,
+            "Type",
+            FormatCompositionLabel(planet.Composition),
+            new Color(190, 200, 225, 255),
+            labelColor,
+            labelSize,
+            valueSize);
+        y += rowHeight;
+
+        DrawEncounterFact(
+            leftX,
+            y,
+            labelWidth,
+            "Terrain",
+            PlanetGenerator.FormatTerrainLabel(planet.TerrainStyle),
+            new Color(175, 195, 215, 255),
+            labelColor,
+            labelSize,
+            valueSize);
+        y += rowHeight;
+
+        if (planet.RadiusKm > 0f)
+        {
+            DrawEncounterFact(
+                leftX,
+                y,
+                labelWidth,
+                "Radius",
+                $"{planet.RadiusKm:N0} km",
+                new Color(180, 210, 235, 255),
+                labelColor,
+                labelSize,
+                valueSize);
+            y += rowHeight;
+        }
+
+        if (planet.Rings.HasValue && planet.Rings.Value.IsValid)
+        {
+            PlanetRingData r = planet.Rings.Value;
+            DrawEncounterFact(
+                leftX,
+                y,
+                labelWidth,
+                "Rings",
+                $"{r.InnerRadiusKm:N0}–{r.OuterRadiusKm:N0} km",
+                new Color(220, 200, 160, 255),
+                labelColor,
+                labelSize,
+                valueSize);
+        }
+
+        if (hasMining)
+        {
+            int rightX = panelX + panelPad + leftColWidth + colGap;
+            int rightY = panelY + panelPad;
+            DrawEncounterFact(
+                rightX,
+                rightY,
+                72,
+                "Rigs",
+                rigCount.ToString(),
+                new Color(255, 200, 90, 255),
+                labelColor,
+                labelSize,
+                valueSize);
+            rightY += rowHeight;
+            DrawEncounterFact(
+                rightX,
+                rightY,
+                72,
+                "Stored",
+                stored.ToString(),
+                new Color(255, 200, 90, 255),
+                labelColor,
+                labelSize,
+                valueSize);
+        }
+
+        if (!string.IsNullOrEmpty(_miningRigStatusMessage))
+        {
+            UiText.DrawTextCenteredAtXClamped(
+                _miningRigStatusMessage,
+                viewWidth * 0.5f,
+                viewHeight * 0.5f + 80f,
+                20,
+                new Color(255, 220, 120, 255),
+                40f,
+                viewWidth - 40f);
+        }
+
+        DrawEncounterHintBar(viewWidth, viewHeight, hasMining);
+    }
+
+    private static void DrawEncounterFact(
+        int x,
+        int y,
+        int labelWidth,
+        string label,
+        string value,
+        Color valueColor,
+        Color labelColor,
+        int labelSize,
+        int valueSize)
+    {
+        UiText.DrawText(label, x, y + 3, labelSize, labelColor);
+        UiText.DrawText(value, x + labelWidth, y, valueSize, valueColor);
+    }
+
+    private static void DrawEncounterHintBar(int viewWidth, int viewHeight, bool showMiningHints)
+    {
+        const int hintHeight = 38;
+        int barY = viewHeight - hintHeight;
+        Raylib.DrawRectangle(0, barY, viewWidth, hintHeight, new Color(6, 8, 14, 220));
+        Raylib.DrawLine(0, barY, viewWidth, barY, new Color(80, 90, 115, 200));
+
+        string hints = showMiningHints
+            ? "ESC Back   ·   P Random planet   ·   M Deploy   ·   H Harvest   ·   X Quit"
+            : "ESC Back   ·   P Random planet   ·   X Quit";
+        UiText.DrawText(hints, 20, barY + 9, 16, new Color(230, 210, 120, 255));
     }
 
     private void DrawShipStatus()
