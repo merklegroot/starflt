@@ -67,6 +67,7 @@ public class Game : IGame
     private GameState _planetaryEncounterReturnState = GameState.CanopyView;
     private GameState _manifestReturnState = GameState.CanopyView;
     private GameState _combatReturnState = GameState.CanopyView;
+    private PlanetSensorScan? _planetSensorScan = null;
 
     public bool ShouldExit { get; private set; } = false;
 
@@ -145,7 +146,13 @@ public class Game : IGame
         UpdateMiningProduction(deltaTime);
         UpdateMiningRigStatusMessage(deltaTime);
 
+        bool encounterCanExitOnBack = _rightPanel.MenuLevel == 0;
         _rightPanel.UpdateNavigation(ref _currentState, ref _justSwitchedState);
+
+        if (_rightPanel.ConsumeSensorsSelection())
+        {
+            TryScanCurrentPlanet();
+        }
 
         if (_currentState == GameState.PlanetaryEncounter
             && _previousState != GameState.PlanetaryEncounter
@@ -166,6 +173,7 @@ public class Game : IGame
                 {
                     SystemName = _currentSystem?.Name ?? "Sol"
                 };
+                _planetSensorScan = null;
                 _planetView.ResetRotation();
             }
         }
@@ -190,7 +198,7 @@ public class Game : IGame
                 UpdatePlanetaryExploration();
                 break;
             case GameState.PlanetaryEncounter:
-                UpdatePlanetaryEncounter();
+                UpdatePlanetaryEncounter(encounterCanExitOnBack);
                 break;
             case GameState.ShipStatus:
                 UpdateShipStatus();
@@ -575,6 +583,7 @@ public class Game : IGame
             {
                 SystemName = _currentSystem?.Name ?? ""
             };
+            _planetSensorScan = null;
             _planetView.ResetRotation();
             _planetaryEncounterReturnState = GameState.StarSystemView;
             _currentState = GameState.PlanetaryEncounter;
@@ -616,9 +625,21 @@ public class Game : IGame
         }
 
         _currentPlanet = PlanetGenerator.CreateRandom(knownSystems: GetKnownSystemNames());
+        _planetSensorScan = null;
         _planetView.ResetRotation();
         _currentState = GameState.PlanetaryEncounter;
         _justSwitchedState = true;
+    }
+
+    private void TryScanCurrentPlanet()
+    {
+        if (_currentState != GameState.PlanetaryEncounter || _currentPlanet == null)
+        {
+            SetMiningRigStatusMessage("Sensors: no planetary target.");
+            return;
+        }
+
+        _planetSensorScan = PlanetSensorScan.FromPlanet(_currentPlanet, _mineralTradeList);
     }
 
     private IReadOnlyList<string> GetKnownSystemNames()
@@ -633,16 +654,18 @@ public class Game : IGame
         return names;
     }
 
-    private void UpdatePlanetaryEncounter()
+    private void UpdatePlanetaryEncounter(bool allowExitOnBack)
     {
-        if (InputManager.IsBackPressed() && _rightPanel.MenuLevel == 0)
+        if (allowExitOnBack && InputManager.IsBackPressed() && _rightPanel.MenuLevel == 0)
         {
+            _planetSensorScan = null;
             _currentState = _planetaryEncounterReturnState;
         }
 
         if (InputManager.IsRefuelPressed() && _rightPanel.MenuLevel == 0)
         {
             _currentPlanet = PlanetGenerator.CreateRandom(knownSystems: GetKnownSystemNames());
+            _planetSensorScan = null;
             _planetView.ResetRotation();
         }
 
@@ -801,7 +824,7 @@ public class Game : IGame
                 break;
             case GameState.PlanetaryEncounter:
                 DrawPlanetaryEncounter();
-                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState);
+                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState, sensorScan: _planetSensorScan);
                 break;
             case GameState.ShipStatus:
                 DrawShipStatus();

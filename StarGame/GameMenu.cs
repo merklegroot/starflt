@@ -12,6 +12,8 @@ public interface IGameMenu
 
     void UpdateNavigation(ref GameState currentState, ref bool justSwitchedState);
 
+    bool ConsumeSensorsSelection();
+
     int Draw(int panelX, int yPos, int panelWidth, int panelPadding, int menuFontSize, int lineSpacing, GameState currentState);
 }
 
@@ -26,6 +28,7 @@ public sealed class GameMenu : IGameMenu
 
     private int _selectedMenuIndex = 0;
     private int _menuLevel = 0;
+    private bool _sensorsRequested = false;
     private readonly List<Rectangle> _menuItemHitRects = new List<Rectangle>();
 
     public int MenuLevel => _menuLevel;
@@ -41,7 +44,13 @@ public sealed class GameMenu : IGameMenu
         if (currentState == GameState.ShipStatus || currentState == GameState.MineralCatalog || currentState == GameState.ShipManifest || currentState == GameState.Combat)
             return;
 
-        if (InputManager.IsBackPressed() && currentState != GameState.StarMap && currentState != GameState.PlanetaryEncounter && currentState != GameState.StarSystemView && currentState != GameState.Combat)
+        bool encounterSubmenuOpen = currentState == GameState.PlanetaryEncounter && _menuLevel > 0;
+        if (InputManager.IsBackPressed()
+            && (encounterSubmenuOpen
+                || (currentState != GameState.StarMap
+                    && currentState != GameState.PlanetaryEncounter
+                    && currentState != GameState.StarSystemView
+                    && currentState != GameState.Combat)))
         {
             if (_menuLevel == 4)
             {
@@ -331,8 +340,15 @@ public sealed class GameMenu : IGameMenu
         }
         else if (_menuLevel == 4)
         {
-            // Sensors: no action yet.
+            _sensorsRequested = true;
         }
+    }
+
+    public bool ConsumeSensorsSelection()
+    {
+        bool requested = _sensorsRequested;
+        _sensorsRequested = false;
+        return requested;
     }
 
     private bool IsReadOnlyMenuLevel()

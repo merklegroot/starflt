@@ -13,6 +13,8 @@ public interface IRightPanel
 
     void UpdateNavigation(ref GameState currentState, ref bool justSwitchedState);
 
+    bool ConsumeSensorsSelection();
+
     void Draw(
         int screenWidth,
         int screenHeight,
@@ -21,7 +23,8 @@ public interface IRightPanel
         Vector2? starSystemLocalPosition = null,
         StarSystem? starSystemForPanelMap = null,
         int? starSystemMainViewWidth = null,
-        int? starSystemMainViewHeight = null);
+        int? starSystemMainViewHeight = null,
+        PlanetSensorScan? sensorScan = null);
 }
 
 
@@ -54,6 +57,11 @@ public sealed class RightPanel : IRightPanel
         _gameMenu.UpdateNavigation(ref currentState, ref justSwitchedState);
     }
 
+    public bool ConsumeSensorsSelection()
+    {
+        return _gameMenu.ConsumeSensorsSelection();
+    }
+
     public void Draw(
         int screenWidth,
         int screenHeight,
@@ -62,7 +70,8 @@ public sealed class RightPanel : IRightPanel
         Vector2? starSystemLocalPosition = null,
         StarSystem? starSystemForPanelMap = null,
         int? starSystemMainViewWidth = null,
-        int? starSystemMainViewHeight = null)
+        int? starSystemMainViewHeight = null,
+        PlanetSensorScan? sensorScan = null)
     {
         int panelWidth = LayoutConstants.RightPanelWidth;
         int panelX = screenWidth - panelWidth;
@@ -74,7 +83,7 @@ public sealed class RightPanel : IRightPanel
 
         int yPos = LayoutConstants.RightPanelPadding;
 
-        yPos = _statusPanel.Draw(panelX, yPos, panelWidth, ship, currentState, starSystemLocalPosition);
+        yPos = _statusPanel.Draw(panelX, yPos, panelWidth, ship, currentState, starSystemLocalPosition, sensorScan);
 
         yPos += 10;
         Raylib.DrawLine(panelX + LayoutConstants.RightPanelPadding, yPos, panelX + panelWidth - LayoutConstants.RightPanelPadding, yPos, Color.DARKGRAY);

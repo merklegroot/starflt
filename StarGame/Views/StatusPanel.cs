@@ -7,7 +7,14 @@ namespace StarflightGame.Views;
 
 public interface IStatusPanel
 {
-    int Draw(int panelX, int yPos, int panelWidth, IShip ship, GameState currentState, Vector2? starSystemLocalPosition = null);
+    int Draw(
+        int panelX,
+        int yPos,
+        int panelWidth,
+        IShip ship,
+        GameState currentState,
+        Vector2? starSystemLocalPosition = null,
+        PlanetSensorScan? sensorScan = null);
 }
 
 
@@ -35,7 +42,14 @@ public sealed class StatusPanel : IStatusPanel
     /// <summary>Total height of the framed STATUS block (content + padding + border).</summary>
     private const int StatusBoxHeight = 300;
 
-    public int Draw(int panelX, int yPos, int panelWidth, IShip ship, GameState currentState, Vector2? starSystemLocalPosition = null)
+    public int Draw(
+        int panelX,
+        int yPos,
+        int panelWidth,
+        IShip ship,
+        GameState currentState,
+        Vector2? starSystemLocalPosition = null,
+        PlanetSensorScan? sensorScan = null)
     {
         int innerLeft = panelX + LayoutConstants.RightPanelPadding;
         int innerWidth = panelWidth - 2 * LayoutConstants.RightPanelPadding;
@@ -57,6 +71,12 @@ public sealed class StatusPanel : IStatusPanel
             _panelBlack);
 
         int y = boxTop + BorderThickness + StatusInnerPad;
+
+        if (sensorScan != null)
+        {
+            DrawSensorContents(contentLeft, contentRight, contentWidth, y, sensorScan);
+            return boxTop + boxHeight + 8;
+        }
 
         void DrawLabelValueRow(ref int rowY, string label, string value, int fontSize)
         {
@@ -142,6 +162,86 @@ public sealed class StatusPanel : IStatusPanel
         DrawLabelValueRow(ref y, "POS Y :", $"{posForDisplay.Y:F1}", LayoutConstants.StatusPanelFontSize);
 
         return boxTop + boxHeight + 8;
+    }
+
+    private static void DrawSensorContents(int contentLeft, int contentRight, int contentWidth, int y, PlanetSensorScan scan)
+    {
+        int fontSize = LayoutConstants.StatusPanelFontSize;
+        int small = fontSize - 2;
+
+        void DrawLabelValueRow(ref int rowY, string label, string value, int size)
+        {
+            UiText.DrawText(label, contentLeft, rowY, size, _labelCyan);
+            int vw = UiText.MeasureText(value, size);
+            UiText.DrawText(value, contentRight - vw, rowY, size, _valueLavender);
+            rowY += RowSpacing;
+        }
+
+        UiText.DrawTextCenteredAtX("SENSORS", contentLeft + contentWidth * 0.5f, y, HeaderFontSize, Color.WHITE);
+        y += HeaderFontSize + 10;
+
+        DrawLabelValueRow(ref y, "MASS :", scan.MassLabel, fontSize);
+        DrawLabelValueRow(ref y, "BIO :", $"{scan.BioPercent} %", fontSize);
+        DrawLabelValueRow(ref y, "MIN :", $"{scan.MineralPercent} %", fontSize);
+
+        Raylib.DrawLine(contentLeft, y, contentRight, y, new Color(60, 80, 140, 255));
+        y += 10;
+
+        y = DrawWrappedSection(contentLeft, contentRight, y, "ATMOSPHERE", scan.Atmosphere, small);
+        y = DrawWrappedSection(contentLeft, contentRight, y, "HYDROSPHERE", scan.Hydrosphere, small);
+        DrawWrappedSection(contentLeft, contentRight, y, "LITHOSPHERE", scan.Lithosphere, small);
+    }
+
+    private static int DrawWrappedSection(int left, int right, int y, string title, string body, int fontSize)
+    {
+        UiText.DrawText(title, left, y, fontSize, _labelCyan);
+        y += fontSize + 4;
+
+        int maxWidth = right - left;
+        string remaining = body;
+        int lines = 0;
+        while (!string.IsNullOrEmpty(remaining) && lines < 3)
+        {
+            string line = TakeWrappedLine(remaining, maxWidth, fontSize, out remaining);
+            UiText.DrawText(line, left, y, fontSize, _valueLavender);
+            y += fontSize + 3;
+            lines++;
+        }
+
+        return y + 6;
+    }
+
+    private static string TakeWrappedLine(string text, int maxWidth, int fontSize, out string rest)
+    {
+        if (UiText.MeasureText(text, fontSize) <= maxWidth)
+        {
+            rest = "";
+            return text;
+        }
+
+        string[] words = text.Split(' ');
+        string line = "";
+        int used = 0;
+        for (int i = 0; i < words.Length; i++)
+        {
+            string trial = line.Length == 0 ? words[i] : line + " " + words[i];
+            if (UiText.MeasureText(trial, fontSize) > maxWidth && line.Length > 0)
+            {
+                break;
+            }
+
+            line = trial;
+            used = i + 1;
+        }
+
+        if (used == 0)
+        {
+            rest = "";
+            return text;
+        }
+
+        rest = string.Join(" ", words, used, words.Length - used);
+        return line;
     }
 
     private static string FormatStardate(Vector2 position)
