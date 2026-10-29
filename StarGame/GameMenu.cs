@@ -8,11 +8,25 @@ public interface IGameMenu
 {
     int MenuLevel { get; }
 
+    bool IsSelectingLandingSite { get; }
+
     void ResetSubmenuToTop();
+
+    void EnterLandSubmenu();
+
+    void ShowCaptainMenu();
 
     void UpdateNavigation(ref GameState currentState, ref bool justSwitchedState);
 
     bool ConsumeSensorsSelection();
+
+    bool ConsumeLandSelection();
+
+    bool ConsumeLaunchSelection();
+
+    bool ConsumeDescendSelection();
+
+    bool ConsumeAbortLandingSelection();
 
     int Draw(int panelX, int yPos, int panelWidth, int panelPadding, int menuFontSize, int lineSpacing, GameState currentState);
 }
@@ -24,20 +38,44 @@ public sealed class GameMenu : IGameMenu
     private readonly string[] _navigatorSubMenuItems = { "Starmap", "Star system" };
     private readonly string[] _infoSubMenuItems = { "Minerals", "Manifest" };
     private readonly string[] _captainSubMenuItems = { "Land" };
+    private readonly string[] _captainSurfaceSubMenuItems = { "Launch" };
+    private readonly string[] _landSubMenuItems = { "Select Site", "Descend", "Abort" };
     private readonly string[] _scienceOfficerSubMenuItems = { "Sensors" };
     private static readonly string[] _noOptionsPlaceholder = { "No options" };
 
     private int _selectedMenuIndex = 0;
     private int _menuLevel = 0;
     private bool _sensorsRequested = false;
+    private bool _landRequested = false;
+    private bool _launchRequested = false;
+    private bool _descendRequested = false;
+    private bool _abortLandingRequested = false;
+    private bool _selectingLandingSite = false;
     private readonly List<Rectangle> _menuItemHitRects = new List<Rectangle>();
 
     public int MenuLevel => _menuLevel;
+
+    public bool IsSelectingLandingSite => _selectingLandingSite;
 
     public void ResetSubmenuToTop()
     {
         _menuLevel = 0;
         _selectedMenuIndex = 0;
+        _selectingLandingSite = false;
+    }
+
+    public void EnterLandSubmenu()
+    {
+        _menuLevel = 5;
+        _selectedMenuIndex = 0;
+        _selectingLandingSite = false;
+    }
+
+    public void ShowCaptainMenu()
+    {
+        _menuLevel = 3;
+        _selectedMenuIndex = 0;
+        _selectingLandingSite = false;
     }
 
     public void UpdateNavigation(ref GameState currentState, ref bool justSwitchedState)
@@ -45,15 +83,30 @@ public sealed class GameMenu : IGameMenu
         if (currentState == GameState.ShipStatus || currentState == GameState.MineralCatalog || currentState == GameState.ShipManifest || currentState == GameState.Combat)
             return;
 
-        bool encounterSubmenuOpen = currentState == GameState.PlanetaryEncounter && _menuLevel > 0;
+        bool planetSubmenuOpen =
+            (currentState == GameState.PlanetaryEncounter || currentState == GameState.PlanetaryExploration)
+            && _menuLevel > 0;
         if (InputManager.IsBackPressed()
-            && (encounterSubmenuOpen
+            && (planetSubmenuOpen
                 || (currentState != GameState.StarMap
                     && currentState != GameState.PlanetaryEncounter
+                    && currentState != GameState.PlanetaryExploration
                     && currentState != GameState.StarSystemView
                     && currentState != GameState.Combat)))
         {
-            if (_menuLevel == 4)
+            if (_menuLevel == 5)
+            {
+                if (_selectingLandingSite)
+                {
+                    _selectingLandingSite = false;
+                    return;
+                }
+
+                _abortLandingRequested = true;
+                _menuLevel = 3;
+                _selectedMenuIndex = 0;
+            }
+            else if (_menuLevel == 4)
             {
                 _menuLevel = 0;
                 _selectedMenuIndex = 4;
@@ -77,10 +130,14 @@ public sealed class GameMenu : IGameMenu
             return;
         }
 
-        string[] displayRows = GetDisplayMenuRows();
-        bool readOnlyMenu = IsReadOnlyMenuLevel();
+        string[] displayRows = GetDisplayMenuRows(currentState);
+        bool readOnlyMenu = IsReadOnlyMenuLevel(currentState);
 
-        if (currentState != GameState.StarMap && currentState != GameState.StarSystemView && currentState != GameState.Combat && !readOnlyMenu)
+        if (currentState != GameState.StarMap
+            && currentState != GameState.StarSystemView
+            && currentState != GameState.Combat
+            && !readOnlyMenu
+            && !_selectingLandingSite)
         {
             if (InputManager.IsMenuUpPressed())
             {
@@ -151,6 +208,21 @@ public sealed class GameMenu : IGameMenu
                 _selectedMenuIndex = 0;
             }
         }
+        else if (_menuLevel == 5)
+        {
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_ONE))
+            {
+                _selectedMenuIndex = 0;
+            }
+            else if (Raylib.IsKeyPressed(KeyboardKey.KEY_TWO))
+            {
+                _selectedMenuIndex = 1;
+            }
+            else if (Raylib.IsKeyPressed(KeyboardKey.KEY_THREE))
+            {
+                _selectedMenuIndex = 2;
+            }
+        }
 
         if (InputManager.IsConfirmPressed() && !readOnlyMenu)
         {
@@ -173,13 +245,14 @@ public sealed class GameMenu : IGameMenu
             2 => "INFO",
             3 => "CAPTAIN",
             4 => "SCIENCE OFFICER",
+            5 => "LAND",
             _ => "MENU"
         };
         UiText.DrawText(menuTitle, panelX + panelPadding, y, menuFontSize, Color.WHITE);
         y += menuFontSize + 15;
 
-        string[] rawItems = GetCurrentMenuItemsRaw();
-        string[] displayRows = GetDisplayMenuRows();
+        string[] rawItems = GetCurrentMenuItemsRaw(currentState);
+        string[] displayRows = GetDisplayMenuRows(currentState);
         bool readOnlyMenu = rawItems.Length == 0;
 
         const int indicatorSize = 16;
@@ -281,7 +354,7 @@ public sealed class GameMenu : IGameMenu
     private void ApplyMenuSelection(ref GameState currentState, ref bool justSwitchedState)
     {
         bool isCurrentlyActive = IsMenuItemActive(_menuLevel, _selectedMenuIndex, currentState);
-        if (isCurrentlyActive)
+        if (isCurrentlyActive && _menuLevel <= 2)
         {
             currentState = GameState.CanopyView;
             justSwitchedState = true;
@@ -348,11 +421,40 @@ public sealed class GameMenu : IGameMenu
         }
         else if (_menuLevel == 3)
         {
-            // Land: no-op until landing is implemented.
+            if (_selectedMenuIndex == 0)
+            {
+                if (currentState == GameState.PlanetaryExploration)
+                {
+                    _launchRequested = true;
+                }
+                else
+                {
+                    _landRequested = true;
+                }
+            }
         }
         else if (_menuLevel == 4)
         {
             _sensorsRequested = true;
+        }
+        else if (_menuLevel == 5)
+        {
+            if (_selectedMenuIndex == 0)
+            {
+                _selectingLandingSite = !_selectingLandingSite;
+            }
+            else if (_selectedMenuIndex == 1)
+            {
+                _selectingLandingSite = false;
+                _descendRequested = true;
+            }
+            else if (_selectedMenuIndex == 2)
+            {
+                _selectingLandingSite = false;
+                _abortLandingRequested = true;
+                _menuLevel = 3;
+                _selectedMenuIndex = 0;
+            }
         }
     }
 
@@ -363,12 +465,40 @@ public sealed class GameMenu : IGameMenu
         return requested;
     }
 
-    private bool IsReadOnlyMenuLevel()
+    public bool ConsumeLandSelection()
     {
-        return GetCurrentMenuItemsRaw().Length == 0;
+        bool requested = _landRequested;
+        _landRequested = false;
+        return requested;
     }
 
-    private string[] GetCurrentMenuItemsRaw()
+    public bool ConsumeLaunchSelection()
+    {
+        bool requested = _launchRequested;
+        _launchRequested = false;
+        return requested;
+    }
+
+    public bool ConsumeDescendSelection()
+    {
+        bool requested = _descendRequested;
+        _descendRequested = false;
+        return requested;
+    }
+
+    public bool ConsumeAbortLandingSelection()
+    {
+        bool requested = _abortLandingRequested;
+        _abortLandingRequested = false;
+        return requested;
+    }
+
+    private bool IsReadOnlyMenuLevel(GameState currentState)
+    {
+        return GetCurrentMenuItemsRaw(currentState).Length == 0;
+    }
+
+    private string[] GetCurrentMenuItemsRaw(GameState currentState)
     {
         if (_menuLevel == 0)
             return _topMenuItems;
@@ -380,24 +510,29 @@ public sealed class GameMenu : IGameMenu
             return _infoSubMenuItems;
 
         if (_menuLevel == 3)
-            return _captainSubMenuItems;
+            return currentState == GameState.PlanetaryExploration
+                ? _captainSurfaceSubMenuItems
+                : _captainSubMenuItems;
 
         if (_menuLevel == 4)
             return _scienceOfficerSubMenuItems;
 
+        if (_menuLevel == 5)
+            return _landSubMenuItems;
+
         return _topMenuItems;
     }
 
-    private string[] GetDisplayMenuRows()
+    private string[] GetDisplayMenuRows(GameState currentState)
     {
-        string[] raw = GetCurrentMenuItemsRaw();
+        string[] raw = GetCurrentMenuItemsRaw(currentState);
         if (raw.Length == 0)
             return _noOptionsPlaceholder;
 
         return raw;
     }
 
-    private static bool IsMenuItemActive(int level, int index, GameState currentState)
+    private bool IsMenuItemActive(int level, int index, GameState currentState)
     {
         if (level == 0)
         {
@@ -428,6 +563,13 @@ public sealed class GameMenu : IGameMenu
             if (index == 1)
             {
                 return currentState == GameState.ShipManifest;
+            }
+        }
+        else if (level == 5)
+        {
+            if (index == 0)
+            {
+                return _selectingLandingSite;
             }
         }
 

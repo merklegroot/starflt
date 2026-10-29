@@ -34,6 +34,10 @@ public class Game : IGame
 
     /// <summary>Exit star system interior when ship offset from the star exceeds this fraction of the smaller main-view dimension (same units as orbit layout).</summary>
     private const float StarSystemInteriorExitBoundaryFraction = 0.42f;
+
+    private const float LandingFuelCost = 4f;
+    private const float LandingDescentSeconds = 2.4f;
+    private const float SurfaceMoveDegreesPerSecond = 4.5f;
     private readonly int _screenWidth;
     private readonly int _screenHeight;
 
@@ -68,6 +72,11 @@ public class Game : IGame
     private GameState _manifestReturnState = GameState.CanopyView;
     private GameState _combatReturnState = GameState.CanopyView;
     private PlanetSensorScan? _planetSensorScan = null;
+    private PlanetLandingMap? _planetLandingMap = null;
+    private float _landingDescentProgress = -1f;
+    private Vector2 _surfaceLonLat = Vector2.Zero;
+    private float _surfaceHeading = -MathF.PI / 2f;
+    private readonly PlanetSurfaceView _planetSurfaceView = new PlanetSurfaceView();
 
     public bool ShouldExit { get; private set; } = false;
 
@@ -154,9 +163,32 @@ public class Game : IGame
             TryScanCurrentPlanet();
         }
 
+        if (_rightPanel.ConsumeLandSelection())
+        {
+            TryBeginLanding();
+        }
+
+        if (_rightPanel.ConsumeDescendSelection())
+        {
+            TryDescendToSite();
+        }
+
+        if (_rightPanel.ConsumeAbortLandingSelection())
+        {
+            CancelLandingSiteSelect();
+        }
+
+        if (_rightPanel.ConsumeLaunchSelection())
+        {
+            TryLaunchFromSurface();
+        }
+
+        UpdateLandingSiteCursor(deltaTime);
+
         if (_currentState == GameState.PlanetaryEncounter
             && _previousState != GameState.PlanetaryEncounter
-            && _previousState != GameState.StarSystemView)
+            && _previousState != GameState.StarSystemView
+            && _previousState != GameState.PlanetaryExploration)
         {
             _planetaryEncounterReturnState = GameState.CanopyView;
 
@@ -174,6 +206,7 @@ public class Game : IGame
                     SystemName = _currentSystem?.Name ?? "Sol"
                 };
                 _planetSensorScan = null;
+                CancelLandingSiteSelect();
                 _planetView.ResetRotation();
             }
         }
@@ -195,10 +228,10 @@ public class Game : IGame
                 UpdateStarSystemView(deltaTime);
                 break;
             case GameState.PlanetaryExploration:
-                UpdatePlanetaryExploration();
+                UpdatePlanetaryExploration(deltaTime);
                 break;
             case GameState.PlanetaryEncounter:
-                UpdatePlanetaryEncounter(encounterCanExitOnBack);
+                UpdatePlanetaryEncounter(encounterCanExitOnBack, deltaTime);
                 break;
             case GameState.ShipStatus:
                 UpdateShipStatus();
@@ -470,11 +503,6 @@ public class Game : IGame
             }
         }
 
-        if (_rightPanel.MenuLevel == 0 && InputManager.IsConfirmPressed() && _currentSystem != null)
-        {
-            _currentState = GameState.PlanetaryExploration;
-        }
-
         if (InputManager.IsShipStatusPressed())
         {
             _currentState = GameState.ShipStatus;
@@ -584,6 +612,7 @@ public class Game : IGame
                 SystemName = _currentSystem?.Name ?? ""
             };
             _planetSensorScan = null;
+            CancelLandingSiteSelect();
             _planetView.ResetRotation();
             _planetaryEncounterReturnState = GameState.StarSystemView;
             _currentState = GameState.PlanetaryEncounter;
@@ -603,18 +632,29 @@ public class Game : IGame
         }
     }
 
-    private void UpdatePlanetaryExploration()
+    private void UpdatePlanetaryExploration(float deltaTime)
     {
-        if (InputManager.IsBackPressed() && _rightPanel.MenuLevel == 0)
+        if (_currentPlanet == null)
         {
-            _currentState = GameState.StarMap;
+            return;
         }
 
-        if (InputManager.IsRefuelPressed())
+        if (_rightPanel.MenuLevel != 0)
         {
-            _currentPlanet = null;
-            _planetView.ResetRotation();
+            return;
         }
+
+        Vector2 pan = InputManager.GetMapPanAxis();
+        if (pan.LengthSquared() <= 0.0001f)
+        {
+            return;
+        }
+
+        float dLon = pan.X * SurfaceMoveDegreesPerSecond * deltaTime;
+        float dLat = -pan.Y * SurfaceMoveDegreesPerSecond * deltaTime;
+        _surfaceLonLat.X = WrapLongitude(_surfaceLonLat.X + dLon);
+        _surfaceLonLat.Y = Math.Clamp(_surfaceLonLat.Y + dLat, -88f, 88f);
+        _surfaceHeading = MathF.Atan2(-dLat, dLon);
     }
 
     private void OpenRandomPlanetEncounter()
@@ -626,6 +666,7 @@ public class Game : IGame
 
         _currentPlanet = PlanetGenerator.CreateRandom(knownSystems: GetKnownSystemNames());
         _planetSensorScan = null;
+        CancelLandingSiteSelect();
         _planetView.ResetRotation();
         _currentState = GameState.PlanetaryEncounter;
         _justSwitchedState = true;
@@ -642,6 +683,138 @@ public class Game : IGame
         _planetSensorScan = PlanetSensorScan.FromPlanet(_currentPlanet, _mineralTradeList);
     }
 
+    private void TryBeginLanding()
+    {
+        if (_currentState != GameState.PlanetaryEncounter || _currentPlanet == null)
+        {
+            SetMiningRigStatusMessage("Land: ship is not in orbit.");
+            return;
+        }
+
+        if (!_currentPlanet.CanLand)
+        {
+            SetMiningRigStatusMessage("Land: no solid surface — cannot set down.");
+            return;
+        }
+
+        if (_landingDescentProgress >= 0f)
+        {
+            return;
+        }
+
+        _planetLandingMap = PlanetLandingMap.FromPlanet(_currentPlanet);
+        _rightPanel.EnterLandSubmenu();
+    }
+
+    private void TryDescendToSite()
+    {
+        if (_currentState != GameState.PlanetaryEncounter || _currentPlanet == null || _planetLandingMap == null)
+        {
+            SetMiningRigStatusMessage("Descend: no landing site.");
+            return;
+        }
+
+        if (!_currentPlanet.CanLand)
+        {
+            SetMiningRigStatusMessage("Land: no solid surface — cannot set down.");
+            return;
+        }
+
+        if (_landingDescentProgress >= 0f)
+        {
+            return;
+        }
+
+        if (_ship.FuelQuantity < LandingFuelCost)
+        {
+            SetMiningRigStatusMessage("Descend: insufficient fuel.");
+            return;
+        }
+
+        _ship.ConsumeFuel(LandingFuelCost);
+        _planetLandingMap.AutoApproach = true;
+        _landingDescentProgress = 0f;
+    }
+
+    private void CancelLandingSiteSelect()
+    {
+        _planetLandingMap = null;
+        _landingDescentProgress = -1f;
+    }
+
+    private void FinishPlanetfall()
+    {
+        if (_currentPlanet == null || _planetLandingMap == null)
+        {
+            CancelLandingSiteSelect();
+            return;
+        }
+
+        _surfaceLonLat = new Vector2(_planetLandingMap.CursorLongitude, _planetLandingMap.CursorLatitude);
+        _surfaceHeading = -MathF.PI / 2f;
+        _planetLandingMap = null;
+        _landingDescentProgress = -1f;
+        _currentState = GameState.PlanetaryExploration;
+        _justSwitchedState = true;
+        _rightPanel.ShowCaptainMenu();
+    }
+
+    private void TryLaunchFromSurface()
+    {
+        if (_currentState != GameState.PlanetaryExploration)
+        {
+            return;
+        }
+
+        _currentState = GameState.PlanetaryEncounter;
+        _justSwitchedState = true;
+        _planetView.ResetRotation();
+        _rightPanel.ResetSubmenuToTop();
+        SetMiningRigStatusMessage("Orbit restored.");
+    }
+
+    private void UpdateLandingSiteCursor(float deltaTime)
+    {
+        if (_planetLandingMap == null || _planetLandingMap.AutoApproach)
+        {
+            return;
+        }
+
+        if (_rightPanel.IsSelectingLandingSite)
+        {
+            Vector2 axis = InputManager.GetCursorAxis();
+            _planetLandingMap.MoveCursor(axis.X * 55f * deltaTime, axis.Y * 28f * deltaTime);
+        }
+
+        if (!Raylib.IsMouseButtonDown(MouseButton.MOUSE_BUTTON_LEFT)
+            && !Raylib.IsMouseButtonPressed(MouseButton.MOUSE_BUTTON_LEFT))
+        {
+            return;
+        }
+
+        Vector2 mouse = Raylib.GetMousePosition();
+        Rectangle mapRect = _planetLandingMap.MapScreenRect;
+        if (mapRect.Width > 1f && Raylib.CheckCollisionPointRec(mouse, mapRect))
+        {
+            _planetLandingMap.SetCursorFromMapPixel(mouse.X, mouse.Y);
+        }
+    }
+
+    private static float WrapLongitude(float lon)
+    {
+        while (lon < 0f)
+        {
+            lon += 360f;
+        }
+
+        while (lon >= 360f)
+        {
+            lon -= 360f;
+        }
+
+        return lon;
+    }
+
     private IReadOnlyList<string> GetKnownSystemNames()
     {
         List<StarSystem> systems = _starMap.GetAllSystems();
@@ -654,11 +827,23 @@ public class Game : IGame
         return names;
     }
 
-    private void UpdatePlanetaryEncounter(bool allowExitOnBack)
+    private void UpdatePlanetaryEncounter(bool allowExitOnBack, float deltaTime)
     {
+        if (_landingDescentProgress >= 0f)
+        {
+            _landingDescentProgress += deltaTime / LandingDescentSeconds;
+            if (_landingDescentProgress >= 1f)
+            {
+                FinishPlanetfall();
+            }
+
+            return;
+        }
+
         if (allowExitOnBack && InputManager.IsBackPressed() && _rightPanel.MenuLevel == 0)
         {
             _planetSensorScan = null;
+            CancelLandingSiteSelect();
             _currentState = _planetaryEncounterReturnState;
         }
 
@@ -666,6 +851,7 @@ public class Game : IGame
         {
             _currentPlanet = PlanetGenerator.CreateRandom(knownSystems: GetKnownSystemNames());
             _planetSensorScan = null;
+            CancelLandingSiteSelect();
             _planetView.ResetRotation();
         }
 
@@ -824,7 +1010,13 @@ public class Game : IGame
                 break;
             case GameState.PlanetaryEncounter:
                 DrawPlanetaryEncounter();
-                _rightPanel.Draw(_screenWidth, _screenHeight, _ship, _currentState, sensorScan: _planetSensorScan);
+                _rightPanel.Draw(
+                    _screenWidth,
+                    _screenHeight,
+                    _ship,
+                    _currentState,
+                    sensorScan: _planetSensorScan,
+                    landingMap: _planetLandingMap);
                 break;
             case GameState.ShipStatus:
                 DrawShipStatus();
@@ -971,32 +1163,29 @@ public class Game : IGame
     {
         UiText.DrawText($"Fuel: {_ship.FuelQuantity:F1} / {_ship.FuelCapacity}", 10, 10, 20, Color.WHITE);
         UiText.DrawText($"Credits: {_ship.Credits}", 10, 35, 20, Color.WHITE);
-        UiText.DrawText($"Press ENTER to explore planet | I for ship status | X to quit", 10, _screenHeight - 30, 16, Color.YELLOW);
+        UiText.DrawText($"I for ship status | X to quit", 10, _screenHeight - 30, 16, Color.YELLOW);
     }
 
     private void DrawPlanetaryExploration()
     {
-        if (_currentPlanet == null && _currentSystem != null)
+        int viewWidth = MainViewWidth;
+        if (_currentPlanet == null)
         {
-            _currentPlanet = PlanetGenerator.CreateRandom(_currentSystem.Name);
+            Raylib.DrawRectangle(0, 0, viewWidth, _screenHeight, Color.BLACK);
+            UiText.DrawTextCenteredAtX("No planetary surface.", viewWidth * 0.5f, _screenHeight / 2, 22, Color.GRAY);
+            return;
         }
 
-        if (_currentPlanet != null)
-        {
-            const int panelX = 200;
-            const int panelY = 100;
-            const int panelWidth = 400;
-            const int panelHeight = 400;
-
-            _planetView.DrawExplorationPanel(_currentPlanet, panelX, panelY, panelWidth, panelHeight);
-        }
+        _planetSurfaceView.Draw(_currentPlanet, _surfaceLonLat.X, _surfaceLonLat.Y, _surfaceHeading, viewWidth, _screenHeight);
     }
 
     private void DrawPlanetaryUi()
     {
-        UiText.DrawText($"Fuel: {_ship.FuelQuantity:F1} / {_ship.FuelCapacity}", 10, 10, 20, Color.WHITE);
-        UiText.DrawText($"Minerals: {_ship.Minerals}", 10, 35, 20, Color.WHITE);
-        UiText.DrawText($"Press ESC to return to star map | P for a random planet | X to quit", 10, _screenHeight - 30, 16, Color.YELLOW);
+        int lat = (int)MathF.Round(_surfaceLonLat.Y);
+        int lon = (int)MathF.Round(_surfaceLonLat.X);
+        string ns = lat >= 0 ? "N" : "S";
+        UiText.DrawText($"LAT {Math.Abs(lat):00}{ns}  LON {lon:000}", 10, _screenHeight - 52, 16, new Color(185, 185, 255, 255));
+        UiText.DrawText("WASD: move  |  Captain → Launch to orbit", 10, _screenHeight - 30, 16, Color.YELLOW);
     }
 
     private void DrawPlanetaryEncounter()
@@ -1030,13 +1219,22 @@ public class Game : IGame
 
         if (_currentPlanet != null)
         {
-            _planetView.DrawEncounterFullBleed(_currentPlanet, viewWidth, viewHeight);
+            float zoom = 1f;
+            float fade = 0f;
+            if (_landingDescentProgress >= 0f)
+            {
+                float t = Math.Clamp(_landingDescentProgress, 0f, 1f);
+                zoom = 1f + 3.2f * (t * t);
+                fade = Math.Clamp((t - 0.62f) / 0.38f, 0f, 1f);
+            }
+
+            _planetView.DrawEncounterFullBleed(_currentPlanet, viewWidth, viewHeight, zoom);
 
             const int titleSize = 22;
             const int planetNameSize = 34;
             float titleY = 22;
             UiText.DrawTextCenteredAtXClamped(
-                "PLANETARY ENCOUNTER",
+                _landingDescentProgress >= 0f ? "AUTO-APPROACH" : "PLANETARY ENCOUNTER",
                 viewWidth * 0.5f,
                 titleY,
                 titleSize,
@@ -1054,6 +1252,11 @@ public class Game : IGame
                 new Color(0, 0, 0, 200));
 
             DrawPlanetaryEncounterHud(viewWidth, viewHeight, _currentPlanet);
+
+            if (fade > 0f)
+            {
+                Raylib.DrawRectangle(0, 0, viewWidth, viewHeight, new Color((byte)0, (byte)0, (byte)0, (byte)(255 * fade)));
+            }
         }
         else
         {

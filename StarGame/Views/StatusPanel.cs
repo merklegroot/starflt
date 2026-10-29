@@ -14,7 +14,8 @@ public interface IStatusPanel
         IShip ship,
         GameState currentState,
         Vector2? starSystemLocalPosition = null,
-        PlanetSensorScan? sensorScan = null);
+        PlanetSensorScan? sensorScan = null,
+        PlanetLandingMap? landingMap = null);
 }
 
 
@@ -49,7 +50,8 @@ public sealed class StatusPanel : IStatusPanel
         IShip ship,
         GameState currentState,
         Vector2? starSystemLocalPosition = null,
-        PlanetSensorScan? sensorScan = null)
+        PlanetSensorScan? sensorScan = null,
+        PlanetLandingMap? landingMap = null)
     {
         int innerLeft = panelX + LayoutConstants.RightPanelPadding;
         int innerWidth = panelWidth - 2 * LayoutConstants.RightPanelPadding;
@@ -71,6 +73,12 @@ public sealed class StatusPanel : IStatusPanel
             _panelBlack);
 
         int y = boxTop + BorderThickness + StatusInnerPad;
+
+        if (landingMap != null)
+        {
+            DrawLandingContents(contentLeft, contentRight, contentWidth, y, landingMap);
+            return boxTop + boxHeight + 8;
+        }
 
         if (sensorScan != null)
         {
@@ -162,6 +170,68 @@ public sealed class StatusPanel : IStatusPanel
         DrawLabelValueRow(ref y, "POS Y :", $"{posForDisplay.Y:F1}", LayoutConstants.StatusPanelFontSize);
 
         return boxTop + boxHeight + 8;
+    }
+
+    private static void DrawLandingContents(int contentLeft, int contentRight, int contentWidth, int y, PlanetLandingMap map)
+    {
+        int fontSize = LayoutConstants.StatusPanelFontSize;
+        UiText.DrawTextCenteredAtX("LANDING", contentLeft + contentWidth * 0.5f, y, HeaderFontSize, Color.WHITE);
+        y += HeaderFontSize + 6;
+
+        const int legendWidth = 18;
+        const int legendGap = 6;
+        int mapWidth = contentWidth - legendWidth - legendGap;
+        int mapHeight = 168;
+        int mapX = contentLeft;
+        int mapY = y;
+        float cellW = mapWidth / (float)PlanetLandingMap.MapColumns;
+        float cellH = mapHeight / (float)PlanetLandingMap.MapRows;
+
+        for (int row = 0; row < PlanetLandingMap.MapRows; row++)
+        {
+            for (int col = 0; col < PlanetLandingMap.MapColumns; col++)
+            {
+                int px = mapX + (int)(col * cellW);
+                int py = mapY + (int)(row * cellH);
+                int w = Math.Max(1, (int)((col + 1) * cellW) - (int)(col * cellW));
+                int h = Math.Max(1, (int)((row + 1) * cellH) - (int)(row * cellH));
+                Raylib.DrawRectangle(px, py, w, h, map.ColorAt(col, row));
+            }
+        }
+
+        Raylib.DrawRectangleLines(mapX, mapY, mapWidth, mapHeight, new Color(140, 200, 255, 180));
+        map.MapScreenRect = new Rectangle(mapX, mapY, mapWidth, mapHeight);
+
+        map.CursorMapPosition(mapX, mapY, mapWidth, mapHeight, out int cx, out int cy);
+        Color cross = map.AutoApproach ? new Color(255, 220, 80, 255) : new Color(255, 255, 255, 255);
+        Raylib.DrawLine(cx - 7, cy, cx + 7, cy, cross);
+        Raylib.DrawLine(cx, cy - 7, cx, cy + 7, cross);
+        Raylib.DrawRectangleLines(cx - 4, cy - 4, 8, 8, cross);
+
+        int legendX = mapX + mapWidth + legendGap;
+        Color[] legend = map.Legend;
+        int swatchH = legend.Length > 0 ? mapHeight / legend.Length : mapHeight;
+        for (int i = 0; i < legend.Length; i++)
+        {
+            int sy = mapY + i * swatchH;
+            int sh = i == legend.Length - 1 ? mapY + mapHeight - sy : swatchH;
+            Raylib.DrawRectangle(legendX, sy, legendWidth, sh, legend[i]);
+        }
+
+        Raylib.DrawRectangleLines(legendX, mapY, legendWidth, mapHeight, new Color(140, 200, 255, 160));
+        y = mapY + mapHeight + 6;
+
+        UiText.DrawText(map.CoordinateLabel, contentLeft, y, fontSize - 2, _valueLavender);
+        y += 16;
+
+        if (map.AutoApproach)
+        {
+            UiText.DrawText("AUTO-APPROACH", contentLeft, y, fontSize - 2, new Color(255, 220, 80, 255));
+        }
+        else if (map.CursorOnLiquid)
+        {
+            UiText.DrawText("LIQUID — NOT RECOMMENDED", contentLeft, y, fontSize - 4, new Color(255, 180, 80, 255));
+        }
     }
 
     private static void DrawSensorContents(int contentLeft, int contentRight, int contentWidth, int y, PlanetSensorScan scan)

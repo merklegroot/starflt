@@ -167,6 +167,66 @@ public static class InputManager
         }
     }
 
+    /// <summary>Held cursor/steer axis for landing site select (arrows, WASD, d-pad, left stick). +X east, +Y north.</summary>
+    public static Vector2 GetCursorAxis()
+    {
+        float x = 0f;
+        float y = 0f;
+
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT) || Raylib.IsKeyDown(KeyboardKey.KEY_D))
+        {
+            x += 1f;
+        }
+
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_LEFT) || Raylib.IsKeyDown(KeyboardKey.KEY_A))
+        {
+            x -= 1f;
+        }
+
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_UP) || Raylib.IsKeyDown(KeyboardKey.KEY_W))
+        {
+            y += 1f;
+        }
+
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_DOWN) || Raylib.IsKeyDown(KeyboardKey.KEY_S))
+        {
+            y -= 1f;
+        }
+
+        if (IsGamepadConnected)
+        {
+            if (Raylib.IsGamepadButtonDown(DefaultGamepad, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_RIGHT))
+            {
+                x += 1f;
+            }
+
+            if (Raylib.IsGamepadButtonDown(DefaultGamepad, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_LEFT))
+            {
+                x -= 1f;
+            }
+
+            if (Raylib.IsGamepadButtonDown(DefaultGamepad, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_UP))
+            {
+                y += 1f;
+            }
+
+            if (Raylib.IsGamepadButtonDown(DefaultGamepad, GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN))
+            {
+                y -= 1f;
+            }
+
+            x += ApplyDeadzone(Raylib.GetGamepadAxisMovement(DefaultGamepad, GamepadAxis.GAMEPAD_AXIS_LEFT_X));
+            y -= ApplyDeadzone(Raylib.GetGamepadAxisMovement(DefaultGamepad, GamepadAxis.GAMEPAD_AXIS_LEFT_Y));
+        }
+
+        if (x == 0f && y == 0f)
+        {
+            return Vector2.Zero;
+        }
+
+        return Vector2.Normalize(new Vector2(x, y));
+    }
+
     /// <summary>Pan offset for star map camera (WASD + left stick).</summary>
     public static Vector2 GetMapPanAxis()
     {

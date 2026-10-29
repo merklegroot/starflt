@@ -9,11 +9,25 @@ public interface IRightPanel
 {
     int MenuLevel { get; }
 
+    bool IsSelectingLandingSite { get; }
+
     void ResetSubmenuToTop();
+
+    void EnterLandSubmenu();
+
+    void ShowCaptainMenu();
 
     void UpdateNavigation(ref GameState currentState, ref bool justSwitchedState);
 
     bool ConsumeSensorsSelection();
+
+    bool ConsumeLandSelection();
+
+    bool ConsumeLaunchSelection();
+
+    bool ConsumeDescendSelection();
+
+    bool ConsumeAbortLandingSelection();
 
     void Draw(
         int screenWidth,
@@ -24,7 +38,8 @@ public interface IRightPanel
         StarSystem? starSystemForPanelMap = null,
         int? starSystemMainViewWidth = null,
         int? starSystemMainViewHeight = null,
-        PlanetSensorScan? sensorScan = null);
+        PlanetSensorScan? sensorScan = null,
+        PlanetLandingMap? landingMap = null);
 }
 
 
@@ -47,9 +62,21 @@ public sealed class RightPanel : IRightPanel
 
     public int MenuLevel => _gameMenu.MenuLevel;
 
+    public bool IsSelectingLandingSite => _gameMenu.IsSelectingLandingSite;
+
     public void ResetSubmenuToTop()
     {
         _gameMenu.ResetSubmenuToTop();
+    }
+
+    public void EnterLandSubmenu()
+    {
+        _gameMenu.EnterLandSubmenu();
+    }
+
+    public void ShowCaptainMenu()
+    {
+        _gameMenu.ShowCaptainMenu();
     }
 
     public void UpdateNavigation(ref GameState currentState, ref bool justSwitchedState)
@@ -62,6 +89,26 @@ public sealed class RightPanel : IRightPanel
         return _gameMenu.ConsumeSensorsSelection();
     }
 
+    public bool ConsumeLandSelection()
+    {
+        return _gameMenu.ConsumeLandSelection();
+    }
+
+    public bool ConsumeLaunchSelection()
+    {
+        return _gameMenu.ConsumeLaunchSelection();
+    }
+
+    public bool ConsumeDescendSelection()
+    {
+        return _gameMenu.ConsumeDescendSelection();
+    }
+
+    public bool ConsumeAbortLandingSelection()
+    {
+        return _gameMenu.ConsumeAbortLandingSelection();
+    }
+
     public void Draw(
         int screenWidth,
         int screenHeight,
@@ -71,7 +118,8 @@ public sealed class RightPanel : IRightPanel
         StarSystem? starSystemForPanelMap = null,
         int? starSystemMainViewWidth = null,
         int? starSystemMainViewHeight = null,
-        PlanetSensorScan? sensorScan = null)
+        PlanetSensorScan? sensorScan = null,
+        PlanetLandingMap? landingMap = null)
     {
         int panelWidth = LayoutConstants.RightPanelWidth;
         int panelX = screenWidth - panelWidth;
@@ -83,7 +131,7 @@ public sealed class RightPanel : IRightPanel
 
         int yPos = LayoutConstants.RightPanelPadding;
 
-        yPos = _statusPanel.Draw(panelX, yPos, panelWidth, ship, currentState, starSystemLocalPosition, sensorScan);
+        yPos = _statusPanel.Draw(panelX, yPos, panelWidth, ship, currentState, starSystemLocalPosition, sensorScan, landingMap);
 
         yPos += 10;
         Raylib.DrawLine(panelX + LayoutConstants.RightPanelPadding, yPos, panelX + panelWidth - LayoutConstants.RightPanelPadding, yPos, Color.DARKGRAY);

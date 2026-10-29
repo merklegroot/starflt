@@ -13,7 +13,7 @@ public interface IPlanetView
 
     void DrawExplorationPanel(Planet planet, int panelX, int panelY, int panelWidth, int panelHeight);
 
-    void DrawEncounterFullBleed(Planet planet, int viewWidth, int viewHeight);
+    void DrawEncounterFullBleed(Planet planet, int viewWidth, int viewHeight, float zoom = 1f);
 }
 
 
@@ -64,11 +64,11 @@ public sealed class PlanetView : IPlanetView
         Raylib.DrawRectangleLines(panelX, panelY, panelWidth, panelHeight, Color.GRAY);
     }
 
-    public void DrawEncounterFullBleed(Planet planet, int viewWidth, int viewHeight)
+    public void DrawEncounterFullBleed(Planet planet, int viewWidth, int viewHeight, float zoom = 1f)
     {
         EnsureTexture(viewWidth, viewHeight);
 
-        float displayRadius = Math.Min(viewWidth, viewHeight) * 0.3f;
+        float displayRadius = Math.Min(viewWidth, viewHeight) * 0.3f * Math.Max(0.15f, zoom);
         AdvanceRotation();
 
         planet.DrawSpherePointsToTexture(_renderTexture!.Value, displayRadius, _rotationAngle);

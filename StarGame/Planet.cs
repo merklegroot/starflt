@@ -28,6 +28,13 @@ public class Planet
     /// <summary>Visual terrain family used when coloring the procedural sphere.</summary>
     public PlanetTerrainStyle TerrainStyle { get; private set; } = PlanetTerrainStyle.Oceanic;
 
+    /// <summary>Gas and ice giants have no solid surface to set down on.</summary>
+    public bool CanLand =>
+        Composition != PlanetComposition.GasGiant
+        && Composition != PlanetComposition.IceGiant
+        && TerrainStyle != PlanetTerrainStyle.GasBanded
+        && TerrainStyle != PlanetTerrainStyle.IceBanded;
+
     private List<Vector3> _spherePoints = new();
     private List<float> _pointHeights = new();
     private List<List<int>> _ringIndices = new();
@@ -370,59 +377,60 @@ public class Planet
     private void AssignHeightsWith3DNoise()
     {
         GetNoiseParameters(out float baseScale, out int octaves, out float persistence, out float lacunarity, out bool ridged);
-
-        float maxPossible = 0f;
-        float amp = 1f;
-        for (int i = 0; i < octaves; i++)
-        {
-            maxPossible += amp;
-            amp *= persistence;
-        }
+        float maxPossible = NoiseAmplitudeSum(octaves, persistence);
 
         for (int i = 0; i < _spherePoints.Count; i++)
         {
-            Vector3 p = _spherePoints[i];
-
-            float noise = 0f;
-            float frequency = baseScale;
-            amp = 1f;
-
-            for (int o = 0; o < octaves; o++)
-            {
-                float sample = Noise3D.Get(
-                    (p.X * frequency) + _noiseOffset.X,
-                    (p.Y * frequency) + _noiseOffset.Y,
-                    (p.Z * frequency) + _noiseOffset.Z);
-                if (ridged)
-                {
-                    sample = 1f - MathF.Abs(sample);
-                }
-
-                noise += sample * amp;
-                amp *= persistence;
-                frequency *= lacunarity;
-            }
-
-            noise /= maxPossible;
-            float height = 1.0f + noise * 0.095f;
-
-            if (noise > 0.15f)
-            {
-                height += (noise - 0.15f) * 0.1125f;
-            }
-
-            if (height < 1.0f)
-            {
-                height = 1.0f + (height - 1.0f) * 0.3f;
-            }
-
-            height = MathF.Max(0.9375f, MathF.Min(1.0625f, height));
-
+            float height = ComputeRawHeight(_spherePoints[i], baseScale, octaves, persistence, lacunarity, ridged, maxPossible);
             _pointHeights[i] = height;
-
             _minHeight = Math.Min(_minHeight, height);
             _maxHeight = Math.Max(_maxHeight, height);
         }
+    }
+
+    private float ComputeRawHeight(
+        Vector3 p,
+        float baseScale,
+        int octaves,
+        float persistence,
+        float lacunarity,
+        bool ridged,
+        float maxPossible)
+    {
+        float noise = 0f;
+        float frequency = baseScale;
+        float amp = 1f;
+
+        for (int o = 0; o < octaves; o++)
+        {
+            float sample = Noise3D.Get(
+                (p.X * frequency) + _noiseOffset.X,
+                (p.Y * frequency) + _noiseOffset.Y,
+                (p.Z * frequency) + _noiseOffset.Z);
+            if (ridged)
+            {
+                sample = 1f - MathF.Abs(sample);
+            }
+
+            noise += sample * amp;
+            amp *= persistence;
+            frequency *= lacunarity;
+        }
+
+        noise /= maxPossible;
+        float height = 1.0f + noise * 0.095f;
+
+        if (noise > 0.15f)
+        {
+            height += (noise - 0.15f) * 0.1125f;
+        }
+
+        if (height < 1.0f)
+        {
+            height = 1.0f + (height - 1.0f) * 0.3f;
+        }
+
+        return MathF.Max(0.9375f, MathF.Min(1.0625f, height));
     }
 
     private float NormalizedHeight(float height)
@@ -432,14 +440,77 @@ public class Planet
             return 0.5f;
         }
 
-        return (height - _minHeight) / (_maxHeight - _minHeight);
+        return Math.Clamp((height - _minHeight) / (_maxHeight - _minHeight), 0f, 1f);
+    }
+
+    /// <summary>
+    /// Samples the same terrain used on the globe at planetary longitude (0–360) and latitude (−90–90).
+    /// </summary>
+    public void SampleSurface(float longitudeDeg, float latitudeDeg, out Color color, out float normalizedHeight, out bool liquid)
+    {
+        Vector3 point = LonLatToUnitPoint(longitudeDeg, latitudeDeg);
+        GetNoiseParameters(out float baseScale, out int octaves, out float persistence, out float lacunarity, out bool ridged);
+        float maxPossible = NoiseAmplitudeSum(octaves, persistence);
+        float height = ComputeRawHeight(point, baseScale, octaves, persistence, lacunarity, ridged, maxPossible);
+        normalizedHeight = NormalizedHeight(height);
+        color = GetSurfaceColor(point, normalizedHeight);
+        liquid = IsLiquidTerrain(normalizedHeight);
+    }
+
+    public Color[] CreateAltitudeLegend()
+    {
+        Vector3 equator = new Vector3(1f, 0f, 0f);
+        float[] samples = { 0.95f, 0.78f, 0.62f, 0.45f, 0.28f, 0.12f };
+        var colors = new Color[samples.Length];
+        for (int i = 0; i < samples.Length; i++)
+        {
+            colors[i] = GetSurfaceColor(equator, samples[i]);
+        }
+
+        return colors;
+    }
+
+    private static float NoiseAmplitudeSum(int octaves, float persistence)
+    {
+        float maxPossible = 0f;
+        float amp = 1f;
+        for (int i = 0; i < octaves; i++)
+        {
+            maxPossible += amp;
+            amp *= persistence;
+        }
+
+        return maxPossible;
+    }
+
+    private static Vector3 LonLatToUnitPoint(float longitudeDeg, float latitudeDeg)
+    {
+        float lat = latitudeDeg * (MathF.PI / 180f);
+        float lon = longitudeDeg * (MathF.PI / 180f);
+        float ring = MathF.Cos(lat);
+        return new Vector3(ring * MathF.Cos(lon), MathF.Sin(lat), ring * MathF.Sin(lon));
+    }
+
+    private bool IsLiquidTerrain(float normalizedHeight)
+    {
+        return TerrainStyle switch
+        {
+            PlanetTerrainStyle.Oceanic => normalizedHeight < 0.28f,
+            PlanetTerrainStyle.Lush => normalizedHeight < 0.12f,
+            PlanetTerrainStyle.Clouded => normalizedHeight < 0.18f,
+            PlanetTerrainStyle.Ice => normalizedHeight < 0.20f,
+            PlanetTerrainStyle.Volcanic => normalizedHeight < 0.34f,
+            _ => false
+        };
     }
 
     private Color GetVertexColor(int index)
     {
-        Vector3 point = _spherePoints[index];
-        float norm = NormalizedHeight(_pointHeights[index]);
+        return GetSurfaceColor(_spherePoints[index], NormalizedHeight(_pointHeights[index]));
+    }
 
+    private Color GetSurfaceColor(Vector3 point, float norm)
+    {
         return TerrainStyle switch
         {
             PlanetTerrainStyle.Desert => ColorDesert(point, norm),
