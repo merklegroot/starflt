@@ -114,12 +114,12 @@ public static class InputManager
     {
         float turn = 0f;
 
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_A) || Raylib.IsKeyDown(KeyboardKey.KEY_LEFT))
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_A))
         {
             turn -= 1f;
         }
 
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_D) || Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_D))
         {
             turn += 1f;
         }
@@ -135,8 +135,8 @@ public static class InputManager
 
     public static void GetThrustHeld(out bool forward, out bool reverse)
     {
-        forward = Raylib.IsKeyDown(KeyboardKey.KEY_W) || Raylib.IsKeyDown(KeyboardKey.KEY_UP);
-        reverse = Raylib.IsKeyDown(KeyboardKey.KEY_S) || Raylib.IsKeyDown(KeyboardKey.KEY_DOWN);
+        forward = Raylib.IsKeyDown(KeyboardKey.KEY_W);
+        reverse = Raylib.IsKeyDown(KeyboardKey.KEY_S);
 
         if (!IsGamepadConnected)
         {
@@ -167,28 +167,28 @@ public static class InputManager
         }
     }
 
-    /// <summary>Pan offset for star map camera (keyboard arrows/WASD + left stick).</summary>
+    /// <summary>Pan offset for star map camera (WASD + left stick).</summary>
     public static Vector2 GetMapPanAxis()
     {
         float x = 0f;
         float y = 0f;
 
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_W) || Raylib.IsKeyDown(KeyboardKey.KEY_UP))
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_W))
         {
             y -= 1f;
         }
 
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_S) || Raylib.IsKeyDown(KeyboardKey.KEY_DOWN))
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_S))
         {
             y += 1f;
         }
 
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_A) || Raylib.IsKeyDown(KeyboardKey.KEY_LEFT))
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_A))
         {
             x -= 1f;
         }
 
-        if (Raylib.IsKeyDown(KeyboardKey.KEY_D) || Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
+        if (Raylib.IsKeyDown(KeyboardKey.KEY_D))
         {
             x += 1f;
         }
