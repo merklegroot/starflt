@@ -18,9 +18,10 @@ public interface IGameMenu
 
 public sealed class GameMenu : IGameMenu
 {
-    private readonly string[] _topMenuItems = { "Planet", "Captain", "Navigator", "Info" };
+    private readonly string[] _topMenuItems = { "Planet", "Captain", "Navigator", "Info", "Science Officer" };
     private readonly string[] _navigatorSubMenuItems = { "Starmap", "Star system" };
     private readonly string[] _infoSubMenuItems = { "Minerals", "Manifest" };
+    private readonly string[] _scienceOfficerSubMenuItems = { "Sensors" };
     private static readonly string[] _noOptionsPlaceholder = { "No options" };
 
     private int _selectedMenuIndex = 0;
@@ -42,7 +43,12 @@ public sealed class GameMenu : IGameMenu
 
         if (InputManager.IsBackPressed() && currentState != GameState.StarMap && currentState != GameState.PlanetaryEncounter && currentState != GameState.StarSystemView && currentState != GameState.Combat)
         {
-            if (_menuLevel == 3)
+            if (_menuLevel == 4)
+            {
+                _menuLevel = 0;
+                _selectedMenuIndex = 4;
+            }
+            else if (_menuLevel == 3)
             {
                 _menuLevel = 0;
                 _selectedMenuIndex = 1;
@@ -94,6 +100,10 @@ public sealed class GameMenu : IGameMenu
             {
                 _selectedMenuIndex = 3;
             }
+            else if (Raylib.IsKeyPressed(KeyboardKey.KEY_FIVE))
+            {
+                _selectedMenuIndex = 4;
+            }
         }
         else if (_menuLevel == 1)
         {
@@ -117,6 +127,13 @@ public sealed class GameMenu : IGameMenu
                 _selectedMenuIndex = 1;
             }
         }
+        else if (_menuLevel == 4)
+        {
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_ONE))
+            {
+                _selectedMenuIndex = 0;
+            }
+        }
 
         if (InputManager.IsConfirmPressed() && !readOnlyMenu)
         {
@@ -138,6 +155,7 @@ public sealed class GameMenu : IGameMenu
             1 => "NAVIGATOR",
             2 => "INFO",
             3 => "CAPTAIN",
+            4 => "SCIENCE OFFICER",
             _ => "MENU"
         };
         UiText.DrawText(menuTitle, panelX + panelPadding, y, menuFontSize, Color.WHITE);
@@ -275,6 +293,11 @@ public sealed class GameMenu : IGameMenu
                 _menuLevel = 2;
                 _selectedMenuIndex = 0;
             }
+            else if (_selectedMenuIndex == 4)
+            {
+                _menuLevel = 4;
+                _selectedMenuIndex = 0;
+            }
         }
         else if (_menuLevel == 1)
         {
@@ -306,6 +329,10 @@ public sealed class GameMenu : IGameMenu
                 justSwitchedState = true;
             }
         }
+        else if (_menuLevel == 4)
+        {
+            // Sensors: no action yet.
+        }
     }
 
     private bool IsReadOnlyMenuLevel()
@@ -326,6 +353,9 @@ public sealed class GameMenu : IGameMenu
 
         if (_menuLevel == 3)
             return Array.Empty<string>();
+
+        if (_menuLevel == 4)
+            return _scienceOfficerSubMenuItems;
 
         return _topMenuItems;
     }
