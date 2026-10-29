@@ -167,7 +167,7 @@ public sealed class StatusPanel : IStatusPanel
     private static void DrawSensorContents(int contentLeft, int contentRight, int contentWidth, int y, PlanetSensorScan scan)
     {
         int fontSize = LayoutConstants.StatusPanelFontSize;
-        int small = fontSize - 2;
+        float progress = scan.ScanProgress;
 
         void DrawLabelValueRow(ref int rowY, string label, string value, int size)
         {
@@ -178,70 +178,130 @@ public sealed class StatusPanel : IStatusPanel
         }
 
         UiText.DrawTextCenteredAtX("SENSORS", contentLeft + contentWidth * 0.5f, y, HeaderFontSize, Color.WHITE);
-        y += HeaderFontSize + 10;
+        y += HeaderFontSize + 6;
 
+        int planetRadius = Math.Min(contentWidth / 2 - 6, 72);
+        int cx = contentLeft + contentWidth / 2;
+        int cy = y + planetRadius;
+        DrawSimplifiedScanPlanet(cx, cy, planetRadius, scan, progress);
+        y = cy + planetRadius + 8;
+
+        int legendSize = fontSize - 4;
+        Raylib.DrawCircle(contentLeft + 5, y + 8, 4, new Color(70, 230, 90, 255));
+        UiText.DrawText("LIFE", contentLeft + 14, y, legendSize, _labelCyan);
+        Raylib.DrawCircle(contentLeft + 78, y + 8, 4, new Color(240, 200, 70, 255));
+        UiText.DrawText("MINERAL", contentLeft + 88, y, legendSize, _labelCyan);
+        y += 20;
+
+        int shownBio = (int)MathF.Round(scan.BioPercent * progress);
+        int shownMin = (int)MathF.Round(scan.MineralPercent * progress);
         DrawLabelValueRow(ref y, "MASS :", scan.MassLabel, fontSize);
-        DrawLabelValueRow(ref y, "BIO :", $"{scan.BioPercent} %", fontSize);
-        DrawLabelValueRow(ref y, "MIN :", $"{scan.MineralPercent} %", fontSize);
-
-        Raylib.DrawLine(contentLeft, y, contentRight, y, new Color(60, 80, 140, 255));
-        y += 10;
-
-        y = DrawWrappedSection(contentLeft, contentRight, y, "ATMOSPHERE", scan.Atmosphere, small);
-        y = DrawWrappedSection(contentLeft, contentRight, y, "HYDROSPHERE", scan.Hydrosphere, small);
-        DrawWrappedSection(contentLeft, contentRight, y, "LITHOSPHERE", scan.Lithosphere, small);
+        DrawLabelValueRow(ref y, "BIO :", $"{shownBio} %", fontSize);
+        DrawLabelValueRow(ref y, "MIN :", $"{shownMin} %", fontSize);
     }
 
-    private static int DrawWrappedSection(int left, int right, int y, string title, string body, int fontSize)
+    private static void DrawSimplifiedScanPlanet(int cx, int cy, int radius, PlanetSensorScan scan, float progress)
     {
-        UiText.DrawText(title, left, y, fontSize, _labelCyan);
-        y += fontSize + 4;
+        Color baseColor = scan.DiscColor.A == 0 ? new Color(80, 110, 160, 255) : scan.DiscColor;
+        Color dark = Shade(baseColor, 0.45f);
+        Color mid = Shade(baseColor, 0.75f);
 
-        int maxWidth = right - left;
-        string remaining = body;
-        int lines = 0;
-        while (!string.IsNullOrEmpty(remaining) && lines < 3)
+        Raylib.DrawCircle(cx, cy, radius + 2, new Color(20, 40, 80, 255));
+        Raylib.DrawCircle(cx, cy, radius, dark);
+        Raylib.DrawCircle(cx - radius / 6, cy - radius / 7, (int)(radius * 0.82f), mid);
+        Raylib.DrawCircle(cx - radius / 4, cy - radius / 5, (int)(radius * 0.45f), baseColor);
+
+        DrawTerrainBlobs(cx, cy, radius, scan, baseColor);
+
+        float sweepX = cx - radius + progress * radius * 2f;
+        if (progress < 1f)
         {
-            string line = TakeWrappedLine(remaining, maxWidth, fontSize, out remaining);
-            UiText.DrawText(line, left, y, fontSize, _valueLavender);
-            y += fontSize + 3;
-            lines++;
+            int x0 = cx - radius;
+            int clipW = Math.Clamp((int)(sweepX - x0), 0, radius * 2);
+            Raylib.DrawRectangle(x0, cy - radius, clipW, 2, new Color(80, 180, 255, 40));
+            DrawScanLine(cx, cy, radius, sweepX);
         }
 
-        return y + 6;
-    }
-
-    private static string TakeWrappedLine(string text, int maxWidth, int fontSize, out string rest)
-    {
-        if (UiText.MeasureText(text, fontSize) <= maxWidth)
+        IReadOnlyList<SensorContact> contacts = scan.Contacts;
+        for (int i = 0; i < contacts.Count; i++)
         {
-            rest = "";
-            return text;
-        }
-
-        string[] words = text.Split(' ');
-        string line = "";
-        int used = 0;
-        for (int i = 0; i < words.Length; i++)
-        {
-            string trial = line.Length == 0 ? words[i] : line + " " + words[i];
-            if (UiText.MeasureText(trial, fontSize) > maxWidth && line.Length > 0)
+            SensorContact contact = contacts[i];
+            float revealAt = (contact.X + 1f) * 0.5f;
+            if (progress < revealAt)
             {
-                break;
+                continue;
             }
 
-            line = trial;
-            used = i + 1;
+            int px = cx + (int)(contact.X * radius);
+            int py = cy + (int)(contact.Y * radius);
+            int dx = px - cx;
+            int dy = py - cy;
+            if (dx * dx + dy * dy > (radius - 3) * (radius - 3))
+            {
+                continue;
+            }
+
+            float age = Math.Clamp((progress - revealAt) / 0.12f, 0f, 1f);
+            int size = contact.Kind == SensorContactKind.Life ? 3 : 2;
+            Color c = contact.Color;
+            byte a = (byte)(80 + 175 * age);
+            Raylib.DrawCircle(px, py, size + 1, new Color(c.R, c.G, c.B, (byte)(a / 3)));
+            Raylib.DrawCircle(px, py, size, new Color(c.R, c.G, c.B, a));
         }
 
-        if (used == 0)
+        Raylib.DrawCircleLines(cx, cy, radius, new Color(140, 200, 255, 180));
+    }
+
+    private static void DrawTerrainBlobs(int cx, int cy, int radius, PlanetSensorScan scan, Color baseColor)
+    {
+        if (scan.TerrainStyle is PlanetTerrainStyle.GasBanded or PlanetTerrainStyle.IceBanded)
         {
-            rest = "";
-            return text;
+            Color band = new Color(baseColor.R, baseColor.G, baseColor.B, (byte)70);
+            Raylib.DrawEllipse(cx, cy - radius / 5, (int)(radius * 0.85f), radius / 10, band);
+            Raylib.DrawEllipse(cx, cy + radius / 6, (int)(radius * 0.9f), radius / 12, band);
+            return;
         }
 
-        rest = string.Join(" ", words, used, words.Length - used);
-        return line;
+        Color land = scan.TerrainStyle switch
+        {
+            PlanetTerrainStyle.Oceanic => new Color(40, 130, 55, 180),
+            PlanetTerrainStyle.Lush => new Color(30, 120, 45, 200),
+            PlanetTerrainStyle.Desert => new Color(180, 110, 50, 160),
+            PlanetTerrainStyle.Ice => new Color(220, 230, 240, 160),
+            PlanetTerrainStyle.Volcanic => new Color(90, 30, 20, 180),
+            PlanetTerrainStyle.Rocky => new Color(90, 90, 95, 160),
+            PlanetTerrainStyle.Clouded => new Color(230, 210, 150, 140),
+            _ => new Color(70, 90, 70, 140)
+        };
+
+        Raylib.DrawCircle(cx - radius / 4, cy + radius / 8, radius / 4, land);
+        Raylib.DrawCircle(cx + radius / 5, cy - radius / 6, radius / 6, land);
+        Raylib.DrawCircle(cx + radius / 8, cy + radius / 3, radius / 7, land);
+    }
+
+    private static void DrawScanLine(int cx, int cy, int radius, float sweepX)
+    {
+        float dx = sweepX - cx;
+        float inner = radius * radius - dx * dx;
+        if (inner <= 0f)
+        {
+            return;
+        }
+
+        float half = MathF.Sqrt(inner);
+        int x = (int)sweepX;
+        Raylib.DrawLine(x, (int)(cy - half), x, (int)(cy + half), new Color(180, 255, 255, 220));
+        Raylib.DrawLine(x - 1, (int)(cy - half), x - 1, (int)(cy + half), new Color(80, 180, 255, 80));
+    }
+
+    private static Color Shade(Color color, float amount)
+    {
+        amount = Math.Clamp(amount, 0f, 1f);
+        return new Color(
+            (byte)(color.R * amount),
+            (byte)(color.G * amount),
+            (byte)(color.B * amount),
+            (byte)255);
     }
 
     private static string FormatStardate(Vector2 position)

@@ -1,16 +1,48 @@
+using System.Numerics;
+using Raylib_cs;
+
 namespace StarflightGame;
+
+public enum SensorContactKind
+{
+    Life,
+    Mineral
+}
+
+public readonly struct SensorContact
+{
+    public float X { get; init; }
+    public float Y { get; init; }
+    public SensorContactKind Kind { get; init; }
+    public Color Color { get; init; }
+}
 
 /// <summary>
 /// Orbit sensor readout in the style of classic Starflight (Science Officer → Sensors).
 /// </summary>
 public sealed class PlanetSensorScan
 {
+    public const float ScanDurationSeconds = 3.4f;
+
     public string MassLabel { get; init; } = "";
     public int BioPercent { get; init; }
     public int MineralPercent { get; init; }
     public string Atmosphere { get; init; } = "None";
     public string Hydrosphere { get; init; } = "None";
     public string Lithosphere { get; init; } = "None";
+    public Color DiscColor { get; init; }
+    public PlanetTerrainStyle TerrainStyle { get; init; }
+    public IReadOnlyList<SensorContact> Contacts { get; init; } = Array.Empty<SensorContact>();
+    public double ScanStartedAt { get; init; }
+
+    public float ScanProgress
+    {
+        get
+        {
+            float elapsed = (float)(Raylib.GetTime() - ScanStartedAt);
+            return Math.Clamp(elapsed / ScanDurationSeconds, 0f, 1f);
+        }
+    }
 
     public static PlanetSensorScan FromPlanet(Planet planet, IReadOnlyList<MineralTradeEntry>? minerals = null)
     {
@@ -20,15 +52,21 @@ public sealed class PlanetSensorScan
         double radiusM = radiusKm * 1000.0;
         double massKg = (4.0 / 3.0) * Math.PI * radiusM * radiusM * radiusM * densityKgM3;
         double massTons = massKg / 1000.0;
+        int bio = BioPercentFor(planet, rng);
+        int mineral = MineralPercentFor(planet, rng);
 
         return new PlanetSensorScan
         {
             MassLabel = FormatMassTons(massTons),
-            BioPercent = BioPercentFor(planet, rng),
-            MineralPercent = MineralPercentFor(planet, rng),
+            BioPercent = bio,
+            MineralPercent = mineral,
             Atmosphere = AtmosphereFor(planet),
             Hydrosphere = HydrosphereFor(planet),
-            Lithosphere = LithosphereFor(planet, minerals, rng)
+            Lithosphere = LithosphereFor(planet, minerals, rng),
+            DiscColor = planet.SurfaceColor,
+            TerrainStyle = planet.TerrainStyle,
+            Contacts = BuildContacts(planet, bio, mineral, rng),
+            ScanStartedAt = Raylib.GetTime()
         };
     }
 
@@ -177,4 +215,85 @@ public sealed class PlanetSensorScan
     }
 
     private static int ClampPercent(int value) => Math.Clamp(value, 0, 100);
+
+    private static List<SensorContact> BuildContacts(Planet planet, int bioPercent, int mineralPercent, Random rng)
+    {
+        var contacts = new List<SensorContact>();
+        int lifeCount = bioPercent <= 0 ? 0 : Math.Clamp(bioPercent / 7, 1, 14);
+        int mineralCount = mineralPercent <= 0 ? 0 : Math.Clamp(mineralPercent / 6, 1, 16);
+
+        if (planet.TerrainStyle is PlanetTerrainStyle.GasBanded or PlanetTerrainStyle.IceBanded)
+        {
+            lifeCount = 0;
+        }
+
+        for (int i = 0; i < lifeCount; i++)
+        {
+            Vector2 p = RandomDiscPoint(rng, equatorialBias: 0.55f);
+            contacts.Add(new SensorContact
+            {
+                X = p.X,
+                Y = p.Y,
+                Kind = SensorContactKind.Life,
+                Color = LifeColor(rng)
+            });
+        }
+
+        for (int i = 0; i < mineralCount; i++)
+        {
+            Vector2 p = RandomDiscPoint(rng, equatorialBias: 0.15f);
+            contacts.Add(new SensorContact
+            {
+                X = p.X,
+                Y = p.Y,
+                Kind = SensorContactKind.Mineral,
+                Color = MineralColor(rng)
+            });
+        }
+
+        return contacts;
+    }
+
+    private static Vector2 RandomDiscPoint(Random rng, float equatorialBias)
+    {
+        for (int attempt = 0; attempt < 24; attempt++)
+        {
+            float x = (float)(rng.NextDouble() * 2.0 - 1.0);
+            float y = (float)(rng.NextDouble() * 2.0 - 1.0);
+            if (x * x + y * y > 0.88f)
+            {
+                continue;
+            }
+
+            if (equatorialBias > 0f && MathF.Abs(y) > 0.72f - equatorialBias * 0.4f && rng.NextDouble() < equatorialBias)
+            {
+                continue;
+            }
+
+            return new Vector2(x, y);
+        }
+
+        return new Vector2(0f, 0f);
+    }
+
+    private static Color LifeColor(Random rng)
+    {
+        return rng.Next(3) switch
+        {
+            0 => new Color(70, 230, 90, 255),
+            1 => new Color(40, 190, 120, 255),
+            _ => new Color(160, 255, 90, 255)
+        };
+    }
+
+    private static Color MineralColor(Random rng)
+    {
+        return rng.Next(4) switch
+        {
+            0 => new Color(240, 200, 70, 255),
+            1 => new Color(230, 140, 50, 255),
+            2 => new Color(200, 200, 210, 255),
+            _ => new Color(180, 80, 40, 255)
+        };
+    }
 }
