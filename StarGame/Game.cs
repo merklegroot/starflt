@@ -648,7 +648,7 @@ public class Game : IGame
 
     private void UpdatePlanetaryExploration(float deltaTime)
     {
-        if (_currentPlanet == null || !_crewDisembarked || _rightPanel.MenuLevel != 0)
+        if (_currentPlanet == null || !_crewDisembarked)
         {
             return;
         }
@@ -769,7 +769,7 @@ public class Game : IGame
         _tvHeading = -MathF.PI / 2f;
         _crewDisembarked = true;
         _rightPanel.SurfaceCrewDisembarked = true;
-        _rightPanel.ShowCaptainMenu();
+        _rightPanel.ResetSubmenuToTop();
         SetMiningRigStatusMessage("Terrain vehicle deployed.");
     }
 
