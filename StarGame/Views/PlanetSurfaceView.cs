@@ -25,34 +25,7 @@ public sealed class PlanetSurfaceView
         int viewWidth,
         int viewHeight)
     {
-        int cols = viewWidth / TileSize + 3;
-        int rows = viewHeight / TileSize + 3;
-        int originX = viewWidth / 2 - cols * TileSize / 2;
-        int originY = viewHeight / 2 - rows * TileSize / 2;
-        int centerCol = cols / 2;
-        int centerRow = rows / 2;
-
-        for (int row = 0; row < rows; row++)
-        {
-            float lat = cameraLatitude + (centerRow - row) * DegreesPerTile;
-            lat = Math.Clamp(lat, -89.5f, 89.5f);
-            for (int col = 0; col < cols; col++)
-            {
-                float lon = WrapLon(cameraLongitude + (col - centerCol) * DegreesPerTile);
-                planet.SampleSurface(lon, lat, out Color color, out _, out bool liquid);
-                if (liquid)
-                {
-                    color = Shade(color, 0.82f);
-                }
-
-                Raylib.DrawRectangle(
-                    originX + col * TileSize,
-                    originY + row * TileSize,
-                    TileSize,
-                    TileSize,
-                    color);
-            }
-        }
+        DrawWorldLockedTerrain(planet, cameraLongitude, cameraLatitude, viewWidth, viewHeight);
 
         WorldToScreen(
             shipLongitude,
@@ -99,6 +72,47 @@ public sealed class PlanetSurfaceView
             28,
             Color.WHITE,
             new Color(0, 0, 0, 200));
+    }
+
+    /// <summary>
+    /// Tiles are locked to a lon/lat grid so each cell keeps a stable color.
+    /// The camera scrolls that grid in pixels instead of resampling the sphere every frame,
+    /// which is what made color bands flicker while driving.
+    /// </summary>
+    private static void DrawWorldLockedTerrain(Planet planet, float cameraLon, float cameraLat, int viewWidth, int viewHeight)
+    {
+        int cols = viewWidth / TileSize + 4;
+        int rows = viewHeight / TileSize + 4;
+        float camTileX = cameraLon / DegreesPerTile;
+        float camTileY = cameraLat / DegreesPerTile;
+        int originTx = (int)MathF.Floor(camTileX) - cols / 2;
+        int originTy = (int)MathF.Floor(camTileY) + rows / 2;
+        float centerX = viewWidth * 0.5f;
+        float centerY = viewHeight * 0.5f;
+
+        for (int row = 0; row < rows; row++)
+        {
+            int ty = originTy - row;
+            float sampleLat = Math.Clamp((ty + 0.5f) * DegreesPerTile, -89.5f, 89.5f);
+            int top = (int)MathF.Floor(centerY - (ty + 1 - camTileY) * TileSize);
+            int bottom = (int)MathF.Floor(centerY - (ty - camTileY) * TileSize);
+            int height = Math.Max(1, bottom - top);
+
+            for (int col = 0; col < cols; col++)
+            {
+                int tx = originTx + col;
+                float sampleLon = WrapLon((tx + 0.5f) * DegreesPerTile);
+                planet.SampleSurface(sampleLon, sampleLat, out Color color, out _, out bool liquid);
+                if (liquid)
+                {
+                    color = Shade(color, 0.82f);
+                }
+
+                int left = (int)MathF.Floor(centerX + (tx - camTileX) * TileSize);
+                int right = (int)MathF.Floor(centerX + (tx + 1 - camTileX) * TileSize);
+                Raylib.DrawRectangle(left, top, Math.Max(1, right - left), height, color);
+            }
+        }
     }
 
     private static void WorldToScreen(
