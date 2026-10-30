@@ -659,9 +659,10 @@ public class Game : IGame
             return;
         }
 
-        float dLon = pan.X * SurfaceMoveDegreesPerSecond * deltaTime;
-        float dLat = -pan.Y * SurfaceMoveDegreesPerSecond * deltaTime;
-        _tvLonLat.X = WrapLongitude(_tvLonLat.X + dLon);
+        float dt = Math.Min(deltaTime, 1f / 30f);
+        float dLon = pan.X * SurfaceMoveDegreesPerSecond * dt;
+        float dLat = -pan.Y * SurfaceMoveDegreesPerSecond * dt;
+        _tvLonLat.X += dLon;
         _tvLonLat.Y = Math.Clamp(_tvLonLat.Y + dLat, -88f, 88f);
         _tvHeading = MathF.Atan2(-dLat, dLon);
     }
@@ -1275,7 +1276,12 @@ public class Game : IGame
     {
         Vector2 coords = _crewDisembarked ? _tvLonLat : _shipLonLat;
         int lat = (int)MathF.Round(coords.Y);
-        int lon = (int)MathF.Round(coords.X);
+        int lon = (int)MathF.Round(WrapLongitude(coords.X));
+        if (lon >= 360)
+        {
+            lon = 0;
+        }
+
         string ns = lat >= 0 ? "N" : "S";
         UiText.DrawText($"LAT {Math.Abs(lat):00}{ns}  LON {lon:000}", 10, _screenHeight - 52, 16, new Color(185, 185, 255, 255));
         string hint = _crewDisembarked

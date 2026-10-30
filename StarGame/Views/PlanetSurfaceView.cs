@@ -25,13 +25,15 @@ public sealed class PlanetSurfaceView
         int viewWidth,
         int viewHeight)
     {
-        DrawWorldLockedTerrain(planet, cameraLongitude, cameraLatitude, viewWidth, viewHeight);
+        int camPixX;
+        int camPixY;
+        DrawWorldLockedTerrain(planet, cameraLongitude, cameraLatitude, viewWidth, viewHeight, out camPixX, out camPixY);
 
         WorldToScreen(
             shipLongitude,
             shipLatitude,
-            cameraLongitude,
-            cameraLatitude,
+            camPixX,
+            camPixY,
             viewWidth,
             viewHeight,
             out int shipX,
@@ -44,16 +46,7 @@ public sealed class PlanetSurfaceView
 
         if (disembarked)
         {
-            WorldToScreen(
-                tvLongitude,
-                tvLatitude,
-                cameraLongitude,
-                cameraLatitude,
-                viewWidth,
-                viewHeight,
-                out int tvX,
-                out int tvY);
-            DrawTerrainVehicle(tvX, tvY, tvHeading);
+            DrawTerrainVehicle(viewWidth / 2, viewHeight / 2, tvHeading);
         }
 
         const int titleSize = 22;
@@ -79,24 +72,31 @@ public sealed class PlanetSurfaceView
     /// The camera scrolls that grid in pixels instead of resampling the sphere every frame,
     /// which is what made color bands flicker while driving.
     /// </summary>
-    private static void DrawWorldLockedTerrain(Planet planet, float cameraLon, float cameraLat, int viewWidth, int viewHeight)
+    private static void DrawWorldLockedTerrain(
+        Planet planet,
+        float cameraLon,
+        float cameraLat,
+        int viewWidth,
+        int viewHeight,
+        out int camPixX,
+        out int camPixY)
     {
         int cols = viewWidth / TileSize + 4;
         int rows = viewHeight / TileSize + 4;
         float camTileX = cameraLon / DegreesPerTile;
         float camTileY = cameraLat / DegreesPerTile;
+        camPixX = (int)MathF.Floor(camTileX * TileSize);
+        camPixY = (int)MathF.Floor(camTileY * TileSize);
         int originTx = (int)MathF.Floor(camTileX) - cols / 2;
         int originTy = (int)MathF.Floor(camTileY) + rows / 2;
-        float centerX = viewWidth * 0.5f;
-        float centerY = viewHeight * 0.5f;
+        int centerX = viewWidth / 2;
+        int centerY = viewHeight / 2;
 
         for (int row = 0; row < rows; row++)
         {
             int ty = originTy - row;
             float sampleLat = Math.Clamp((ty + 0.5f) * DegreesPerTile, -89.5f, 89.5f);
-            int top = (int)MathF.Floor(centerY - (ty + 1 - camTileY) * TileSize);
-            int bottom = (int)MathF.Floor(centerY - (ty - camTileY) * TileSize);
-            int height = Math.Max(1, bottom - top);
+            int top = centerY - (ty + 1) * TileSize + camPixY;
 
             for (int col = 0; col < cols; col++)
             {
@@ -108,9 +108,8 @@ public sealed class PlanetSurfaceView
                     color = Shade(color, 0.82f);
                 }
 
-                int left = (int)MathF.Floor(centerX + (tx - camTileX) * TileSize);
-                int right = (int)MathF.Floor(centerX + (tx + 1 - camTileX) * TileSize);
-                Raylib.DrawRectangle(left, top, Math.Max(1, right - left), height, color);
+                int left = centerX + tx * TileSize - camPixX;
+                Raylib.DrawRectangle(left, top, TileSize, TileSize, color);
             }
         }
     }
@@ -118,26 +117,17 @@ public sealed class PlanetSurfaceView
     private static void WorldToScreen(
         float lon,
         float lat,
-        float cameraLon,
-        float cameraLat,
+        int camPixX,
+        int camPixY,
         int viewWidth,
         int viewHeight,
         out int x,
         out int y)
     {
-        float dLon = lon - cameraLon;
-        while (dLon > 180f)
-        {
-            dLon -= 360f;
-        }
-
-        while (dLon < -180f)
-        {
-            dLon += 360f;
-        }
-
-        x = viewWidth / 2 + (int)MathF.Round(dLon / DegreesPerTile * TileSize);
-        y = viewHeight / 2 - (int)MathF.Round((lat - cameraLat) / DegreesPerTile * TileSize);
+        int entPixX = (int)MathF.Floor(lon / DegreesPerTile * TileSize);
+        int entPixY = (int)MathF.Floor(lat / DegreesPerTile * TileSize);
+        x = viewWidth / 2 + entPixX - camPixX;
+        y = viewHeight / 2 - (entPixY - camPixY);
     }
 
     private static void DrawTerrainVehicle(int cx, int cy, float heading)
