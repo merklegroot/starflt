@@ -74,8 +74,11 @@ public class Game : IGame
     private PlanetSensorScan? _planetSensorScan = null;
     private PlanetLandingMap? _planetLandingMap = null;
     private float _landingDescentProgress = -1f;
-    private Vector2 _surfaceLonLat = Vector2.Zero;
-    private float _surfaceHeading = -MathF.PI / 2f;
+    private Vector2 _shipLonLat = Vector2.Zero;
+    private float _shipHeading = -MathF.PI / 2f;
+    private Vector2 _tvLonLat = Vector2.Zero;
+    private float _tvHeading = -MathF.PI / 2f;
+    private bool _crewDisembarked = false;
     private readonly PlanetSurfaceView _planetSurfaceView = new PlanetSurfaceView();
 
     public bool ShouldExit { get; private set; } = false;
@@ -155,6 +158,7 @@ public class Game : IGame
         UpdateMiningProduction(deltaTime);
         UpdateMiningRigStatusMessage(deltaTime);
 
+        _rightPanel.SurfaceCrewDisembarked = _crewDisembarked;
         bool encounterCanExitOnBack = _rightPanel.MenuLevel == 0;
         _rightPanel.UpdateNavigation(ref _currentState, ref _justSwitchedState);
 
@@ -181,6 +185,16 @@ public class Game : IGame
         if (_rightPanel.ConsumeLaunchSelection())
         {
             TryLaunchFromSurface();
+        }
+
+        if (_rightPanel.ConsumeDisembarkSelection())
+        {
+            TryDisembark();
+        }
+
+        if (_rightPanel.ConsumeEmbarkSelection())
+        {
+            TryEmbark();
         }
 
         UpdateLandingSiteCursor(deltaTime);
@@ -634,12 +648,7 @@ public class Game : IGame
 
     private void UpdatePlanetaryExploration(float deltaTime)
     {
-        if (_currentPlanet == null)
-        {
-            return;
-        }
-
-        if (_rightPanel.MenuLevel != 0)
+        if (_currentPlanet == null || !_crewDisembarked || _rightPanel.MenuLevel != 0)
         {
             return;
         }
@@ -652,9 +661,9 @@ public class Game : IGame
 
         float dLon = pan.X * SurfaceMoveDegreesPerSecond * deltaTime;
         float dLat = -pan.Y * SurfaceMoveDegreesPerSecond * deltaTime;
-        _surfaceLonLat.X = WrapLongitude(_surfaceLonLat.X + dLon);
-        _surfaceLonLat.Y = Math.Clamp(_surfaceLonLat.Y + dLat, -88f, 88f);
-        _surfaceHeading = MathF.Atan2(-dLat, dLon);
+        _tvLonLat.X = WrapLongitude(_tvLonLat.X + dLon);
+        _tvLonLat.Y = Math.Clamp(_tvLonLat.Y + dLat, -88f, 88f);
+        _tvHeading = MathF.Atan2(-dLat, dLon);
     }
 
     private void OpenRandomPlanetEncounter()
@@ -740,6 +749,65 @@ public class Game : IGame
     {
         _planetLandingMap = null;
         _landingDescentProgress = -1f;
+        _crewDisembarked = false;
+    }
+
+    private void TryDisembark()
+    {
+        if (_currentState != GameState.PlanetaryExploration || _currentPlanet == null)
+        {
+            SetMiningRigStatusMessage("Disembark: not planetside.");
+            return;
+        }
+
+        if (_crewDisembarked)
+        {
+            return;
+        }
+
+        _tvLonLat = new Vector2(_shipLonLat.X, Math.Clamp(_shipLonLat.Y + 0.4f, -88f, 88f));
+        _tvHeading = -MathF.PI / 2f;
+        _crewDisembarked = true;
+        _rightPanel.SurfaceCrewDisembarked = true;
+        _rightPanel.ShowCaptainMenu();
+        SetMiningRigStatusMessage("Terrain vehicle deployed.");
+    }
+
+    private void TryEmbark()
+    {
+        if (_currentState != GameState.PlanetaryExploration || !_crewDisembarked)
+        {
+            return;
+        }
+
+        if (SurfaceDistanceDegrees(_tvLonLat, _shipLonLat) > 0.75f)
+        {
+            SetMiningRigStatusMessage("Embark: return to the ship first.");
+            return;
+        }
+
+        _crewDisembarked = false;
+        _tvLonLat = _shipLonLat;
+        _rightPanel.SurfaceCrewDisembarked = false;
+        _rightPanel.ShowCaptainMenu();
+        SetMiningRigStatusMessage("Crew aboard.");
+    }
+
+    private static float SurfaceDistanceDegrees(Vector2 a, Vector2 b)
+    {
+        float dLon = a.X - b.X;
+        while (dLon > 180f)
+        {
+            dLon -= 360f;
+        }
+
+        while (dLon < -180f)
+        {
+            dLon += 360f;
+        }
+
+        float dLat = a.Y - b.Y;
+        return MathF.Sqrt(dLon * dLon + dLat * dLat);
     }
 
     private void FinishPlanetfall()
@@ -750,8 +818,11 @@ public class Game : IGame
             return;
         }
 
-        _surfaceLonLat = new Vector2(_planetLandingMap.CursorLongitude, _planetLandingMap.CursorLatitude);
-        _surfaceHeading = -MathF.PI / 2f;
+        _shipLonLat = new Vector2(_planetLandingMap.CursorLongitude, _planetLandingMap.CursorLatitude);
+        _shipHeading = -MathF.PI / 2f;
+        _tvLonLat = _shipLonLat;
+        _tvHeading = _shipHeading;
+        _crewDisembarked = false;
         _planetLandingMap = null;
         _landingDescentProgress = -1f;
         _currentState = GameState.PlanetaryExploration;
@@ -766,6 +837,13 @@ public class Game : IGame
             return;
         }
 
+        if (_crewDisembarked)
+        {
+            SetMiningRigStatusMessage("Launch: return to the ship first.");
+            return;
+        }
+
+        _crewDisembarked = false;
         _currentState = GameState.PlanetaryEncounter;
         _justSwitchedState = true;
         _planetView.ResetRotation();
@@ -1176,16 +1254,34 @@ public class Game : IGame
             return;
         }
 
-        _planetSurfaceView.Draw(_currentPlanet, _surfaceLonLat.X, _surfaceLonLat.Y, _surfaceHeading, viewWidth, _screenHeight);
+        float cameraLon = _crewDisembarked ? _tvLonLat.X : _shipLonLat.X;
+        float cameraLat = _crewDisembarked ? _tvLonLat.Y : _shipLonLat.Y;
+        _planetSurfaceView.Draw(
+            _currentPlanet,
+            cameraLon,
+            cameraLat,
+            _shipLonLat.X,
+            _shipLonLat.Y,
+            _shipHeading,
+            _crewDisembarked,
+            _tvLonLat.X,
+            _tvLonLat.Y,
+            _tvHeading,
+            viewWidth,
+            _screenHeight);
     }
 
     private void DrawPlanetaryUi()
     {
-        int lat = (int)MathF.Round(_surfaceLonLat.Y);
-        int lon = (int)MathF.Round(_surfaceLonLat.X);
+        Vector2 coords = _crewDisembarked ? _tvLonLat : _shipLonLat;
+        int lat = (int)MathF.Round(coords.Y);
+        int lon = (int)MathF.Round(coords.X);
         string ns = lat >= 0 ? "N" : "S";
         UiText.DrawText($"LAT {Math.Abs(lat):00}{ns}  LON {lon:000}", 10, _screenHeight - 52, 16, new Color(185, 185, 255, 255));
-        UiText.DrawText("WASD: move  |  Captain → Launch to orbit", 10, _screenHeight - 30, 16, Color.YELLOW);
+        string hint = _crewDisembarked
+            ? "WASD: drive  |  Captain → Embark at the ship"
+            : "Captain → Disembark to explore  |  Launch to orbit";
+        UiText.DrawText(hint, 10, _screenHeight - 30, 16, Color.YELLOW);
     }
 
     private void DrawPlanetaryEncounter()

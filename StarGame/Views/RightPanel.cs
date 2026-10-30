@@ -25,7 +25,13 @@ public interface IRightPanel
 
     bool ConsumeLaunchSelection();
 
+    bool ConsumeDisembarkSelection();
+
+    bool ConsumeEmbarkSelection();
+
     bool ConsumeDescendSelection();
+
+    bool SurfaceCrewDisembarked { get; set; }
 
     bool ConsumeAbortLandingSelection();
 
@@ -97,6 +103,22 @@ public sealed class RightPanel : IRightPanel
     public bool ConsumeLaunchSelection()
     {
         return _gameMenu.ConsumeLaunchSelection();
+    }
+
+    public bool ConsumeDisembarkSelection()
+    {
+        return _gameMenu.ConsumeDisembarkSelection();
+    }
+
+    public bool ConsumeEmbarkSelection()
+    {
+        return _gameMenu.ConsumeEmbarkSelection();
+    }
+
+    public bool SurfaceCrewDisembarked
+    {
+        get => _gameMenu.SurfaceCrewDisembarked;
+        set => _gameMenu.SurfaceCrewDisembarked = value;
     }
 
     public bool ConsumeDescendSelection()

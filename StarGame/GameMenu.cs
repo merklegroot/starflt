@@ -24,7 +24,13 @@ public interface IGameMenu
 
     bool ConsumeLaunchSelection();
 
+    bool ConsumeDisembarkSelection();
+
+    bool ConsumeEmbarkSelection();
+
     bool ConsumeDescendSelection();
+
+    bool SurfaceCrewDisembarked { get; set; }
 
     bool ConsumeAbortLandingSelection();
 
@@ -38,7 +44,8 @@ public sealed class GameMenu : IGameMenu
     private readonly string[] _navigatorSubMenuItems = { "Starmap", "Star system" };
     private readonly string[] _infoSubMenuItems = { "Minerals", "Manifest" };
     private readonly string[] _captainSubMenuItems = { "Land" };
-    private readonly string[] _captainSurfaceSubMenuItems = { "Launch" };
+    private readonly string[] _captainSurfaceSubMenuItems = { "Launch", "Disembark" };
+    private readonly string[] _captainEmbarkSubMenuItems = { "Embark" };
     private readonly string[] _landSubMenuItems = { "Select Site", "Descend", "Abort" };
     private readonly string[] _scienceOfficerSubMenuItems = { "Sensors" };
     private static readonly string[] _noOptionsPlaceholder = { "No options" };
@@ -48,6 +55,8 @@ public sealed class GameMenu : IGameMenu
     private bool _sensorsRequested = false;
     private bool _landRequested = false;
     private bool _launchRequested = false;
+    private bool _disembarkRequested = false;
+    private bool _embarkRequested = false;
     private bool _descendRequested = false;
     private bool _abortLandingRequested = false;
     private bool _selectingLandingSite = false;
@@ -56,6 +65,8 @@ public sealed class GameMenu : IGameMenu
     public int MenuLevel => _menuLevel;
 
     public bool IsSelectingLandingSite => _selectingLandingSite;
+
+    public bool SurfaceCrewDisembarked { get; set; }
 
     public void ResetSubmenuToTop()
     {
@@ -199,6 +210,10 @@ public sealed class GameMenu : IGameMenu
             if (Raylib.IsKeyPressed(KeyboardKey.KEY_ONE))
             {
                 _selectedMenuIndex = 0;
+            }
+            else if (Raylib.IsKeyPressed(KeyboardKey.KEY_TWO))
+            {
+                _selectedMenuIndex = 1;
             }
         }
         else if (_menuLevel == 4)
@@ -421,16 +436,24 @@ public sealed class GameMenu : IGameMenu
         }
         else if (_menuLevel == 3)
         {
-            if (_selectedMenuIndex == 0)
+            if (currentState == GameState.PlanetaryExploration)
             {
-                if (currentState == GameState.PlanetaryExploration)
+                if (SurfaceCrewDisembarked)
+                {
+                    _embarkRequested = true;
+                }
+                else if (_selectedMenuIndex == 0)
                 {
                     _launchRequested = true;
                 }
-                else
+                else if (_selectedMenuIndex == 1)
                 {
-                    _landRequested = true;
+                    _disembarkRequested = true;
                 }
+            }
+            else if (_selectedMenuIndex == 0)
+            {
+                _landRequested = true;
             }
         }
         else if (_menuLevel == 4)
@@ -479,6 +502,20 @@ public sealed class GameMenu : IGameMenu
         return requested;
     }
 
+    public bool ConsumeDisembarkSelection()
+    {
+        bool requested = _disembarkRequested;
+        _disembarkRequested = false;
+        return requested;
+    }
+
+    public bool ConsumeEmbarkSelection()
+    {
+        bool requested = _embarkRequested;
+        _embarkRequested = false;
+        return requested;
+    }
+
     public bool ConsumeDescendSelection()
     {
         bool requested = _descendRequested;
@@ -510,9 +547,16 @@ public sealed class GameMenu : IGameMenu
             return _infoSubMenuItems;
 
         if (_menuLevel == 3)
-            return currentState == GameState.PlanetaryExploration
-                ? _captainSurfaceSubMenuItems
-                : _captainSubMenuItems;
+        {
+            if (currentState != GameState.PlanetaryExploration)
+            {
+                return _captainSubMenuItems;
+            }
+
+            return SurfaceCrewDisembarked
+                ? _captainEmbarkSubMenuItems
+                : _captainSurfaceSubMenuItems;
+        }
 
         if (_menuLevel == 4)
             return _scienceOfficerSubMenuItems;
