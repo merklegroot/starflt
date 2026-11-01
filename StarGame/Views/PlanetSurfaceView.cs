@@ -1,5 +1,6 @@
 using Raylib_cs;
 using System.Numerics;
+using StarflightGame;
 
 namespace StarflightGame.Views;
 
@@ -8,8 +9,8 @@ namespace StarflightGame.Views;
 /// </summary>
 public sealed class PlanetSurfaceView
 {
-    private const int TileSize = 16;
-    private const float DegreesPerTile = 0.22f;
+    public const int TileSize = 16;
+    public const float DegreesPerTile = 0.22f;
 
     public void Draw(
         Planet planet,
@@ -23,11 +24,12 @@ public sealed class PlanetSurfaceView
         float tvLatitude,
         float tvHeading,
         int viewWidth,
-        int viewHeight)
+        int viewHeight,
+        PlanetSurfaceDeposits? deposits = null)
     {
         int camPixX;
         int camPixY;
-        DrawWorldLockedTerrain(planet, cameraLongitude, cameraLatitude, viewWidth, viewHeight, out camPixX, out camPixY);
+        DrawWorldLockedTerrain(planet, cameraLongitude, cameraLatitude, viewWidth, viewHeight, deposits, out camPixX, out camPixY);
 
         WorldToScreen(
             shipLongitude,
@@ -78,6 +80,7 @@ public sealed class PlanetSurfaceView
         float cameraLat,
         int viewWidth,
         int viewHeight,
+        PlanetSurfaceDeposits? deposits,
         out int camPixX,
         out int camPixY)
     {
@@ -110,6 +113,11 @@ public sealed class PlanetSurfaceView
 
                 int left = centerX + tx * TileSize - camPixX;
                 Raylib.DrawRectangle(left, top, TileSize, TileSize, color);
+
+                if (deposits != null && deposits.TryGet(tx, ty, out SurfaceMineralDeposit mineral))
+                {
+                    MineralIconRenderer.Draw(left + TileSize / 2, top + TileSize / 2, mineral.Color);
+                }
             }
         }
     }

@@ -25,6 +25,7 @@
     <None Include="Fonts\OpenSans-OFL.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Textures\tiny-spaceships\**\*" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Textures\solarsystemscope\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Textures\ui\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

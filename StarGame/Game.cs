@@ -79,6 +79,7 @@ public class Game : IGame
     private Vector2 _tvLonLat = Vector2.Zero;
     private float _tvHeading = -MathF.PI / 2f;
     private bool _crewDisembarked = false;
+    private PlanetSurfaceDeposits? _surfaceDeposits = null;
     private readonly PlanetSurfaceView _planetSurfaceView = new PlanetSurfaceView();
 
     public bool ShouldExit { get; private set; } = false;
@@ -125,6 +126,7 @@ public class Game : IGame
         InputManager.Initialize();
         UiText.Load();
         ShipRenderer.Load();
+        MineralIconRenderer.Load();
 
         while (!ShouldExit && !WindowShouldClose())
         {
@@ -140,6 +142,7 @@ public class Game : IGame
     {
         UiText.Unload();
         ShipRenderer.Unload();
+        MineralIconRenderer.Unload();
         _planetView.Unload();
     }
 
@@ -665,6 +668,7 @@ public class Game : IGame
         _tvLonLat.X += dLon;
         _tvLonLat.Y = Math.Clamp(_tvLonLat.Y + dLat, -88f, 88f);
         _tvHeading = MathF.Atan2(-dLat, dLon);
+        TryPickupSurfaceMineral();
     }
 
     private void OpenRandomPlanetEncounter()
@@ -772,6 +776,7 @@ public class Game : IGame
         _rightPanel.SurfaceCrewDisembarked = true;
         _rightPanel.ResetSubmenuToTop();
         SetMiningRigStatusMessage("Terrain vehicle deployed.");
+        TryPickupSurfaceMineral();
     }
 
     private void TryEmbark()
@@ -811,6 +816,33 @@ public class Game : IGame
         return MathF.Sqrt(dLon * dLon + dLat * dLat);
     }
 
+    private void TryPickupSurfaceMineral()
+    {
+        if (!_crewDisembarked || _surfaceDeposits == null)
+        {
+            return;
+        }
+
+        if (!_surfaceDeposits.TryFindAt(_tvLonLat.X, _tvLonLat.Y, out SurfaceMineralDeposit mineral))
+        {
+            return;
+        }
+
+        if (!_ship.TryAddCargo(mineral.Name, mineral.Quantity, "Minerals", out string failureReason))
+        {
+            if (_miningRigStatusMessage != failureReason)
+            {
+                SetMiningRigStatusMessage(failureReason);
+            }
+
+            return;
+        }
+
+        _surfaceDeposits.Collect(mineral.TileX, mineral.TileY);
+        _ship.AddMinerals(mineral.Quantity);
+        SetMiningRigStatusMessage($"Picked up {mineral.Name}.");
+    }
+
     private void FinishPlanetfall()
     {
         if (_currentPlanet == null || _planetLandingMap == null)
@@ -826,6 +858,11 @@ public class Game : IGame
         _crewDisembarked = false;
         _planetLandingMap = null;
         _landingDescentProgress = -1f;
+        if (_surfaceDeposits == null || _surfaceDeposits.PlanetName != _currentPlanet.Name)
+        {
+            _surfaceDeposits = PlanetSurfaceDeposits.Create(_currentPlanet, _mineralTradeList);
+        }
+
         _currentState = GameState.PlanetaryExploration;
         _justSwitchedState = true;
         _rightPanel.ShowCaptainMenu();
@@ -1269,7 +1306,8 @@ public class Game : IGame
             _tvLonLat.Y,
             _tvHeading,
             viewWidth,
-            _screenHeight);
+            _screenHeight,
+            _surfaceDeposits);
     }
 
     private void DrawPlanetaryUi()
@@ -1285,7 +1323,7 @@ public class Game : IGame
         string ns = lat >= 0 ? "N" : "S";
         UiText.DrawText($"LAT {Math.Abs(lat):00}{ns}  LON {lon:000}", 10, _screenHeight - 52, 16, new Color(185, 185, 255, 255));
         string hint = _crewDisembarked
-            ? "WASD: drive  |  Captain → Embark at the ship"
+            ? "WASD: drive over minerals to pick them up  |  Captain → Embark"
             : "Captain → Disembark to explore  |  Launch to orbit";
         UiText.DrawText(hint, 10, _screenHeight - 30, 16, Color.YELLOW);
     }

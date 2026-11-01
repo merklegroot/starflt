@@ -26,6 +26,8 @@ public interface IShip
     void AddMinerals(int amount);
     bool CanMove();
     int GetCargoFillPercent();
+    float GetCargoFreeUnits();
+    bool TryAddCargo(string name, int quantity, string category, out string failureReason);
     float ShieldStrength { get; set; }
     float HullStrength { get; set; }
     float MaxShieldStrength { get; }
@@ -167,6 +169,65 @@ public class Ship : IShip
         }
 
         return Math.Clamp((int)(totalUnits * 100f / CargoCapacity), 0, 100);
+    }
+
+    private float GetCargoUsedUnitsExcludingFuel()
+    {
+        float total = 0f;
+        for (int i = 0; i < _cargo.Count; i++)
+        {
+            if (i == _fuelCargoIndex)
+            {
+                continue;
+            }
+
+            total += _cargo[i].Quantity;
+        }
+
+        return total;
+    }
+
+    public float GetCargoFreeUnits()
+    {
+        return Math.Max(0f, CargoCapacity - GetCargoUsedUnitsExcludingFuel());
+    }
+
+    public bool TryAddCargo(string name, int quantity, string category, out string failureReason)
+    {
+        failureReason = "";
+        if (string.IsNullOrWhiteSpace(name) || quantity <= 0)
+        {
+            failureReason = "Nothing to load.";
+            return false;
+        }
+
+        if (GetCargoFreeUnits() < quantity)
+        {
+            failureReason = "Cargo hold is full.";
+            return false;
+        }
+
+        for (int i = 0; i < _cargo.Count; i++)
+        {
+            if (i == _fuelCargoIndex)
+            {
+                continue;
+            }
+
+            if (string.Equals(_cargo[i].Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                _cargo[i].Quantity += quantity;
+                return true;
+            }
+        }
+
+        _cargo.Add(new CargoHoldEntry
+        {
+            Name = name,
+            Quantity = quantity,
+            Category = string.IsNullOrWhiteSpace(category) ? "Minerals" : category
+        });
+        return true;
     }
 
     public float GetShieldFillFraction()
